@@ -1,20 +1,214 @@
 'use strict';
-const cities=['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad'];
-const offsets={Chennai:0,Mumbai:-430,Delhi:-540,Bengaluru:-730,Hyderabad:-870};
-const examples={gold24:73850,gold22:67670,silver:93200};
-const markets=[['LBMA Gold','$2,332.40','USD / troy oz','+0.4%'],['COMEX Gold','$2,345.10','USD / troy oz','+0.5%'],['MCX Gold','₹67,670','INR / 10g','+0.3%'],['USD/INR','₹83.25','INR / USD','-0.2%']];
-const app=document.querySelector('#app');const select=document.querySelector('#city-select');
-let metal='gold24';
-const fmt=n=>'₹'+Math.round(n).toLocaleString('en-IN');
-const icon=(name,cls='icon')=>'<svg class="'+cls+'" aria-hidden="true"><use href="#i-'+name+'"/></svg>';
-const priceCard=(label,value,change,type)=>'<article class="card"><div class="price-top">'+icon(type==='silver'?'silver':'bars','metal')+'<div><strong>'+label+'</strong><div class="muted">'+(type==='silver'?'₹ / kg':'₹ / 10g')+'</div></div></div><div class="price">'+fmt(value)+'</div><div class="change '+(change.startsWith('-')?'down':'')+'">'+(change.startsWith('-')?'▼ ':'▲ ')+change+'</div></article>';
-const city=()=>select.value;
-const header=(title,subtitle)=>'<section class="hero"><div><h1>'+title+'</h1><p>'+subtitle+'</p></div><span class="date">'+icon('calendar')+'Illustrative demo · Not live</span></section>';
-const notice='<p class="notice">Demonstration only: All prices, movements and chart points are illustrative, not real-time data or generated forecasts. No prediction model or live market API is connected.</p>';
-function chart(){return '<svg class="chart" viewBox="0 0 650 255" role="img" aria-label="Illustrative seven-day gold price trend chart"><defs><linearGradient id="shade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#e9ad2b" stop-opacity=".24"/><stop offset="1" stop-color="#e9ad2b" stop-opacity="0"/></linearGradient></defs>'+[55,110,165,220].map(y=>'<line x1="40" x2="630" y1="'+y+'" y2="'+y+'" stroke="#eef0f3"/>').join('')+'<path d="M40 188 L135 153 L230 126 L325 157 L420 105 L515 123 L625 65 L625 220 L40 220Z" fill="url(#shade)"/><path d="M40 188 L135 153 L230 126 L325 157 L420 105 L515 123 L625 65" fill="none" stroke="#dda020" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'+[[40,188],[135,153],[230,126],[325,157],[420,105],[515,123],[625,65]].map(([x,y])=>'<circle cx="'+x+'" cy="'+y+'" r="5" fill="#fff" stroke="#d99a18" stroke-width="3"/>').join('')+'<g fill="#8893a4" font-size="15">'+['Day 1','Day 2','Day 3','Day 4','Day 5','Day 6','Day 7'].map((d,i)=>'<text x="'+(40+i*97)+'" y="245" text-anchor="middle">'+d+'</text>').join('')+'</g></svg>'}
-function home(){let off=offsets[city()];return header('Tomorrow’s Price Prediction','Gold and silver prices, made simple.')+'<section class="grid three">'+priceCard('24K Gold',examples.gold24+off,'+0.6%','gold')+priceCard('22K Gold',examples.gold22+off*.916,'+0.5%','gold')+priceCard('Silver 999',examples.silver+off*3,'-0.3%','silver')+'</section><section class="grid two section"><article class="card"><div class="section-head"><h2>24K Gold · Last 7 Days</h2><span class="pill">7 days</span></div>'+chart()+'</article><article class="card"><h2>Key Drivers</h2>'+[['LBMA','+0.4%','globe'],['COMEX','+0.5%','markets'],['MCX','+0.3%','markets'],['USD/INR','-0.2%','rupee']].map(([n,c,i])=>'<div class="driver"><span class="driver-label">'+icon(i)+'<strong>'+n+'</strong></span><span class="change '+(c.startsWith('-')?'down':'')+'">'+c+'</span></div>').join('')+'</article></section>'+notice}
-function marketsPage(){return header('Markets','Follow the global signals behind Indian metal prices.')+'<section class="grid four market-grid">'+markets.map(([n,v,u,c])=>'<article class="card"><strong>'+n+'</strong><div class="muted">'+u+'</div><div class="price">'+v+'</div><span class="change '+(c.startsWith('-')?'down':'')+'">'+c+'</span></article>').join('')+'</section><section class="card section"><h2>Global Trading Sessions</h2><p>Indicative sequence only. Actual trading hours depend on exchange calendars and daylight saving time.</p><div class="session">'+['Asia','India MCX','London','US COMEX'].map(n=>'<div class="session-item"><strong>'+n+'</strong></div>').join('')+'</div></section><section class="card section"><h2>What affects tomorrow?</h2>'+[['Global prices','International benchmark and futures moves.'],['Currency moves','Changes in USD/INR can alter rupee-denominated prices.'],['Market sentiment','Interest rates, economic releases and investor demand.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</section>'+notice}
-function compare(){let labels={gold24:['24K Gold','₹ / 10g'],gold22:['22K Gold','₹ / 10g'],silver:['Silver 999','₹ / kg']};return header('Compare Cities','Compare indicative prices across major Indian cities.')+'<div class="tabs" role="group" aria-label="Select metal">'+Object.entries(labels).map(([k,v])=>'<button type="button" data-metal="'+k+'" class="'+(metal===k?'active':'')+'" aria-pressed="'+(metal===k)+'">'+v[0]+'</button>').join('')+'</div><article class="card"><div class="section-head"><h2>City Prices</h2><span class="muted">'+labels[metal][1]+'</span></div>'+cities.map(c=>'<div class="city-row '+(c===city()?'selected':'')+'"><strong>'+c+'</strong><span><b>'+fmt(examples[metal]+offsets[c]*(metal==='silver'?3:metal==='gold22'?.916:1))+'</b></span><span class="change">▲ +0.4%</span></div>').join('')+'</article>'+notice}
-function insights(){return header('Insights','Understand the factors that influence prices.')+'<div class="grid two"><article class="card"><h2>Gold price drivers</h2>'+[['Global benchmarks','LBMA and COMEX movements help establish global pricing.'],['Indian markets','MCX, physical premiums and IBJA reference rates influence local pricing.'],['Exchange rates','A weaker rupee can increase Indian prices even when global gold is stable.'],['Economic news','Real yields, US interest rates and inflation expectations can shift demand.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</article><article class="card"><h2>Silver price drivers</h2>'+[['Industrial demand','Solar, electronics and manufacturing affect silver demand.'],['Investor demand','Silver is also traded as a precious metal and investment asset.'],['Supply and currency','Mine production, recycling and USD/INR influence local prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</article></div><section class="card section"><h2>Forecast transparency</h2><p>Live predictions are not yet available. A production forecast must include source timestamps, estimated price ranges, confidence calibration, market-closure handling, and historical accuracy reporting. Jewellery making charges and applicable taxes should be shown separately from bullion rates.</p></section>'+notice}
-function render(){let route=location.hash.slice(1);if(!['home','markets','compare','insights'].includes(route))route='home';document.querySelectorAll('[data-route]').forEach(a=>{let active=a.dataset.route===route;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});app.innerHTML=({home,markets:marketsPage,compare,insights})[route]();app.querySelectorAll('[data-metal]').forEach(b=>b.addEventListener('click',()=>{metal=b.dataset.metal;render()}));document.title='NextRate | '+route[0].toUpperCase()+route.slice(1)}
-select.addEventListener('change',render);window.addEventListener('hashchange',render);render();
+
+/*
+ * Source-backed static dashboard. All published observations come from
+ * data/latest.json and data/history.json generated by the GitHub Actions
+ * collector. Never generate a numeric "tomorrow" prediction here.
+ */
+const cities = ['Chennai', 'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad'];
+const app = document.querySelector('#app');
+const select = document.querySelector('#city-select');
+let activeMetal = 'gold24';
+let rates = null;
+let history = null;
+let loadFailure = null;
+
+const INR = new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 0});
+const USD = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 2});
+const icon = (name, cls='icon') => '<svg class="' + cls + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
+const price = n => Number.isFinite(Number(n)) ? INR.format(Number(n)) : 'Unavailable';
+const usd = n => Number.isFinite(Number(n)) ? USD.format(Number(n)) : 'Unavailable';
+const escapeHTML = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function sourceDate(iso) {
+  if (!iso || !/^\d{4}-\d\d-\d\d$/.test(iso)) return 'Date unavailable';
+  return new Date(iso + 'T12:00:00+05:30').toLocaleDateString('en-IN', {timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric'});
+}
+function sourceTime(iso) {
+  if (!iso) return 'Time unavailable';
+  const dt = new Date(iso);
+  if (!Number.isFinite(dt.getTime())) return 'Time unavailable';
+  return dt.toLocaleString('en-IN', {timeZone:'Asia/Kolkata',day:'numeric',month:'short',hour:'numeric',minute:'2-digit',hour12:true})+' IST';
+}
+function daysOld(dateString) {
+  if (!dateString) return Infinity;
+  const date = new Date(dateString.slice(0,10)+'T00:00:00Z');
+  if (!Number.isFinite(date.getTime())) return Infinity;
+  const today = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
+  let utcToday = new Date(today+'T00:00:00Z');
+  if (!Number.isFinite(utcToday.getTime())) utcToday = new Date();
+  return Math.max(0, Math.floor((utcToday-date)/86400000));
+}
+const india = () => rates?.india || null;
+const series = () => Array.isArray(history?.india) ? history.india.slice().sort((a,b)=>a.date.localeCompare(b.date)) : [];
+
+function benchmark(metal) {
+  const info = {
+    gold24: {key:'gold24_inr_10g',label:'24K Gold',unit:'₹ / 10g',icon:'bars'},
+    gold22: {key:'gold22_inr_10g',label:'22K Gold',unit:'₹ / 10g',icon:'bars'},
+    silver: {key:'silver999_inr_kg',label:'Silver 999',unit:'₹ / kg',icon:'silver'}
+  }[metal];
+  return {...info, value: india()?.[info.key] ?? null};
+}
+function previousObservation(key) {
+  const d=india()?.date;
+  return series().filter(r=>r.date<d && Number.isFinite(r[key])).at(-1);
+}
+function movement(key, current) {
+  const old = previousObservation(key);
+  const prev=old?.[key];
+  if (!Number.isFinite(current)||!Number.isFinite(prev)||prev===0) return '<span class="muted">No earlier observation</span>';
+  const delta=(current-prev)/prev*100;
+  const positive=delta>=0;
+  return '<span class="change '+(positive?'':'down')+'">'+(positive?'▲ +':'▼ ')+delta.toFixed(2)+'%</span><span class="muted"> vs '+sourceDate(old.date)+'</span>';
+}
+function availabilityTag() {
+  const p=india();
+  if (!p) return '<span class="date status-warning">'+icon('calendar')+'Indian rates unavailable</span>';
+  const stale=daysOld(p.date)>4;
+  return '<span class="date '+(stale?'status-warning':'')+'">'+icon('calendar')+(stale?'Older reference':'IBJA '+escapeHTML(p.session||'last'))+' · '+sourceDate(p.date)+'</span>';
+}
+function heading(title,sub) {
+  return '<section class="hero"><div><h1>'+title+'</h1><p>'+sub+'</p></div>'+availabilityTag()+'</section>';
+}
+function benchmarkCard(which) {
+  const b=benchmark(which);
+  const ok=Number.isFinite(b.value);
+  return '<article class="card"><div class="price-top">'+icon(b.icon,'metal')+
+    '<div><strong>'+b.label+'</strong><div class="muted">'+b.unit+'</div></div></div>'+
+    '<div class="price">'+(ok?price(b.value):'—')+'</div>'+
+    '<div class="price-change">'+(ok?movement(b.key,b.value):'<span class="muted">Awaiting validated quote</span>')+'</div>'+
+    '</article>';
+}
+function note() {
+  const p=india();
+  let message = p
+    ? 'National IBJA benchmark for '+sourceDate(p.date)+' ('+escapeHTML(p.session||'last')+'). Prices exclude GST and making charges. These are not jewellery-shop or city-specific selling prices.'
+    : 'IBJA reference rates are currently unavailable. No placeholder or estimated retail prices are shown.';
+  if (p && daysOld(p.date)>4) message+=' This observation is older than four days: check the publisher for newer rates.';
+  return '<p class="notice">'+message+' <a href="https://www.ibjarates.com/" target="_blank" rel="noopener noreferrer">Source: IBJA ↗</a></p>';
+}
+function chart() {
+  const points=series().filter(r=>Number.isFinite(r.gold24_inr_10g)).slice(-7);
+  if (points.length<2) {
+    return '<div class="empty-chart">A price-history chart will appear after at least two verified dated observations are available.</div>';
+  }
+  const nums=points.map(r=>r.gold24_inr_10g);
+  let low=Math.min(...nums), high=Math.max(...nums);
+  const padding=Math.max((high-low)*.2,high*.002);
+  low-=padding;high+=padding;
+  const px=i=>45+(i/(points.length-1))*575;
+  const py=v=>204-(v-low)/(high-low)*155;
+  const coords=nums.map((v,i)=>[px(i),py(v)]);
+  const path=coords.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const base=coords.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+
+    ' L'+coords.at(-1)[0]+' 213 L'+coords[0][0]+' 213 Z';
+  const labels=points.map((r,i)=>'<text x="'+px(i).toFixed(1)+'" y="249" text-anchor="middle">'+
+    new Date(r.date+'T12:00:00+05:30').toLocaleDateString('en-IN',{day:'numeric',month:'short',timeZone:'Asia/Kolkata'})+'</text>').join('');
+  const circles=coords.map(([x,y])=>'<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="4" fill="#fff" stroke="#d99a18" stroke-width="3"/>').join('');
+  return '<svg class="chart" viewBox="0 0 650 255" role="img" aria-label="Actual dated IBJA 24K gold prices for the last '+points.length+' published observations">'+
+    '<defs><linearGradient id="shade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#e9ad2b" stop-opacity=".24"/><stop offset="1" stop-color="#e9ad2b" stop-opacity="0"/></linearGradient></defs>'+
+    [55,105,155,205].map(y=>'<line x1="40" x2="635" y1="'+y+'" y2="'+y+'" stroke="#eef0f3"/>').join('')+
+    '<path d="'+base+'" fill="url(#shade)"/><path d="'+path+'" fill="none" stroke="#dda020" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+
+    circles+'<g fill="#8793a4" font-size="13">'+labels+'</g></svg>';
+}
+function spotRow(symbol,label) {
+  const r=rates?.spot?.[symbol];
+  if (!r) return '<div class="driver"><span class="driver-label">'+icon('globe')+'<strong>'+label+'</strong></span><span class="muted">Unavailable</span></div>';
+  return '<div class="driver"><span class="driver-label">'+icon('globe')+'<strong>'+label+'</strong></span><span><b>'+usd(r.usd_per_troy_ounce)+'</b><small class="subdate">'+sourceTime(r.as_of)+'</small></span></div>';
+}
+function home() {
+  return heading('Latest Gold & Silver Rates','Verified Indian benchmark prices, updated automatically on publication days.')+
+    '<section class="grid three">'+['gold24','gold22','silver'].map(benchmarkCard).join('')+'</section>'+
+    '<section class="grid two section"><article class="card"><div class="section-head"><h2>24K Gold · Recent Prices</h2><span class="pill">Actual IBJA dates</span></div>'+chart()+'</article>'+
+    '<article class="card"><h2>Key Market References</h2>'+spotRow('XAU','Gold spot · USD/oz')+spotRow('XAG','Silver spot · USD/oz')+
+    '<div class="driver"><span class="driver-label">'+icon('rupee')+'<strong>USD/INR · Daily FX</strong></span><span><b>'+(rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'Unavailable')+'</b><small class="subdate">'+(rates?.fx?sourceDate(rates.fx.date):'')+'</small></span></div>'+
+    '<p class="muted small-copy">Gold/silver spot quotes are indicative international prices, not LBMA auction benchmarks or COMEX settlements.</p></article></section>'+
+    note()+
+    '<article class="forecast-note">Tomorrow’s forecast is not active. Only published actual rates and observations appear until a forecast model has been tested against historical results.</article>';
+}
+function marketCard(label,value,unit,date,link) {
+  return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
+}
+function marketsPage() {
+  return heading('Markets','Source-backed international and Indian reference observations.')+
+    '<section class="grid four market-grid">'+
+    marketCard('Gold · XAU',rates?.spot?.XAU?usd(rates.spot.XAU.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAU?sourceTime(rates.spot.XAU.as_of):'','https://gold-api.com/docs')+
+    marketCard('Silver · XAG',rates?.spot?.XAG?usd(rates.spot.XAG.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAG?sourceTime(rates.spot.XAG.as_of):'','https://gold-api.com/docs')+
+    marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?sourceDate(rates.fx.date):'','https://frankfurter.dev/')+
+    marketCard('India 24K',india()?price(india().gold24_inr_10g):'—','IBJA national benchmark · ₹ / 10g',india()?sourceDate(india().date):'','https://www.ibjarates.com/')+
+    '</section>'+
+    '<section class="card section"><h2>Other market venues</h2><p>LBMA auction benchmarks, COMEX futures and MCX futures require separate authorised feeds. They are not equivalent to international spot quotes or the IBJA physical-market benchmark.</p><div class="source-links"><a href="https://www.lbma.org.uk/prices-and-data" target="_blank" rel="noopener noreferrer">LBMA ↗</a><a href="https://www.cmegroup.com/markets/metals/precious/gold.html" target="_blank" rel="noopener noreferrer">COMEX ↗</a><a href="https://www.mcxindia.com/" target="_blank" rel="noopener noreferrer">MCX ↗</a></div></section>'+
+    '<section class="card section"><h2>What affects tomorrow?</h2>'+
+    [['International metal quotes','Global spot prices reflect precious-metal demand and market expectations.'],['Currency movement','The USD/INR rate changes the rupee value of globally priced metals.'],['Domestic physical-market demand','Local premiums, import policies, taxes and jewellery demand affect final retail prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</section>'+note();
+}
+function compare() {
+  const labels={gold24:'24K Gold',gold22:'22K Gold',silver:'Silver 999'};
+  const selected=benchmark(activeMetal);
+  return heading('Compare Cities','Check national reference rates. Local shop quotations have not been connected.')+
+    '<div class="tabs" role="group" aria-label="Choose metal">'+Object.entries(labels).map(([key,label])=>'<button type="button" data-metal="'+key+'" class="'+(activeMetal===key?'active':'')+'" aria-pressed="'+(activeMetal===key)+'">'+label+'</button>').join('')+'</div>'+
+    '<article class="card"><div class="section-head"><h2>India benchmark: '+selected.label+'</h2><span class="muted">'+selected.unit+'</span></div>'+
+    '<div class="reference-value">'+(Number.isFinite(selected.value)?price(selected.value):'Unavailable')+'</div>'+
+    '<p class="muted">IBJA '+(india()?sourceDate(india().date):'rates unavailable')+'. This is one India-wide reference rate, not a verified rate for any individual city.</p></article>'+
+    '<article class="card section"><h2>City retail rates</h2>'+
+    cities.map(c=>'<div class="city-row '+(c===select.value?'selected':'')+'"><strong>'+c+'</strong><span class="muted">Shop quote not connected</span><span class="muted">—</span></div>').join('')+'</article>'+note();
+}
+function insights() {
+  return heading('Insights','How global and Indian markets influence gold and silver prices.')+
+    '<div class="grid two"><article class="card"><h2>Gold price drivers</h2>'+
+    [['Global benchmark prices','London benchmarks and US futures can influence global bullion trends; their official quotations are not yet integrated.'],
+    ['Indian market','IBJA publishes India’s physical-market reference for multiple gold purities.'],['Currency','A weaker rupee can lift INR-denominated prices even if USD gold prices are flat.'],
+    ['Monetary policy','US real yields, inflation expectations, policy rates and risk sentiment can change demand.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</article>'+
+    '<article class="card"><h2>Silver price drivers</h2>'+
+    [['Industrial use','Solar panels, electronics and industrial output contribute to silver demand.'],
+    ['Investors','Fund holdings, futures positioning and risk sentiment can influence prices.'],
+    ['Local conversion','USD/INR, physical-market premiums and taxes can change Indian prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</article></div>'+
+    '<section class="card section"><h2>Data and forecasting policy</h2><p>The live data collection runs automatically on GitHub Actions, normally twice daily. The data labels show the publisher’s observation date, not the most recent page visit. On market holidays and weekends the last published IBJA rate is retained with its original date. No city premiums, model confidence, futures settlements or tomorrow’s predicted prices are fabricated.</p><p>IBJA benchmark rates exclude GST and making charges. International spot and FX quotes are separate markets and do not directly represent Indian jewellery prices.</p></section>'+note();
+}
+function errorScreen() {
+  return heading('Latest Gold & Silver Rates','Waiting for the first validated market data publication.')+
+    '<article class="card"><h2>Rates temporarily unavailable</h2><p>NextRate has no confirmed published snapshot yet. The daily GitHub Actions collector will populate it after a successful run. We do not show invented fallback prices.</p><a href="https://github.com/Vignesh-S-GitHub/Next-Rate/actions" target="_blank" rel="noopener noreferrer">Check collection status on GitHub ↗</a></article>';
+}
+function render() {
+  let route=location.hash.slice(1);
+  if(!['home','markets','compare','insights'].includes(route))route='home';
+  document.querySelectorAll('[data-route]').forEach(a=>{
+    const active=a.dataset.route===route;
+    a.classList.toggle('active',active);
+    if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+  });
+  if (!rates && !loadFailure) {
+    app.innerHTML='<section class="card"><h2>Loading verified market data…</h2></section>';
+  } else if (!rates) {
+    app.innerHTML=errorScreen();
+  } else {
+    app.innerHTML=({home,markets:marketsPage,compare,insights})[route]();
+  }
+  app.querySelectorAll('[data-metal]').forEach(b=>b.addEventListener('click',()=>{
+    activeMetal=b.dataset.metal;
+    render();
+  }));
+  document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
+}
+async function getJSON(file) {
+  const res=await fetch('./data/'+file+'?v='+Date.now(),{cache:'no-store'});
+  if(!res.ok)throw new Error('Market snapshot unavailable: '+res.status);
+  return res.json();
+}
+async function loadData() {
+  try{
+    const [snapshot, series]=await Promise.all([getJSON('latest.json'),getJSON('history.json')]);
+    if(snapshot.schema_version!==1 || series.schema_version!==1)throw new Error('Unsupported market snapshot');
+    rates=snapshot;
+    history=series;
+    loadFailure=null;
+  } catch(e){
+    loadFailure=e;
+    console.warn('NextRate data unavailable',e);
+  }
+  render();
+}
+select.addEventListener('change',render);
+window.addEventListener('hashchange',render);
+render();
+loadData();
