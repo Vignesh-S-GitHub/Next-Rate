@@ -25,7 +25,11 @@ HISTORY = ROOT / "data" / "history.json"
 IST = ZoneInfo("Asia/Kolkata")
 IBJA_URL = "https://www.ibjarates.com/"
 SPOT_URL = "https://api.gold-api.com/price/"
-FX_URL = "https://api.frankfurter.dev/v2/rate/usd/inr"
+FX_URLS = (
+    "https://api.frankfurter.dev/v2/rate/usd/inr",
+    "https://api.frankfurter.dev/v1/latest?base=USD&symbols=INR",
+    "https://open.er-api.com/v6/latest/USD",
+)
 USER_AGENT = "NextRate/1.0 (+https://github.com/Vignesh-S-GitHub/Next-Rate; daily market reference)"
 LOG = logging.getLogger("nextrate")
 
@@ -259,21 +263,38 @@ def parse_spot(body: bytes, symbol: str, now: datetime):
 
 def parse_fx(body: bytes, now: datetime):
     item = json.loads(body)
-    if not isinstance(item, dict) or item.get("base", "").upper() != "USD" or item.get("quote", "").upper() != "INR":
-        raise ValueError("Unexpected Frankfurter response")
-    value = float(item["rate"])
-    day = date.fromisoformat(item["date"])
+    if not isinstance(item, dict):
+        raise ValueError("Malformed currency response")
+    source = "Frankfurter daily FX reference"
+    link = "https://frankfurter.dev/"
+    if item.get("result") == "success" and item.get("base_code") == "USD":
+        # Open ExchangeRate-API fallback. This endpoint requires attribution
+        # when the USD/INR rate appears in the app.
+        source = "ExchangeRate-API open access"
+        link = "https://www.exchangerate-api.com"
+        value = float(item["rates"]["INR"])
+        day = datetime.fromtimestamp(int(item["time_last_update_unix"]), timezone.utc).date()
+    elif item.get("base", "").upper() == "USD" and item.get("quote", "").upper() == "INR":
+        # Frankfurter v2 single-pair response
+        value = float(item["rate"])
+        day = date.fromisoformat(item["date"])
+    elif item.get("base", "").upper() == "USD" and isinstance(item.get("rates"), dict):
+        # Frankfurter v1 latest (ECB daily reference)
+        value = float(item["rates"]["INR"])
+        day = date.fromisoformat(item["date"])
+    else:
+        raise ValueError("Unexpected FX response structure")
     local_today = now.astimezone(IST).date()
     if not math.isfinite(value) or not (20 < value < 250):
         raise ValueError("Invalid INR exchange rate")
     if day > local_today or (local_today - day).days > 10:
-        raise ValueError("FX rate outside accepted publication window")
+        raise ValueError("FX reference out of publication window: " + day.isoformat() + " vs " + local_today.isoformat())
     return {
         "inr_per_usd": round(value, 5),
         "date": day.isoformat(),
         "retrieved_at": now.isoformat(timespec="seconds"),
-        "source": "Frankfurter daily FX reference",
-        "source_url": "https://frankfurter.dev/",
+        "source": source,
+        "source_url": link,
     }
 
 
@@ -337,15 +358,22 @@ def refresh(now=None):
         except Exception as exc:
             snapshot["sources_checked"][symbol.lower()] = "unavailable"
             LOG.warning("%s spot unavailable: %s", symbol, exc)
-    try:
-        fx = parse_fx(download(FX_URL), now)
-        snapshot["fx"] = fx
-        records["fx"] = append_history(records["fx"], [fx], ("date",))
-        snapshot["sources_checked"]["usd_inr"] = "ok"
-        succeeded += 1
-    except Exception as exc:
+    fx_errors = []
+    for url in FX_URLS:
+        try:
+            fx = parse_fx(download(url), now)
+            snapshot["fx"] = fx
+            records["fx"] = append_history(records["fx"], [fx], ("date",))
+            snapshot["sources_checked"]["usd_inr"] = "ok"
+            LOG.info("USD/INR %s via %s: %s", fx["date"], fx["source"], fx["inr_per_usd"])
+            succeeded += 1
+            break
+        except Exception as exc:
+            fx_errors.append(str(exc))
+            LOG.warning("FX endpoint rejected %s: %s", url.split("/")[2], exc)
+    else:
         snapshot["sources_checked"]["usd_inr"] = "unavailable"
-        LOG.warning("USD/INR unavailable: %s", exc)
+        LOG.warning("USD/INR all providers unavailable: %s", " | ".join(fx_errors))
     if succeeded == 0:
         raise RuntimeError("All data sources unavailable; preserved existing published snapshot")
     LATEST.parent.mkdir(parents=True, exist_ok=True)
