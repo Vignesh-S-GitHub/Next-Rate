@@ -306,7 +306,10 @@ function forecastPanel(){
   const tradingNote=tomorrowIsTarget
     ? 'Forecast for '+dateText+' · expected next Indian bullion publication'
     : 'No regular IBJA publication expected tomorrow. Outlook for '+dateText+
-      ', the next expected weekday (exchange holidays not included).';
+      ', the next expected IBJA publication day.';
+  const calendarNote=forecast.holiday_calendar_verified
+    ? 'Weekends and IBJA’s published 2026 exchange holidays excluded.'
+    : 'Future-year holiday calendar not verified; publication could shift.';
   const notes=(Array.isArray(forecast.signal_summary)?forecast.signal_summary:[])
      .slice(0,4).map(item=>
        '<div class="forecast-factor"><span class="forecast-factor-dot '+(item.used_in_estimate?'active':'')+'"></span>'+
@@ -321,7 +324,8 @@ function forecastPanel(){
       '% across '+tracking.gold24.sample_size+' evaluated forecasts.'
     : 'Accuracy tracking: '+n+' forecast'+(n===1?'':'s')+' evaluated; at least 10 are required before publishing an error summary.';
   return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
-    '<p class="forecast-subtitle">'+tradingNote+'</p>'+
+    '<p class="forecast-subtitle">'+tradingNote+
+      ' <span class="forecast-calendar">'+calendarNote+'</span></p>'+
     '<div class="forecast-grid">'+
       forecastMetalCard('gold24','24K Gold','per 10 grams','gold-bar.webp')+
       forecastMetalCard('gold22','22K Gold','per 10 grams','gold-bar.webp')+
