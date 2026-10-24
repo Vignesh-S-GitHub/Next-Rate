@@ -18,8 +18,9 @@ The workflow executes:
 1. Python standard-library collector `scripts/update_rates.py`.
 2. Unit tests in `tests/test_update_rates.py`.
 3. Source freshness, currency and purity consistency validation.
-4. Atomic Git commit of `data/latest.json` and a rolling `data/history.json` (up to 180 publication dates).
-5. Direct GitHub Pages deployment of the updated site in the **same workflow**. GitHub does not trigger `push` workflows from a commit made with `GITHUB_TOKEN`; direct deployment avoids that limitation.
+4. Produce `data/forecast.json`, archive immutable issuances in `data/forecast_history.json`, and evaluate completed forecasts against the target-day IBJA PM close.
+5. Commit verified observations and archived forecasts to GitHub (up to 180 source dates and 300 forecast issuances).
+6. Direct GitHub Pages deployment of the updated site in the **same workflow**. GitHub does not trigger `push` workflows from a commit made with `GITHUB_TOKEN`; direct deployment avoids that limitation.
 
 The regular Pages workflow `.github/workflows/pages.yml` continues to publish ordinary source-code changes.
 
@@ -29,7 +30,7 @@ The regular Pages workflow `.github/workflows/pages.yml` continues to publish or
 
 - **Predictions:** 24K gold and 22K gold in rupees per 10 g, Silver 999 in rupees per kg, plus simple conversions to 1 g and 8 g (gold) or 1 g and 100 g (silver).
 - **Model:** Damped median of the last 2–7 published IBJA price changes, with a deliberately broad heuristic range based on recent price variation and sensible minimum widths. Does not infer fake LBMA, COMEX or MCX futures prices.
-- **Time horizon:** If tomorrow is an ordinary weekday, it predicts that expected publication date. If tomorrow is Saturday or Sunday, it transparently shows the next expected weekday instead of inventing a non-trading-day IBJA rate. **Indian exchange and festival holidays are not yet in the calendar**.
+- **Time horizon:** If tomorrow is an ordinary weekday, it predicts that expected publication date. If tomorrow is Saturday or Sunday, it transparently shows the next expected weekday instead of inventing a non-trading-day IBJA rate. The **official 2026 IBJA commodity-exchange holiday list** is considered; dates for 2027 onward must be verified and loaded when published. Some festival dates can change. See [IBJA 2026 holiday list](https://www.ibjarates.com/pdf/List-of-Holidays/List-of-Holidays-2026.pdf).
 - **Accuracy:** Not statistically validated with the available short history; no made-up confidence probability or success percentage is displayed. Issued predictions are archived immutably in `data/forecast_history.json`, and measured against the **next target-date IBJA PM closing rate** once published. Error summaries require at least 10 evaluated forecasts.
 - **Important:** An estimated range is not a guaranteed or calibrated confidence interval. This is a national benchmark outlook, not a city-specific retail jeweller quote. GST, making charges, local premiums and taxes are excluded.
 - **Model sources:** IBJA history only at present. International XAU/XAG spot and USD/INR are shown separately as market references, not covertly included as forecasting signals. Official LBMA, COMEX and MCX feeds are not yet connected.
@@ -65,7 +66,7 @@ Rates are not necessarily updated on Saturdays, Sundays or Indian government hol
 
 ## Limitations and forecasting
 
-**No tomorrow-price forecast has been activated.** Accurate predictions would need reliable historical data, a time-aligned forecasting model, measured out-of-sample errors, calibrated ranges and independently verified city-specific actuals.
+**An experimental tomorrow/next-publication-day forecast is now active.** Its current four-day source history is too short to establish dependable predictive accuracy. The model deliberately publishes a heuristic planning range, not statistically calibrated confidence limits. More reliable predictions require longer unbiased historical data, time-aligned international and FX inputs, out-of-sample validation and independently verified city-level prices.
 
 **LBMA auction prices, COMEX futures and MCX futures are not yet connected**, because free international spot data cannot be presented as official exchange/futures values. The Markets screen links to those venues without suggesting they are collected.
 
@@ -76,7 +77,7 @@ If an individual source fails validation, its last validated observation is reta
 - Main website: https://vignesh-s-github.github.io/Next-Rate/
 - Deployment workflow: [Pages](.github/workflows/pages.yml)
 - Scheduled collection and deployment: [Refresh rates](.github/workflows/refresh-rates.yml)
-- Generated data: [latest.json](data/latest.json), [history.json](data/history.json)
+- Generated data: [latest.json](data/latest.json), [history.json](data/history.json), [forecast.json](data/forecast.json), [forecast_history.json](data/forecast_history.json)
 
 No API keys or database are required. HTML, CSS and vanilla JavaScript are hosted by GitHub Pages; Python runs only inside GitHub Actions.
 
