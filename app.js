@@ -34,9 +34,9 @@ function daysOld(dateString) {
   if (!dateString) return Infinity;
   const date = new Date(dateString.slice(0,10)+'T00:00:00Z');
   if (!Number.isFinite(date.getTime())) return Infinity;
-  const today = new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
-  let utcToday = new Date(today+'T00:00:00Z');
-  if (!Number.isFinite(utcToday.getTime())) utcToday = new Date();
+  const parts = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+  const part = key => parts.find(p=>p.type===key)?.value;
+  const utcToday = new Date(part('year')+'-'+part('month')+'-'+part('day')+'T00:00:00Z');
   return Math.max(0, Math.floor((utcToday-date)/86400000));
 }
 const india = () => rates?.india || null;
@@ -123,7 +123,7 @@ function home() {
     '<section class="grid two section"><article class="card"><div class="section-head"><h2>24K Gold · Recent Prices</h2><span class="pill">Actual IBJA dates</span></div>'+chart()+'</article>'+
     '<article class="card"><h2>Key Market References</h2>'+spotRow('XAU','Gold spot · USD/oz')+spotRow('XAG','Silver spot · USD/oz')+
     '<div class="driver"><span class="driver-label">'+icon('rupee')+'<strong>USD/INR · Daily FX</strong></span><span><b>'+(rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'Unavailable')+'</b><small class="subdate">'+(rates?.fx?sourceDate(rates.fx.date):'')+'</small></span></div>'+
-    '<p class="muted small-copy">Gold/silver spot quotes are indicative international prices, not LBMA auction benchmarks or COMEX settlements.</p></article></section>'+
+    '<p class="muted small-copy">Gold/silver spot quotes are indicative international prices, not LBMA auction benchmarks or COMEX settlements.'+(rates?.fx?.source_url?' Currency source: <a href="'+rates.fx.source_url+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(rates.fx.source)+'</a>.':'')+'</p></article></section>'+
     note()+
     '<article class="forecast-note">Tomorrow’s forecast is not active. Only published actual rates and observations appear until a forecast model has been tested against historical results.</article>';
 }
@@ -135,7 +135,7 @@ function marketsPage() {
     '<section class="grid four market-grid">'+
     marketCard('Gold · XAU',rates?.spot?.XAU?usd(rates.spot.XAU.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAU?sourceTime(rates.spot.XAU.as_of):'','https://gold-api.com/docs')+
     marketCard('Silver · XAG',rates?.spot?.XAG?usd(rates.spot.XAG.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAG?sourceTime(rates.spot.XAG.as_of):'','https://gold-api.com/docs')+
-    marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?sourceDate(rates.fx.date):'','https://frankfurter.dev/')+
+    marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?sourceDate(rates.fx.date):'',rates?.fx?.source_url||'https://frankfurter.dev/')+
     marketCard('India 24K',india()?price(india().gold24_inr_10g):'—','IBJA national benchmark · ₹ / 10g',india()?sourceDate(india().date):'','https://www.ibjarates.com/')+
     '</section>'+
     '<section class="card section"><h2>Other market venues</h2><p>LBMA auction benchmarks, COMEX futures and MCX futures require separate authorised feeds. They are not equivalent to international spot quotes or the IBJA physical-market benchmark.</p><div class="source-links"><a href="https://www.lbma.org.uk/prices-and-data" target="_blank" rel="noopener noreferrer">LBMA ↗</a><a href="https://www.cmegroup.com/markets/metals/precious/gold.html" target="_blank" rel="noopener noreferrer">COMEX ↗</a><a href="https://www.mcxindia.com/" target="_blank" rel="noopener noreferrer">MCX ↗</a></div></section>'+
