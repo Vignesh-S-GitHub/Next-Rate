@@ -9,6 +9,9 @@ const cities = ['Chennai', 'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad'];
 const app = document.querySelector('#app');
 const select = document.querySelector('#city-select');
 let activeMetal = 'gold24';
+let weightMetal = 'gold22';
+let customWeight = '8';
+let customUnit = 'g';
 let rates = null;
 let history = null;
 let loadFailure = null;
@@ -78,6 +81,7 @@ function benchmarkCard(which) {
     '<div><strong>'+b.label+'</strong><div class="muted">'+b.unit+'</div></div></div>'+
     '<div class="price">'+(ok?price(b.value):'—')+'</div>'+
     '<div class="price-change">'+(ok?movement(b.key,b.value):'<span class="muted">Awaiting validated quote</span>')+'</div>'+
+    (ok?'<div class="per-gram">1 gram · <strong>'+NextRateWeights.formatINR(NextRateWeights.calculate(b.value,which,1).amount)+'</strong></div>':'')+
     '</article>';
 }
 function note() {
@@ -112,6 +116,104 @@ function chart() {
     '<path d="'+base+'" fill="url(#shade)"/><path d="'+path+'" fill="none" stroke="#dda020" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'+
     circles+'<g fill="#8793a4" font-size="13">'+labels+'</g></svg>';
 }
+
+/* Proportional India bullion weights using the actual dated IBJA rates. */
+function weightPriceSection(){
+  const selected=benchmark(weightMetal);
+  const published=Number.isFinite(selected.value)&&selected.value>0;
+  const weights=NextRateWeights.POPULAR_WEIGHTS[weightMetal];
+  const tabs=[['gold24','24K Gold'],['gold22','22K Gold'],['silver','Silver 999']]
+    .map(([key,label])=>'<button class="weight-tab'+(weightMetal===key?' active':'')+
+      '" type="button" data-weight-metal="'+key+'" aria-pressed="'+(weightMetal===key)+'">'+label+'</button>').join('');
+  const options=weights.map(grams=>{
+    const converted=published?NextRateWeights.calculate(selected.value,weightMetal,grams):null;
+    const isActive=Number(customWeight)*(customUnit==='kg'?1000:1)===grams;
+    const extra=grams===8&&weightMetal!=='silver'?'<small>1 sovereign / pavan</small>':'';
+    return '<button type="button" class="weight-option'+(isActive?' selected':'')+
+      '" data-weight-grams="'+grams+'" aria-label="Calculate '+grams+' grams of '+selected.label+'">'+
+      '<span class="weight-name">'+NextRateWeights.gramLabel(grams)+extra+'</span>'+
+      '<strong class="weight-price">'+(converted?NextRateWeights.formatINR(converted.amount):'—')+'</strong></button>';
+  }).join('');
+  let initialValue='—';
+  if(published){try{
+    initialValue=NextRateWeights.formatINR(NextRateWeights.calculate(
+      selected.value,weightMetal,customWeight,customUnit).amount);
+  }catch{initialValue='—';}}
+  return '<section class="card section weight-panel" data-selected-metal="'+weightMetal+
+    '" aria-labelledby="weights-heading">'+
+    '<div class="weight-section-header"><div><h2 id="weights-heading">Prices by Weight</h2>'+
+    '<p class="muted">1 g, 8 g (pavan), 10 g and other common Indian weights</p></div>'+
+    '<span class="weight-date">'+(india()?'IBJA · '+sourceDate(india().date):'Rates unavailable')+'</span></div>'+
+    '<div class="weight-tabs" role="group" aria-label="Select metal for weight prices">'+tabs+'</div>'+
+    '<p class="weight-rate-line">'+selected.label+' · '+selected.unit+' benchmark: <strong>'+
+    (published?price(selected.value):'Unavailable')+'</strong></p>'+
+    '<div class="weight-grid" aria-label="Common bullion weights">'+options+'</div>'+
+    '<div class="weight-calculator"><div class="weight-calculator-heading"><h3>Calculate your own weight</h3>'+
+    '<p class="muted">Enter any weight or tap a price above.</p></div>'+
+    '<div class="weight-custom-row"><div class="weight-entry">'+
+    '<label for="custom-weight">Weight</label>'+
+    '<input type="number" id="custom-weight" min="0.01" max="100000" step="any" inputmode="decimal" value="'+escapeHTML(customWeight)+'" placeholder="e.g. 8" aria-describedby="weight-error"></div>'+
+    '<div class="weight-unit-entry"><label for="weight-unit">Unit</label>'+
+    '<select id="weight-unit"><option value="g"'+(customUnit==='g'?' selected':'')+'>grams (g)</option>'+
+    '<option value="kg"'+(customUnit==='kg'?' selected':'')+'>kilograms (kg)</option></select></div>'+
+    '<div class="weight-total" role="status" aria-live="polite" aria-atomic="true">'+
+    '<span>Estimated bullion value</span><strong id="weight-result">'+initialValue+'</strong>'+
+    '<small id="weight-result-basis">'+(published?'Based on national IBJA '+selected.unit+' benchmark':'Waiting for a verified rate')+'</small></div></div>'+
+    '<p id="weight-error" class="weight-error" aria-live="polite"></p></div>'+
+    '<p class="weight-disclaimer">Reference metal value only · Excludes GST, making charges and local dealer premiums. Calculated from the IBJA '+escapeHTML(selected.unit)+' rate, not a retail shop quotation.</p>'+
+    '</section>';
+}
+
+function updateCustomWeight(){
+  const result=document.querySelector('#weight-result');
+  const basis=document.querySelector('#weight-result-basis');
+  const error=document.querySelector('#weight-error');
+  if(!result||!basis||!error)return;
+  const b=benchmark(weightMetal);
+  document.querySelectorAll('[data-weight-grams]').forEach(card=>
+    card.classList.toggle('selected',Number(customWeight)*(customUnit==='kg'?1000:1)===Number(card.dataset.weightGrams))
+  );
+  if(!Number.isFinite(b.value)||b.value<=0){
+    result.textContent='—';
+    basis.textContent='No published benchmark available';
+    error.textContent='';
+    return;
+  }
+  try{
+    const value=NextRateWeights.calculate(b.value,weightMetal,customWeight,customUnit);
+    result.textContent=NextRateWeights.formatINR(value.amount);
+    basis.textContent='For '+value.grams.toLocaleString('en-IN',{maximumFractionDigits:3})+
+      ' g · '+b.label+' · IBJA '+sourceDate(india().date);
+    error.textContent='';
+  }catch(err){
+    result.textContent='—';
+    basis.textContent='Enter a valid weight to see its value';
+    error.textContent=err.message;
+  }
+}
+
+function wireWeightCalculator(){
+  document.querySelectorAll('[data-weight-metal]').forEach(tab=>
+    tab.addEventListener('click',()=>{weightMetal=tab.dataset.weightMetal;render();})
+  );
+  document.querySelectorAll('[data-weight-grams]').forEach(button=>
+    button.addEventListener('click',()=>{
+      const grams=Number(button.dataset.weightGrams);
+      if(grams>=1000){customWeight=String(grams/1000);customUnit='kg';}
+      else{customWeight=String(grams);customUnit='g';}
+      const input=document.querySelector('#custom-weight');
+      const unit=document.querySelector('#weight-unit');
+      if(input)input.value=customWeight;
+      if(unit)unit.value=customUnit;
+      updateCustomWeight();
+    })
+  );
+  const input=document.querySelector('#custom-weight');
+  const unit=document.querySelector('#weight-unit');
+  if(input)input.addEventListener('input',()=>{customWeight=input.value;updateCustomWeight();});
+  if(unit)unit.addEventListener('change',()=>{customUnit=unit.value;updateCustomWeight();});
+}
+
 function spotRow(symbol,label) {
   const r=rates?.spot?.[symbol];
   if (!r) return '<div class="driver"><span class="driver-label">'+icon('globe')+'<strong>'+label+'</strong></span><span class="muted">Unavailable</span></div>';
@@ -120,6 +222,7 @@ function spotRow(symbol,label) {
 function home() {
   return heading('Latest Gold & Silver Rates','Verified Indian benchmark prices, updated automatically on publication days.')+
     '<section class="grid three">'+['gold24','gold22','silver'].map(benchmarkCard).join('')+'</section>'+
+    weightPriceSection()+
     '<section class="grid two section"><article class="card"><div class="section-head"><h2>24K Gold · Recent Prices</h2><span class="pill">Actual IBJA dates</span></div>'+chart()+'</article>'+
     '<article class="card"><h2>Key Market References</h2>'+spotRow('XAU','Gold spot · USD/oz')+spotRow('XAG','Silver spot · USD/oz')+
     '<div class="driver"><span class="driver-label">'+icon('rupee')+'<strong>USD/INR · Daily FX</strong></span><span><b>'+(rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'Unavailable')+'</b><small class="subdate">'+(rates?.fx?sourceDate(rates.fx.date):'')+'</small></span></div>'+
@@ -151,7 +254,8 @@ function compare() {
     '<div class="reference-value">'+(Number.isFinite(selected.value)?price(selected.value):'Unavailable')+'</div>'+
     '<p class="muted">IBJA '+(india()?sourceDate(india().date):'rates unavailable')+'. This is one India-wide reference rate, not a verified rate for any individual city.</p></article>'+
     '<article class="card section"><h2>City retail rates</h2>'+
-    cities.map(c=>'<div class="city-row '+(c===select.value?'selected':'')+'"><strong>'+c+'</strong><span class="muted">Shop quote not connected</span><span class="muted">—</span></div>').join('')+'</article>'+note();
+    cities.map(c=>'<div class="city-row '+(c===select.value?'selected':'')+'"><strong>'+c+'</strong><span class="muted">Shop quote not connected</span><span class="muted">—</span></div>').join('')+'</article>'+
+    weightPriceSection()+note();
 }
 function insights() {
   return heading('Insights','How global and Indian markets influence gold and silver prices.')+
@@ -188,6 +292,7 @@ function render() {
     activeMetal=b.dataset.metal;
     render();
   }));
+  wireWeightCalculator();
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }
 async function getJSON(file) {
