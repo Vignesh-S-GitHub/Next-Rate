@@ -51,6 +51,19 @@ class RatesTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_spot(json.dumps(data).encode(), "XAU", now)
 
+    def test_fx_legacy_provider(self):
+        now = datetime(2026, 10, 24, 14, tzinfo=timezone.utc)
+        data = b'{"date":"2026-10-23","base":"USD","rates":{"INR":93.211}}'
+        result = parse_fx(data, now)
+        self.assertEqual(result["inr_per_usd"], 93.211)
+
+    def test_fx_open_fallback(self):
+        now = datetime(2026, 10, 24, 14, tzinfo=timezone.utc)
+        data = b'{"result":"success","base_code":"USD","time_last_update_unix":1792800000,"rates":{"INR":93.215}}'
+        result = parse_fx(data, now)
+        self.assertEqual(result["source"], "ExchangeRate-API open access")
+        self.assertEqual(result["inr_per_usd"], 93.215)
+
     def test_fx(self):
         now = datetime(2026, 10, 24, 14, tzinfo=timezone.utc)
         result = parse_fx(b'{"date":"2026-10-23","base":"USD","quote":"INR","rate":83.2711}', now)
