@@ -211,8 +211,9 @@ def score_archive(archive: list, history: dict, now: datetime):
         except (TypeError, ValueError):
             continue
         obs = actuals.get(target)
-        if not obs:
-            # Holidays and missing sessions are not classified as accuracy failures.
+        if not obs or obs.get("session") != "PM":
+            # Do not prematurely grade the next-day close from an AM observation.
+            # Holidays and missing PM sessions remain unevaluated.
             continue
         outcomes = {}
         for name, config in KEYS.items():
