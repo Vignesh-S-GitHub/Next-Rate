@@ -108,6 +108,24 @@ class ForecastTests(unittest.TestCase):
         again = forecast.score_archive(copy.deepcopy(scored), hist, monday)
         self.assertEqual(again[0]["evaluation"], scored[0]["evaluation"])
 
+    def test_am_quote_is_not_counted_as_finished_day_for_scoring(self):
+        issued = forecast.generate(self.latest(), self.history(), NOW)
+        prediction = [{
+            "target_date": "2026-10-26",
+            "based_on_date": "2026-10-23",
+            "metals": issued["metals"],
+        }]
+        am = {**SAMPLE[-1], "date": "2026-10-26", "session": "AM",
+              "gold24_inr_10g": 139900}
+        hist = self.history()
+        hist["india"].append(am)
+        monday = datetime(2026, 10, 26, 15, tzinfo=timezone.utc)
+        pending = forecast.score_archive(prediction, hist, monday)
+        self.assertNotIn("evaluation", pending[0])
+        hist["india"][-1] = {**am, "session": "PM"}
+        evaluated = forecast.score_archive(pending, hist, monday)
+        self.assertIn("evaluation", evaluated[0])
+
     def test_archive_keeps_first_forecast_for_same_source_session(self):
         with TemporaryDirectory() as tmp:
             p=Path(tmp)
