@@ -231,3 +231,16 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
  .forecast-metal-head,.forecast-price,.forecast-direction,.forecast-range{grid-column:1;grid-row:auto;justify-self:stretch;text-align:left}
  .forecast-direction{justify-self:start}
 }
+
+/* Familiar India weight references inside next-day forecast cards. */
+.forecast-quick-weights{display:flex;gap:9px;flex-wrap:wrap;color:#586880;font-size:11px;line-height:1.6}
+.forecast-quick-weights span{display:block;padding:4px 7px;border-radius:7px;background:#faf7ef;white-space:nowrap}
+.forecast-quick-weights b{color:#946919;font-weight:750}
+@media(max-width:680px){
+ .forecast-quick-weights{grid-column:1/-1;grid-row:3;gap:6px}
+ .forecast-quick-weights span{font-size:11px}
+ .forecast-range{grid-row:4}
+}
+@media(max-width:345px){
+ .forecast-quick-weights,.forecast-range{grid-row:auto}
+}
