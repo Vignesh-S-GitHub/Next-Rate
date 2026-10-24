@@ -37,6 +37,13 @@ jobs:
           test -s assets/silver-bar.webp
           grep -q 'assets/nextrate-icon.png' index.html
           python -m unittest discover -s tests -v
+          node --test tests/ui-forecast.test.cjs
+
+      - name: Build experimental outlook from published rates
+        run: |
+          python scripts/forecast.py
+          python -m json.tool data/forecast.json >/dev/null
+          python -m json.tool data/forecast_history.json >/dev/null
 
       - name: Stage public assets
         run: |
@@ -46,7 +53,7 @@ jobs:
           if test -s data/latest.json && test -s data/history.json; then
             python -m json.tool data/latest.json >/dev/null
             python -m json.tool data/history.json >/dev/null
-            cp data/latest.json data/history.json _site/data/
+            cp data/latest.json data/history.json data/forecast.json data/forecast_history.json _site/data/
           else
             echo "No data snapshot committed yet: frontend will display unavailable message"
           fi
