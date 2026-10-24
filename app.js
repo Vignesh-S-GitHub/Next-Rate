@@ -269,12 +269,19 @@ function forecastMetalCard(key, title, unit, iconFile){
   const move=data.expected_change_pct;
   const pct=typeof move==='number'&&Number.isFinite(move)?
     (move>0?'+':'')+move.toFixed(2)+'%':'—';
+  const quickWeights=(key==='silver'?[1,100]:[1,8]).map(grams=>
+    '<span><b>'+grams+' g</b> · '+
+    NextRateWeights.formatINR(NextRateWeights.calculate(data.estimate,key,grams).amount)+
+    '</span>'
+  ).join('');
   return '<article class="forecast-metal" aria-label="'+title+' forecast">'+
     '<div class="forecast-metal-head">'+
     '<img src="./assets/'+iconFile+'?v=20261025-prediction" width="42" height="42" alt="" class="forecast-metal-img" loading="eager">'+
     '<div><h3>'+title+'</h3><span>'+unit+'</span></div></div>'+
     '<div class="forecast-price">'+price(data.estimate)+'</div>'+
     '<span class="forecast-direction '+dirClass+'">'+escapeHTML(direction)+' · '+pct+'</span>'+
+    '<div class="forecast-quick-weights" aria-label="Estimated price for familiar Indian weights">'+
+      quickWeights+'</div>'+
     '<div class="forecast-range"><span>Estimated range</span><strong>'+
       price(data.low)+' – '+price(data.high)+'</strong></div>'+
     '</article>';
