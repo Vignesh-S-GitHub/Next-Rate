@@ -3,28 +3,53 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: true
+
 jobs:
   deploy:
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate static application
+        run: |
+          set -eu
+          node --check app.js
+          test -s index.html
+          test -s styles.css
+          test -s assets/nextrate-icon.png
+          grep -q 'assets/nextrate-icon.png' index.html
+          echo "NextRate static app and original brand icon verified"
+
+      - name: Stage only public website assets
+        run: |
+          mkdir -p _site/assets
+          cp index.html app.js styles.css _site/
+          cp assets/nextrate-icon.png _site/assets/
+          touch _site/.nojekyll
+
+      # On a new repository, Settings > Pages > Source must be GitHub Actions.
+      # Enabling Pages requires one-time owner setup; GITHUB_TOKEN alone cannot do this.
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Upload static site
+
+      - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
-      - name: Deploy
+          path: _site
+
+      - name: Deploy website
         id: deployment
         uses: actions/deploy-pages@v4

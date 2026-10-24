@@ -1,13 +1,32 @@
 # NextRate
-A responsive, static GitHub Pages-ready demonstration of the locked NextRate gold-and-silver interface.
 
-## Pages setup
-Repository → Settings → Pages → Build and deployment → Source: **GitHub Actions**. Push to main or manually run **Deploy NextRate to GitHub Pages**.
+Mobile-first gold and silver market dashboard for India, styled to match the approved NextRate mockups. The NextRate icon uses the original approved logo artwork (transparent PNG).
 
-Expected Pages URL (once enabled and deployed): https://vignesh-s-github.github.io/Next-Rate/
+## Screens
 
-## Data integrity
-All sample rates and percentage changes are **illustrative**, not live or actual forecasts. This V1 deliberately does not invent a prediction engine or imply live LBMA, COMEX, MCX, IBJA or city prices. Production integration needs licensed data feeds, scheduled ingestion, city-specific price calibration and measured forecast error. No backend is required for this static UI.
+- Home: simplified gold and silver price presentation, chart, and four global drivers.
+- Markets: LBMA, COMEX, MCX, USD/INR and explanation of market influences.
+- Compare: 24K gold, 22K gold and silver across five cities.
+- Insights: explanatory market factors and transparent forecast limitations.
 
-## Development
-Open index.html in a browser. No npm dependencies. Assets use relative URLs for GitHub Pages project hosting.
+## Deploy to GitHub Pages
+
+**One-time setup required:**
+1. Visit [Settings → Pages](https://github.com/Vignesh-S-GitHub/Next-Rate/settings/pages).
+2. Under **Build and deployment → Source**, select **GitHub Actions**.
+3. Open [Actions](https://github.com/Vignesh-S-GitHub/Next-Rate/actions/workflows/pages.yml) and run **Deploy NextRate to GitHub Pages** (or push a new commit).
+4. Once the workflow is green, visit <https://vignesh-s-github.github.io/Next-Rate/>.
+
+If Pages settings are unavailable because this repo is private, GitHub Free requires the repository to be public for Pages. GitHub Pro / Team / Enterprise plans may support private repositories. Changing repository visibility is a decision for the owner; a public Pages site is accessible to everyone even if source remains private.
+
+### Previous deployment failure
+
+The original workflow stopped at `actions/configure-pages@v5` with `Get Pages site failed: Not Found`. This indicates that Pages has not been enabled/configured for the repository. The workflow now validates the JavaScript and the required logo asset before trying to deploy, but GitHub Pages still requires the owner to enable the publishing source.
+
+## Data accuracy
+
+**All values are illustrative sample data.** No live quote API, real forecasting model, city retail feed, or trained confidence scoring has been connected. Real forecasting would require source-licensed LBMA / COMEX / MCX / IBJA feeds, timestamps, trading-calendar awareness, currency conversion, city-specific physical bullion premiums, backtesting and calibrated uncertainty bands. Do not use the sample price values as investment guidance.
+
+## Technology
+
+HTML + CSS + vanilla JavaScript, no npm runtime dependencies. The GitHub Actions workflow checks JavaScript syntax, stages only public site files, and deploys using the official Pages actions.
