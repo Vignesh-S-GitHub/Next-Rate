@@ -23,6 +23,19 @@ The workflow executes:
 
 The regular Pages workflow `.github/workflows/pages.yml` continues to publish ordinary source-code changes.
 
+## Tomorrow / next expected publication forecast
+
+**NextRate now puts an experimental tomorrow-price outlook first on the Home screen**, ahead of actual prices and the weight calculator. A separate transparent forecasting script runs after market-data collection on GitHub Actions:
+
+- **Predictions:** 24K gold and 22K gold in rupees per 10 g, Silver 999 in rupees per kg, plus simple conversions to 1 g and 8 g (gold) or 1 g and 100 g (silver).
+- **Model:** Damped median of the last 2–7 published IBJA price changes, with a deliberately broad heuristic range based on recent price variation and sensible minimum widths. Does not infer fake LBMA, COMEX or MCX futures prices.
+- **Time horizon:** If tomorrow is an ordinary weekday, it predicts that expected publication date. If tomorrow is Saturday or Sunday, it transparently shows the next expected weekday instead of inventing a non-trading-day IBJA rate. **Indian exchange and festival holidays are not yet in the calendar**.
+- **Accuracy:** Not statistically validated with the available short history; no made-up confidence probability or success percentage is displayed. Issued predictions are archived immutably in `data/forecast_history.json`, and measured against the **next target-date IBJA PM closing rate** once published. Error summaries require at least 10 evaluated forecasts.
+- **Important:** An estimated range is not a guaranteed or calibrated confidence interval. This is a national benchmark outlook, not a city-specific retail jeweller quote. GST, making charges, local premiums and taxes are excluded.
+- **Model sources:** IBJA history only at present. International XAU/XAG spot and USD/INR are shown separately as market references, not covertly included as forecasting signals. Official LBMA, COMEX and MCX feeds are not yet connected.
+
+Files: `scripts/forecast.py`, `tests/test_forecast.py`, `data/forecast.json`, `data/forecast_history.json`. Both GitHub Pages and data-refresh workflows generate and publish the forecast. The data-refresh workflow retries bot pushes safely if another commit moves `main` during processing.
+
 ## Prices by Indian weight
 
 On the home dashboard and Compare screen, **Prices by Weight** converts the verified published India Bullion and Jewellers Association (IBJA) rates into familiar gram quantities.
