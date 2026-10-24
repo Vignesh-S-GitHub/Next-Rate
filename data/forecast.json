@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-24T19:09:24+00:00",
+  "today_ist": "2026-10-25",
+  "calendar_tomorrow": "2026-10-26",
+  "target_date": "2026-10-26",
+  "target_type": "expected_next_weekday_not_holiday_adjusted",
+  "market_closed_tomorrow": false,
+  "status": "experimental",
+  "scope": "India national IBJA benchmark estimate; not city retail or jewellery pricing",
+  "method": "Conservative, experimental momentum baseline with heuristic volatility range.",
+  "validity": "Not a proven statistical confidence interval. Predictions may be wrong.",
+  "source_url": "https://www.ibjarates.com/",
+  "metals": {
+    "gold24": {
+      "label": "24K gold",
+      "unit": "10 g",
+      "baseline": 141630,
+      "estimate": 141400,
+      "low": 138600,
+      "high": 144500,
+      "expected_change_pct": -0.16,
+      "direction": "Down",
+      "scenario_width_pct": 1.96,
+      "history_returns_used": 3,
+      "description": "Volatility-banded, damped median of recent published IBJA changes.",
+      "interval_calibrated": false
+    },
+    "gold22": {
+      "label": "22K gold",
+      "unit": "10 g",
+      "baseline": 129733,
+      "estimate": 129500,
+      "low": 126900,
+      "high": 132300,
+      "expected_change_pct": -0.18,
+      "direction": "Down",
+      "scenario_width_pct": 1.96,
+      "history_returns_used": 3,
+      "description": "Volatility-banded, damped median of recent published IBJA changes.",
+      "interval_calibrated": false
+    },
+    "silver": {
+      "label": "Silver 999",
+      "unit": "1 kg",
+      "baseline": 194415,
+      "estimate": 193500,
+      "low": 183000,
+      "high": 205000,
+      "expected_change_pct": -0.47,
+      "direction": "Down",
+      "scenario_width_pct": 5.37,
+      "history_returns_used": 3,
+      "description": "Volatility-banded, damped median of recent published IBJA changes.",
+      "interval_calibrated": false
+    }
+  },
+  "signal_summary": [
+    {
+      "name": "Domestic published momentum",
+      "details": "Uses up to seven successive IBJA rate changes. Recent direction is damped to avoid extrapolating full daily jumps.",
+      "used_in_estimate": true
+    },
+    {
+      "name": "Uncertainty range",
+      "details": "Uses historical absolute price movements with minimum widths of 1.5% for gold and 2.8% for silver. Heuristic, not calibrated.",
+      "used_in_estimate": true
+    },
+    {
+      "name": "International references",
+      "details": "International spot and USD/INR are shown on Markets as context, but not added to this forecast without a validated, time-aligned history.",
+      "used_in_estimate": false
+    },
+    {
+      "name": "LBMA / COMEX / MCX",
+      "details": "Official venue feeds are not connected. Their price changes are not assumed or invented.",
+      "used_in_estimate": false
+    }
+  ],
+  "based_on_date": "2026-10-23",
+  "based_on_session": "PM",
+  "observations": 4,
+  "validation": {
+    "status": "not_backtested",
+    "observations": 4,
+    "description": "Live accuracy tracking begins with newly issued future forecasts; no historical success rate claimed."
+  },
+  "issuance_key": "2026-10-26:2026-10-23:PM",
+  "accuracy_tracking": {
+    "evaluated_issuances": 0,
+    "status": "collecting"
+  }
+}

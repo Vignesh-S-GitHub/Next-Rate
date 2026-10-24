@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "forecasts": [
+    {
+      "issuance_key": "2026-10-26:2026-10-23:PM",
+      "issued_at": "2026-10-24T19:09:24+00:00",
+      "target_date": "2026-10-26",
+      "based_on_date": "2026-10-23",
+      "based_on_session": "PM",
+      "metals": {
+        "gold24": {
+          "label": "24K gold",
+          "unit": "10 g",
+          "baseline": 141630,
+          "estimate": 141400,
+          "low": 138600,
+          "high": 144500,
+          "expected_change_pct": -0.16,
+          "direction": "Down",
+          "scenario_width_pct": 1.96,
+          "history_returns_used": 3,
+          "description": "Volatility-banded, damped median of recent published IBJA changes.",
+          "interval_calibrated": false
+        },
+        "gold22": {
+          "label": "22K gold",
+          "unit": "10 g",
+          "baseline": 129733,
+          "estimate": 129500,
+          "low": 126900,
+          "high": 132300,
+          "expected_change_pct": -0.18,
+          "direction": "Down",
+          "scenario_width_pct": 1.96,
+          "history_returns_used": 3,
+          "description": "Volatility-banded, damped median of recent published IBJA changes.",
+          "interval_calibrated": false
+        },
+        "silver": {
+          "label": "Silver 999",
+          "unit": "1 kg",
+          "baseline": 194415,
+          "estimate": 193500,
+          "low": 183000,
+          "high": 205000,
+          "expected_change_pct": -0.47,
+          "direction": "Down",
+          "scenario_width_pct": 5.37,
+          "history_returns_used": 3,
+          "description": "Volatility-banded, damped median of recent published IBJA changes.",
+          "interval_calibrated": false
+        }
+      }
+    }
+  ]
+}
