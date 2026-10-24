@@ -33,6 +33,33 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(forecast.next_weekday(date(2026, 10, 25)), date(2026, 10, 26))
         self.assertEqual(forecast.next_weekday(date(2026, 10, 26)), date(2026, 10, 27))
 
+    def test_2026_official_commodity_holidays_are_skipped(self):
+        self.assertEqual(
+            forecast.next_ibja_publication_day(date(2026, 11, 23)),
+            date(2026, 11, 25),
+        )
+        self.assertEqual(
+            forecast.next_ibja_publication_day(date(2026, 12, 24)),
+            date(2026, 12, 28),
+        )
+        self.assertEqual(
+            forecast.next_ibja_publication_day(date(2026, 10, 25)),
+            date(2026, 10, 26),
+        )
+
+    def test_2027_without_official_calendar_is_marked_unverified(self):
+        rows = []
+        for row in SAMPLE:
+            shifted = dict(row)
+            shifted["date"] = row["date"].replace("2026", "2027")
+            rows.append(shifted)
+        latest = {"india": rows[-1]}
+        history = {"india": rows}
+        now = datetime(2027, 10, 24, 19, tzinfo=timezone.utc)
+        pred = forecast.generate(latest, history, now)
+        self.assertEqual(pred["status"], "experimental")
+        self.assertFalse(pred["holiday_calendar_verified"])
+
     def test_sunday_forecast_is_dated_monday_and_sourced_friday(self):
         result = forecast.generate(self.latest(), self.history(), NOW)
         self.assertEqual(result["status"], "experimental")
