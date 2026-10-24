@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -31,25 +31,30 @@ jobs:
           test -s styles.css
           test -s assets/nextrate-icon.png
           grep -q 'assets/nextrate-icon.png' index.html
-          echo "NextRate static app and original brand icon verified"
+          python -m unittest discover -s tests -v
 
-      - name: Stage only public website assets
+      - name: Stage public assets
         run: |
-          mkdir -p _site/assets
+          mkdir -p _site/assets _site/data
           cp index.html app.js styles.css _site/
           cp assets/nextrate-icon.png _site/assets/
+          if test -s data/latest.json && test -s data/history.json; then
+            python -m json.tool data/latest.json >/dev/null
+            python -m json.tool data/history.json >/dev/null
+            cp data/latest.json data/history.json _site/data/
+          else
+            echo "No data snapshot committed yet: frontend will display unavailable message"
+          fi
           touch _site/.nojekyll
 
-      # On a new repository, Settings > Pages > Source must be GitHub Actions.
-      # Enabling Pages requires one-time owner setup; GITHUB_TOKEN alone cannot do this.
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload website
+      - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
 
-      - name: Deploy website
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
