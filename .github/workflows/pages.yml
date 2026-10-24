@@ -26,7 +26,9 @@ jobs:
       - name: Validate static application
         run: |
           set -eu
+          node --check weights.js
           node --check app.js
+          node --test tests/weights.test.cjs
           test -s index.html
           test -s styles.css
           test -s assets/nextrate-icon.png
@@ -38,7 +40,7 @@ jobs:
       - name: Stage public assets
         run: |
           mkdir -p _site/assets _site/data
-          cp index.html app.js styles.css _site/
+          cp index.html app.js weights.js styles.css _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           if test -s data/latest.json && test -s data/history.json; then
             python -m json.tool data/latest.json >/dev/null
