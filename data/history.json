@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "india": [
+    {
+      "date": "2026-10-19",
+      "session": "PM",
+      "gold24_inr_10g": 145944,
+      "gold22_inr_10g": 133685,
+      "silver999_inr_kg": 208750
+    },
+    {
+      "date": "2026-10-21",
+      "session": "PM",
+      "gold24_inr_10g": 144105,
+      "gold22_inr_10g": 132000,
+      "silver999_inr_kg": 206783
+    },
+    {
+      "date": "2026-10-22",
+      "session": "PM",
+      "gold24_inr_10g": 142694,
+      "gold22_inr_10g": 130708,
+      "silver999_inr_kg": 199777
+    },
+    {
+      "date": "2026-10-23",
+      "session": "PM",
+      "gold24_inr_10g": 141630,
+      "gold22_inr_10g": 129733,
+      "silver999_inr_kg": 194415
+    }
+  ],
+  "spot": {
+    "XAU": [
+      {
+        "date": "2026-10-24",
+        "usd_per_troy_ounce": 3996.8999,
+        "as_of": "2026-10-24T18:18:53+00:00",
+        "retrieved_at": "2026-10-24T18:19:12+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs"
+      }
+    ],
+    "XAG": [
+      {
+        "date": "2026-10-24",
+        "usd_per_troy_ounce": 54.046,
+        "as_of": "2026-10-24T18:18:52+00:00",
+        "retrieved_at": "2026-10-24T18:19:12+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs"
+      }
+    ]
+  },
+  "fx": []
+}
