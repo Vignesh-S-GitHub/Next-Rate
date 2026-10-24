@@ -1,0 +1,77 @@
+name: Refresh market rates and publish NextRate
+
+on:
+  schedule:
+    # After the Indian AM and PM bullion price publications (UTC times).
+    - cron: "15 7 * * *"
+    - cron: "45 13 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Run collector tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Fetch validated rates and retain dated history
+        run: python scripts/update_rates.py
+
+      - name: Commit changed daily observations
+        run: |
+          set -eu
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/latest.json data/history.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: refresh market observations [skip ci]"
+            git push origin HEAD:main
+          else
+            echo "No new market observations to commit"
+          fi
+
+      - name: Validate frontend
+        run: |
+          node --check app.js
+          test -s index.html
+          test -s data/latest.json
+          test -s assets/nextrate-icon.png
+          python -m json.tool data/latest.json >/dev/null
+          python -m json.tool data/history.json >/dev/null
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build static site
+        run: |
+          mkdir -p _site/assets _site/data
+          cp index.html styles.css app.js _site/
+          cp assets/nextrate-icon.png _site/assets/
+          cp data/latest.json data/history.json _site/data/
+          touch _site/.nojekyll
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
