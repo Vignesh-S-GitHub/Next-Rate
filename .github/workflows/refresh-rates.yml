@@ -56,7 +56,9 @@ jobs:
 
       - name: Validate frontend
         run: |
+          node --check weights.js
           node --check app.js
+          node --test tests/weights.test.cjs
           test -s index.html
           test -s data/latest.json
           test -s assets/nextrate-icon.png
@@ -71,7 +73,7 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p _site/assets _site/data
-          cp index.html styles.css app.js _site/
+          cp index.html styles.css app.js weights.js _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           cp data/latest.json data/history.json _site/data/
           touch _site/.nojekyll
