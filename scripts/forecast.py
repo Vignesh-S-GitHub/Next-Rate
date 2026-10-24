@@ -36,11 +36,30 @@ def read_json(path: Path, default=None):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+# IBJA-published commodity exchange holidays for 2026 (not all office
+# holidays). Few festival dates can change; review annually.
+# https://www.ibjarates.com/pdf/List-of-Holidays/List-of-Holidays-2026.pdf
+IBJA_2026_EXCHANGE_HOLIDAYS = frozenset({
+    "2026-01-15", "2026-01-26", "2026-02-15", "2026-03-03",
+    "2026-03-21", "2026-03-26", "2026-03-31", "2026-04-03",
+    "2026-04-14", "2026-05-01", "2026-05-27", "2026-06-26",
+    "2026-08-15", "2026-09-14", "2026-10-02", "2026-10-20",
+    "2026-11-08", "2026-11-24", "2026-12-25",
+})
+IBJA_HOLIDAY_SOURCE = "https://www.ibjarates.com/pdf/List-of-Holidays/List-of-Holidays-2026.pdf"
+
+
 def next_weekday(day: date) -> date:
-    # Not an exchange holiday calendar: we label it "expected business day".
     d = day + timedelta(days=1)
     while d.weekday() >= 5:
         d += timedelta(days=1)
+    return d
+
+
+def next_ibja_publication_day(day: date) -> date:
+    d = next_weekday(day)
+    while d.isoformat() in IBJA_2026_EXCHANGE_HOLIDAYS:
+        d = next_weekday(d)
     return d
 
 
@@ -135,15 +154,17 @@ def metal_forecast(rows: list, anchor: dict, code: str):
 
 def generate(latest: dict, history: dict, now: datetime) -> dict:
     today = now.astimezone(IST).date()
-    target = next_weekday(today)
+    target = next_ibja_publication_day(today)
     output = {
         "schema_version": 1,
         "generated_at": now.isoformat(timespec="seconds"),
         "today_ist": today.isoformat(),
         "calendar_tomorrow": (today + timedelta(days=1)).isoformat(),
         "target_date": target.isoformat(),
-        "target_type": "expected_next_weekday_not_holiday_adjusted",
-        "market_closed_tomorrow": (today + timedelta(days=1)).weekday() >= 5,
+        "target_type": "expected_IBJA_publication_day",
+        "holiday_calendar_verified": target.year == 2026,
+        "holiday_calendar_source": IBJA_HOLIDAY_SOURCE if target.year == 2026 else None,
+        "market_closed_tomorrow": (today + timedelta(days=1)) != target,
         "status": "unavailable",
         "scope": "India national IBJA benchmark estimate; not city retail or jewellery pricing",
         "method": "Conservative, experimental momentum baseline with heuristic volatility range.",
