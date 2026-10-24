@@ -23,6 +23,18 @@ The workflow executes:
 
 The regular Pages workflow `.github/workflows/pages.yml` continues to publish ordinary source-code changes.
 
+## Prices by Indian weight
+
+On the home dashboard and Compare screen, **Prices by Weight** converts the verified published India Bullion and Jewellers Association (IBJA) rates into familiar gram quantities.
+
+- Select **24K Gold**, **22K Gold**, or **Silver 999**; display presets include **1 g, 8 g (one sovereign/pavan for gold), 10 g, 20 g, 50 g, 100 g, and 1 kg**.
+- Tap any preset to calculate it, or enter a custom quantity in grams or kilograms.
+- Indian rupee formatting uses lakh and crore group separators and displays paise when applicable.
+- Gold: `IBJA 10g rate × weight in grams / 10`; silver: `IBJA 1kg rate × weight in grams / 1000`.
+- 8 g = one sovereign/pavan in some Indian markets; the price is a weight conversion, not a jewellery store quote.
+- The displayed rate is an **India-wide published benchmark**, not a city-specific retail quotation or next-day prediction. The calculation excludes GST, making charges, and local premiums.
+- Pure conversion helpers are in `weights.js`; zero-dependency validation tests are in `tests/weights.test.cjs` and run before both Pages and daily data deployments.
+
 ## Actual data sources
 
 | Data shown | Source | Exact meaning |
