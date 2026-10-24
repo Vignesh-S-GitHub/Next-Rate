@@ -37,3 +37,75 @@ body{overflow-x:clip}
   .three .price-top{gap:6px}
   .three .price-top strong{overflow-wrap:normal;white-space:normal}
 }
+
+
+/* India bullion weight calculator — match the locked minimal NextRate style. */
+.per-gram{font-size:12px;color:#64748b;margin-top:12px;line-height:1.4}
+.per-gram strong{color:#14233c;font-variant-numeric:tabular-nums}
+.weight-panel{overflow:hidden}
+.weight-section-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.weight-section-header h2{margin-bottom:4px}
+.weight-section-header p{margin:0;font-size:13px}
+.weight-date{font-size:12px;background:#fff7e6;color:#8f671e;border-radius:100px;padding:7px 11px;white-space:nowrap}
+.weight-tabs{display:flex;gap:5px;padding:5px;background:#f5f6f8;border-radius:13px;margin:22px 0 16px;width:max-content;max-width:100%}
+.weight-tab{border:0;background:transparent;color:#657186;padding:11px 18px;border-radius:10px;font:inherit;font-size:13px;font-weight:650;transition:background .15s,color .15s}
+.weight-tab.active{color:#fff;background:#d59b25;box-shadow:0 2px 7px rgba(149,94,1,.12)}
+.weight-panel[data-selected-metal="silver"] .weight-tab.active{background:#657487}
+.weight-rate-line{font-size:13px;margin:4px 0 15px}
+.weight-rate-line strong{color:#17243b}
+.weight-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
+.weight-option{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:92px;text-align:left;border:1px solid #ebeef2;border-radius:12px;padding:15px 12px;background:#fff;font:inherit;color:inherit;cursor:pointer;transition:background .15s,border-color .15s}
+.weight-option:hover,.weight-option:focus-visible{border-color:#d6a23f;background:#fffcf5}
+.weight-option.selected{border-color:#d59b25;background:#fffaef;box-shadow:inset 0 0 0 1px #edcd87}
+.weight-panel[data-selected-metal="silver"] .weight-option.selected{border-color:#8997a7;background:#f3f5f8;box-shadow:inset 0 0 0 1px #dbe0e6}
+.weight-option:focus-visible,.weight-tab:focus-visible,.weight-entry input:focus-visible,.weight-unit-entry select:focus-visible{outline:2px solid #d59b25;outline-offset:3px}
+.weight-name{font-size:13px;font-weight:650;color:#394960}
+.weight-name small{display:block;font-weight:400;font-size:11px;color:#8c7750;line-height:1.3;margin-top:4px}
+.weight-price{font-size:clamp(13px,1.6vw,18px);font-weight:800;line-height:1.3;color:#17243b;letter-spacing:-.25px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.weight-calculator{background:#fafbfd;border:1px solid #ebedf0;border-radius:14px;margin-top:20px;padding:18px}
+.weight-calculator-heading h3{font-size:16px;margin:0 0 3px}
+.weight-calculator-heading p{font-size:12px;margin:0}
+.weight-custom-row{display:grid;grid-template-columns:minmax(90px,1fr) minmax(140px,1fr) minmax(190px,1.45fr);align-items:end;gap:13px;margin-top:15px}
+.weight-entry,.weight-unit-entry,.weight-total{min-width:0}
+.weight-entry label,.weight-unit-entry label{font-weight:650;color:#475569;font-size:12px;display:block;margin-bottom:6px}
+.weight-entry input,.weight-unit-entry select{border:1px solid #dce1e8;border-radius:10px;background:#fff;width:100%;min-height:44px;padding:10px 12px;color:#1a2b43;font:inherit;font-size:15px}
+.weight-total{border-left:1px solid #e4e7ec;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.weight-total span{font-size:12px;color:#738093}
+.weight-total strong{font-size:clamp(20px,2.4vw,28px);letter-spacing:-.6px;color:#14243e;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.weight-total small{font-size:11px;color:#8691a0;line-height:1.45}
+.weight-error{min-height:0;color:#b42318;font-size:12px;margin:6px 0 0}
+.weight-error:empty{display:none}
+.weight-disclaimer{font-size:12px;color:#8f7855;margin:16px 0 0;line-height:1.65}
+@media(max-width:900px){
+  .weight-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  /* Each national benchmark receives its own readable mobile card. */
+  .content .three{grid-template-columns:1fr;gap:11px}
+  .content .three .card{display:grid;grid-template-columns:minmax(0,1fr) max-content;column-gap:8px;row-gap:5px;padding:16px;align-items:center}
+  .content .three .price-top{grid-column:1;grid-row:1 / 4;flex-direction:row;align-items:center;gap:10px}
+  .content .three .price-top .metal-photo{width:44px;height:44px}
+  .content .three .price-top strong{font-size:14px}
+  .content .three .price-top .muted{font-size:11px}
+  .content .three .price{grid-column:2;grid-row:1;align-self:center;margin:0;text-align:right;font-size:clamp(20px,5.7vw,27px);letter-spacing:-.5px}
+  .content .three .price-change{grid-column:2;grid-row:2;justify-content:flex-end;font-size:11px}
+  .content .three .price-change .change{font-size:12px}
+  .content .three .per-gram{grid-column:2;grid-row:3;margin:0;text-align:right;font-size:11px}
+  .weight-section-header{flex-wrap:wrap}
+  .weight-date{font-size:11px}
+  .weight-tabs{width:100%;margin:16px 0}
+  .weight-tab{flex:1;padding:10px 6px;font-size:12px}
+  .weight-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .weight-option{min-height:83px;padding:12px 10px;gap:8px}
+  .weight-price{font-size:clamp(14px,4vw,18px)}
+  .weight-custom-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+  .weight-total{grid-column:1 / -1;border-left:0;border-top:1px solid #e4e7ec;padding:12px 0 0}
+}
+@media(max-width:360px){
+  .content .three .card{padding:12px}
+  .content .three .price{font-size:19px}
+  .content .three .price-top .metal-photo{width:36px;height:36px}
+  .content .three .price-top strong{font-size:12px}
+  .weight-tab{font-size:11px}
+  .weight-price{font-size:13px}
+}
