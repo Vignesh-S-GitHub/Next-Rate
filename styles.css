@@ -22,3 +22,18 @@
   .source-links{gap:14px}
   .empty-chart{min-height:180px}
 }
+
+/* Photo-real transparent bullion assets, matching locked NextRate palette. */
+body{overflow-x:clip}
+.price-top,.price-top>div,.card{min-width:0}
+.metal-photo{display:block;width:52px;height:52px;object-fit:contain;flex:0 0 auto}
+.price-top{gap:10px}
+.price-top strong{line-height:1.25}
+.three .price{overflow-wrap:normal;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media(max-width:750px){
+  .three .card{min-width:0;overflow:hidden}
+  .three .metal-photo{width:39px;height:39px}
+  .three .price{font-size:clamp(13px,3.8vw,20px);letter-spacing:-.55px}
+  .three .price-top{gap:6px}
+  .three .price-top strong{overflow-wrap:normal;white-space:normal}
+}

@@ -30,6 +30,8 @@ jobs:
           test -s index.html
           test -s styles.css
           test -s assets/nextrate-icon.png
+          test -s assets/gold-bar.webp
+          test -s assets/silver-bar.webp
           grep -q 'assets/nextrate-icon.png' index.html
           python -m unittest discover -s tests -v
 
@@ -37,7 +39,7 @@ jobs:
         run: |
           mkdir -p _site/assets _site/data
           cp index.html app.js styles.css _site/
-          cp assets/nextrate-icon.png _site/assets/
+          cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           if test -s data/latest.json && test -s data/history.json; then
             python -m json.tool data/latest.json >/dev/null
             python -m json.tool data/history.json >/dev/null

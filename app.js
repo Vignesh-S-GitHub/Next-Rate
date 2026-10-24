@@ -74,7 +74,7 @@ function heading(title,sub) {
 function benchmarkCard(which) {
   const b=benchmark(which);
   const ok=Number.isFinite(b.value);
-  return '<article class="card"><div class="price-top">'+icon(b.icon,'metal')+
+  return '<article class="card"><div class="price-top">'+'<img class="metal metal-photo" src="./assets/'+(b.icon==='silver'?'silver-bar.webp':'gold-bar.webp')+'" width="52" height="52" alt="" decoding="async">'+
     '<div><strong>'+b.label+'</strong><div class="muted">'+b.unit+'</div></div></div>'+
     '<div class="price">'+(ok?price(b.value):'—')+'</div>'+
     '<div class="price-change">'+(ok?movement(b.key,b.value):'<span class="muted">Awaiting validated quote</span>')+'</div>'+
