@@ -1,32 +1,60 @@
 # NextRate
 
-Mobile-first gold and silver market dashboard for India, styled to match the approved NextRate mockups. The NextRate icon uses the original approved logo artwork (transparent PNG).
+[NextRate web application](https://vignesh-s-github.github.io/Next-Rate/) — a minimal, mobile-first Indian gold and silver dashboard with **actual dated market observations**, using the approved NextRate logo and theme.
 
-## Screens
+## What updates automatically
 
-- Home: simplified gold and silver price presentation, chart, and four global drivers.
-- Markets: LBMA, COMEX, MCX, USD/INR and explanation of market influences.
-- Compare: 24K gold, 22K gold and silver across five cities.
-- Insights: explanatory market factors and transparent forecast limitations.
+The [Refresh market rates and publish NextRate](.github/workflows/refresh-rates.yml) workflow runs on GitHub Actions twice daily:
 
-## Deploy to GitHub Pages
+| UTC | India time (IST) | Purpose |
+|---|---|---|
+| 07:15 | 12:45 PM | Check newly published Indian bullion AM rates |
+| 13:45 | 7:15 PM | Check Indian bullion PM rates and daily international references |
 
-**One-time setup required:**
-1. Visit [Settings → Pages](https://github.com/Vignesh-S-GitHub/Next-Rate/settings/pages).
-2. Under **Build and deployment → Source**, select **GitHub Actions**.
-3. Open [Actions](https://github.com/Vignesh-S-GitHub/Next-Rate/actions/workflows/pages.yml) and run **Deploy NextRate to GitHub Pages** (or push a new commit).
-4. Once the workflow is green, visit <https://vignesh-s-github.github.io/Next-Rate/>.
+GitHub-hosted scheduled jobs may begin later than the specified minute. Workflows can also be run manually using **Actions → Refresh market rates and publish NextRate → Run workflow**.
 
-If Pages settings are unavailable because this repo is private, GitHub Free requires the repository to be public for Pages. GitHub Pro / Team / Enterprise plans may support private repositories. Changing repository visibility is a decision for the owner; a public Pages site is accessible to everyone even if source remains private.
+The workflow executes:
 
-### Previous deployment failure
+1. Python standard-library collector `scripts/update_rates.py`.
+2. Unit tests in `tests/test_update_rates.py`.
+3. Source freshness, currency and purity consistency validation.
+4. Atomic Git commit of `data/latest.json` and a rolling `data/history.json` (up to 180 publication dates).
+5. Direct GitHub Pages deployment of the updated site in the **same workflow**. GitHub does not trigger `push` workflows from a commit made with `GITHUB_TOKEN`; direct deployment avoids that limitation.
 
-The original workflow stopped at `actions/configure-pages@v5` with `Get Pages site failed: Not Found`. This indicates that Pages has not been enabled/configured for the repository. The workflow now validates the JavaScript and the required logo asset before trying to deploy, but GitHub Pages still requires the owner to enable the publishing source.
+The regular Pages workflow `.github/workflows/pages.yml` continues to publish ordinary source-code changes.
 
-## Data accuracy
+## Actual data sources
 
-**All values are illustrative sample data.** No live quote API, real forecasting model, city retail feed, or trained confidence scoring has been connected. Real forecasting would require source-licensed LBMA / COMEX / MCX / IBJA feeds, timestamps, trading-calendar awareness, currency conversion, city-specific physical bullion premiums, backtesting and calibrated uncertainty bands. Do not use the sample price values as investment guidance.
+| Data shown | Source | Exact meaning |
+|---|---|---|
+| 24K Gold (Gold 999) | [IBJA](https://www.ibjarates.com/) | India-wide physical bullion benchmark in INR per **10 g** |
+| 22K Gold (Gold 916) | [IBJA](https://www.ibjarates.com/) | India-wide physical bullion benchmark in INR per **10 g** |
+| Silver 999 | [IBJA](https://www.ibjarates.com/) | India-wide physical silver benchmark in INR per **kg** |
+| XAU, XAG | [Gold API](https://gold-api.com/docs) | International indicative spot quote in USD per **troy ounce**, **not** LBMA benchmark or futures price |
+| USD/INR | [Frankfurter](https://frankfurter.dev/) | Latest available daily exchange-rate reference; when a primary endpoint is stale, a fresher Frankfurter endpoint is used |
+| USD/INR fallback | [ExchangeRate-API](https://www.exchangerate-api.com) | Free open-access daily FX quote, **attributed in the app whenever used** |
 
-## Technology
+The India benchmark is not the same as a retail jewellery-shop price; IBJA published values exclude GST and making charges. The five selected cities are UI context only until verified city-specific retail feeds are connected; the app **does not invent city offsets**.
 
-HTML + CSS + vanilla JavaScript, no npm runtime dependencies. The GitHub Actions workflow checks JavaScript syntax, stages only public site files, and deploys using the official Pages actions.
+Rates are not necessarily updated on Saturdays, Sundays or Indian government holidays. The app retains and labels the most recently published valid session and flags older quotations. Each international spot quote carries its original source timestamp.
+
+## Limitations and forecasting
+
+**No tomorrow-price forecast has been activated.** Accurate predictions would need reliable historical data, a time-aligned forecasting model, measured out-of-sample errors, calibrated ranges and independently verified city-specific actuals.
+
+**LBMA auction prices, COMEX futures and MCX futures are not yet connected**, because free international spot data cannot be presented as official exchange/futures values. The Markets screen links to those venues without suggesting they are collected.
+
+If an individual source fails validation, its last validated observation is retained with its original date/time, and the collector reports the unsuccessful attempt. If all sources fail, no misleading new snapshot is published.
+
+## Deployment
+
+- Main website: https://vignesh-s-github.github.io/Next-Rate/
+- Deployment workflow: [Pages](.github/workflows/pages.yml)
+- Scheduled collection and deployment: [Refresh rates](.github/workflows/refresh-rates.yml)
+- Generated data: [latest.json](data/latest.json), [history.json](data/history.json)
+
+No API keys or database are required. HTML, CSS and vanilla JavaScript are hosted by GitHub Pages; Python runs only inside GitHub Actions.
+
+To run collector tests locally: `python -m unittest discover -s tests -v`.
+
+For production or commercial usage, verify any publication/redistribution licence applicable to each data provider before relying on that source.
