@@ -18,7 +18,9 @@ let customWeight = '8';
 let customUnit = 'g';
 let rates = null;
 let history = null;
+let forecast = null;
 let loadFailure = null;
+let forecastLoadFailure = false;
 
 const INR = new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 0});
 const USD = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 2});
@@ -235,16 +237,112 @@ function spotRow(symbol,label) {
   if (!r) return '<div class="driver"><span class="driver-label">'+icon('globe')+'<strong>'+label+'</strong></span><span class="muted">Unavailable</span></div>';
   return '<div class="driver"><span class="driver-label">'+icon('globe')+'<strong>'+label+'</strong></span><span><b>'+usd(r.usd_per_troy_ounce)+'</b><small class="subdate">'+sourceTime(r.as_of)+'</small></span></div>';
 }
+
+/**
+ * Future India benchmark outlook. All figures come from forecast.json,
+ * generated server-side from pre-existing published IBJA data.
+ * No client-made forecasts or fake probability/confidence scores.
+ */
+function indiaTodayISO(){
+  const pieces=new Intl.DateTimeFormat('en-GB',{
+    timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date());
+  const get=key=>pieces.find(p=>p.type===key)?.value;
+  return get('year')+'-'+get('month')+'-'+get('day');
+}
+function forecastDate(value){
+  return /^20\d\d-\d\d-\d\d$/.test(value||'') ? sourceDate(value) : 'Date unavailable';
+}
+function forecastDataIsCurrent(){
+  return forecast && forecast.schema_version===1 && forecast.status==='experimental' &&
+    forecast.target_date >= indiaTodayISO() && forecast.metals && forecast.metals.gold24 &&
+    forecast.metals.gold22 && forecast.metals.silver;
+}
+function forecastMetalCard(key, title, unit, iconFile){
+  const data=forecast.metals[key];
+  const hasNumbers=['estimate','low','high','baseline'].every(k=>
+    typeof data[k]==='number' && Number.isFinite(data[k]) && data[k]>0);
+  if(!hasNumbers)return '<article class="forecast-metal"><h3>'+title+'</h3><p>Estimate unavailable</p></article>';
+  const direction=['Up','Down','Mostly steady'].includes(data.direction)
+    ? data.direction : 'No direction';
+  const dirClass=direction==='Up'?'is-up':direction==='Down'?'is-down':'is-steady';
+  const move=data.expected_change_pct;
+  const pct=typeof move==='number'&&Number.isFinite(move)?
+    (move>0?'+':'')+move.toFixed(2)+'%':'—';
+  return '<article class="forecast-metal" aria-label="'+title+' forecast">'+
+    '<div class="forecast-metal-head">'+
+    '<img src="./assets/'+iconFile+'?v=20261025-prediction" width="42" height="42" alt="" class="forecast-metal-img" loading="eager">'+
+    '<div><h3>'+title+'</h3><span>'+unit+'</span></div></div>'+
+    '<div class="forecast-price">'+price(data.estimate)+'</div>'+
+    '<span class="forecast-direction '+dirClass+'">'+escapeHTML(direction)+' · '+pct+'</span>'+
+    '<div class="forecast-range"><span>Estimated range</span><strong>'+
+      price(data.low)+' – '+price(data.high)+'</strong></div>'+
+    '</article>';
+}
+function forecastPanel(){
+  const headingText='<div class="forecast-topline"><div>'+
+    '<div class="forecast-eyebrow">NEXT RATE OUTLOOK</div>'+
+    '<h2 id="forecast-title">Tomorrow’s Gold &amp; Silver Prediction</h2>'+
+    '</div><span class="forecast-tag">Experimental forecast</span></div>';
+  if(!forecastDataIsCurrent()){
+    const reason=forecast?.status==='unavailable'
+      ? escapeHTML(forecast.reason||'A validated forecast is unavailable.')
+      : 'A current, verified forecast has not been published yet.';
+    return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
+      '<div class="forecast-empty"><strong>Prediction temporarily unavailable</strong>'+
+      '<p>'+reason+' Actual rates below remain available.</p></div></section>';
+  }
+  const tomorrowIsTarget=forecast.calendar_tomorrow===forecast.target_date;
+  const dateText=forecastDate(forecast.target_date);
+  const reference=forecastDate(forecast.based_on_date);
+  const observationCount=Number.isInteger(forecast.observations)?forecast.observations:0;
+  const tradingNote=tomorrowIsTarget
+    ? 'Forecast for '+dateText+' · expected next Indian bullion publication'
+    : 'No regular IBJA publication expected tomorrow. Outlook for '+dateText+
+      ', the next expected weekday (exchange holidays not included).';
+  const notes=(Array.isArray(forecast.signal_summary)?forecast.signal_summary:[])
+     .slice(0,4).map(item=>
+       '<div class="forecast-factor"><span class="forecast-factor-dot '+(item.used_in_estimate?'active':'')+'"></span>'+
+       '<div><strong>'+escapeHTML(item.name)+'</strong>'+
+       '<p>'+escapeHTML(item.details)+'</p></div>'+
+       '<span class="forecast-factor-badge">'+(item.used_in_estimate?'Used':'Context')+'</span></div>'
+     ).join('');
+  const tracking=forecast.accuracy_tracking||{};
+  const n=Number.isInteger(tracking.evaluated_issuances)?tracking.evaluated_issuances:0;
+  const accuracyText=n>=10&&tracking.gold24?
+    'Gold 24K historical mean absolute percentage error: '+Number(tracking.gold24.mean_absolute_percentage_error).toFixed(2)+
+      '% across '+tracking.gold24.sample_size+' evaluated forecasts.'
+    : 'Accuracy tracking: '+n+' forecast'+(n===1?'':'s')+' evaluated; at least 10 are required before publishing an error summary.';
+  return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
+    '<p class="forecast-subtitle">'+tradingNote+'</p>'+
+    '<div class="forecast-grid">'+
+      forecastMetalCard('gold24','24K Gold','per 10 grams','gold-bar.webp')+
+      forecastMetalCard('gold22','22K Gold','per 10 grams','gold-bar.webp')+
+      forecastMetalCard('silver','Silver 999','per kilogram','silver-bar.webp')+
+    '</div>'+
+    '<div class="forecast-under"><div class="forecast-method">'+
+      '<div class="forecast-method-title"><strong>Why these prices?</strong>'+
+      '<span class="forecast-evidence">Limited history: '+observationCount+' dates</span></div>'+
+      '<div class="forecast-factors">'+notes+'</div></div>'+
+    '<div class="forecast-disclosure"><strong>Forecast basis</strong>'+
+      '<p>Derived from published IBJA '+reference+' ('+escapeHTML(forecast.based_on_session||'last')+
+      ') using a damped recent-price trend and a broad volatility-based scenario range.</p>'+
+      '<p>The estimated range is <strong>not</strong> a validated confidence interval. It is an India-wide reference estimate, not a jewellery-store price. GST, making charges and city premiums are excluded.</p>'+
+      '<p class="forecast-accuracy">'+escapeHTML(accuracyText)+'</p>'+
+      '</div></div></section>';
+}
+
 function home() {
-  return heading('Latest Gold & Silver Rates','Verified Indian benchmark prices, updated automatically on publication days.')+
+  return forecastPanel()+
+    '<section class="actual-rates-heading section"><div><h2>Latest Verified Gold & Silver Rates</h2>'+
+    '<p>India-wide IBJA benchmark · actual published prices</p></div>'+availabilityTag()+'</section>'+
     '<section class="grid three">'+['gold24','gold22','silver'].map(benchmarkCard).join('')+'</section>'+
     weightPriceSection()+
     '<section class="grid two section"><article class="card"><div class="section-head"><h2>24K Gold · Recent Prices</h2><span class="pill">Actual IBJA dates</span></div>'+chart()+'</article>'+
     '<article class="card"><h2>Key Market References</h2>'+spotRow('XAU','Gold spot · USD/oz')+spotRow('XAG','Silver spot · USD/oz')+
     '<div class="driver"><span class="driver-label">'+icon('rupee')+'<strong>USD/INR · Daily FX</strong></span><span><b>'+(rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'Unavailable')+'</b><small class="subdate">'+(rates?.fx?sourceDate(rates.fx.date):'')+'</small></span></div>'+
     '<p class="muted small-copy">Gold/silver spot quotes are indicative international prices, not LBMA auction benchmarks or COMEX settlements.'+(rates?.fx?.source_url?' Currency source: <a href="'+rates.fx.source_url+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(rates.fx.source)+'</a>.':'')+'</p></article></section>'+
-    note()+
-    '<article class="forecast-note">Tomorrow’s forecast is not active. Only published actual rates and observations appear until a forecast model has been tested against historical results.</article>';
+    note();
 }
 function marketCard(label,value,unit,date,link) {
   return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
@@ -298,7 +396,7 @@ function render() {
     if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
   });
   if (!rates && !loadFailure) {
-    app.innerHTML='<section class="card"><h2>Loading verified market data…</h2></section>';
+    app.innerHTML='<section class="card"><h2>Loading verified market data and tomorrow’s forecast…</h2></section>';
   } else if (!rates) {
     app.innerHTML=errorScreen();
   } else {
@@ -317,15 +415,30 @@ async function getJSON(file) {
   return res.json();
 }
 async function loadData() {
-  try{
-    const [snapshot, series]=await Promise.all([getJSON('latest.json'),getJSON('history.json')]);
-    if(snapshot.schema_version!==1 || series.schema_version!==1)throw new Error('Unsupported market snapshot');
-    rates=snapshot;
-    history=series;
-    loadFailure=null;
-  } catch(e){
-    loadFailure=e;
-    console.warn('NextRate data unavailable',e);
+  const [marketResult, forecastResult]=await Promise.allSettled([
+    Promise.all([getJSON('latest.json'),getJSON('history.json')]),
+    getJSON('forecast.json')
+  ]);
+  if(marketResult.status==='fulfilled'){
+    const [snapshot, series]=marketResult.value;
+    if(snapshot.schema_version===1&&series.schema_version===1){
+      rates=snapshot;
+      history=series;
+      loadFailure=null;
+    } else {
+      loadFailure=new Error('Unsupported market data version');
+    }
+  }else{
+    loadFailure=marketResult.reason;
+    console.warn('NextRate market data unavailable',loadFailure);
+  }
+  if(forecastResult.status==='fulfilled'&&forecastResult.value.schema_version===1){
+    forecast=forecastResult.value;
+    forecastLoadFailure=false;
+  }else{
+    forecast=null;
+    forecastLoadFailure=true;
+    console.warn('NextRate forecast unavailable',forecastResult.reason);
   }
   render();
 }
