@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/update_rates.py"
+      - "scripts/forecast.py"
       - "tests/**"
       - ".github/workflows/refresh-rates.yml"
       - "app.js"
@@ -41,12 +42,15 @@ jobs:
       - name: Fetch validated rates and retain dated history
         run: python scripts/update_rates.py
 
+      - name: Produce and archive next-session outlook
+        run: python scripts/forecast.py
+
       - name: Commit changed daily observations
         run: |
           set -eu
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/latest.json data/history.json
+          git add data/latest.json data/history.json data/forecast.json data/forecast_history.json
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh market observations [skip ci]"
             git push origin HEAD:main
@@ -60,13 +64,18 @@ jobs:
           node --check app.js
           node --test tests/weights.test.cjs
           node --test tests/ui-controls.test.cjs
+          node --test tests/ui-forecast.test.cjs
           test -s index.html
           test -s data/latest.json
+          test -s data/forecast.json
+          test -s data/forecast_history.json
           test -s assets/nextrate-icon.png
           test -s assets/gold-bar.webp
           test -s assets/silver-bar.webp
           python -m json.tool data/latest.json >/dev/null
           python -m json.tool data/history.json >/dev/null
+          python -m json.tool data/forecast.json >/dev/null
+          python -m json.tool data/forecast_history.json >/dev/null
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -76,7 +85,7 @@ jobs:
           mkdir -p _site/assets _site/data
           cp index.html styles.css app.js weights.js _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
-          cp data/latest.json data/history.json _site/data/
+          cp data/latest.json data/history.json data/forecast.json data/forecast_history.json _site/data/
           touch _site/.nojekyll
 
       - name: Upload Pages artifact
