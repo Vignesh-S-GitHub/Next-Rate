@@ -7,7 +7,11 @@
  */
 const cities = ['Chennai', 'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad'];
 const app = document.querySelector('#app');
-const select = document.querySelector('#city-select');
+const cityPicker=document.querySelector('#city-picker');
+const cityTrigger=document.querySelector('#city-trigger');
+const cityMenu=document.querySelector('#city-menu');
+const selectedCity=document.querySelector('#selected-city');
+let currentCity='Chennai';
 let activeMetal = 'gold24';
 let weightMetal = 'gold22';
 let customWeight = '8';
@@ -77,7 +81,7 @@ function heading(title,sub) {
 function benchmarkCard(which) {
   const b=benchmark(which);
   const ok=Number.isFinite(b.value);
-  return '<article class="card"><div class="price-top">'+'<img class="metal metal-photo" src="./assets/'+(b.icon==='silver'?'silver-bar.webp':'gold-bar.webp')+'" width="52" height="52" alt="" decoding="async">'+
+  return '<article class="card"><div class="price-top">'+'<img class="metal metal-photo" src="./assets/'+(b.icon==='silver'?'silver-bar.webp':'gold-bar.webp')+'?v=20261025-theme2" width="52" height="52" alt="" decoding="async">'+
     '<div><strong>'+b.label+'</strong><div class="muted">'+b.unit+'</div></div></div>'+
     '<div class="price">'+(ok?price(b.value):'—')+'</div>'+
     '<div class="price-change">'+(ok?movement(b.key,b.value):'<span class="muted">Awaiting validated quote</span>')+'</div>'+
@@ -153,9 +157,10 @@ function weightPriceSection(){
     '<div class="weight-custom-row"><div class="weight-entry">'+
     '<label for="custom-weight">Weight</label>'+
     '<input type="number" id="custom-weight" min="0.01" max="100000" step="any" inputmode="decimal" value="'+escapeHTML(customWeight)+'" placeholder="e.g. 8" aria-describedby="weight-error"></div>'+
-    '<div class="weight-unit-entry"><label for="weight-unit">Unit</label>'+
-    '<select id="weight-unit"><option value="g"'+(customUnit==='g'?' selected':'')+'>grams (g)</option>'+
-    '<option value="kg"'+(customUnit==='kg'?' selected':'')+'>kilograms (kg)</option></select></div>'+
+    '<div class="weight-unit-entry"><span class="field-label" id="unit-label">Unit</span>'+
+    '<div class="unit-toggle" role="group" aria-labelledby="unit-label">'+
+    '<button type="button" class="unit-button'+(customUnit==='g'?' active':'')+'" data-unit="g" aria-pressed="'+(customUnit==='g')+'" aria-label="Grams">g</button>'+
+    '<button type="button" class="unit-button'+(customUnit==='kg'?' active':'')+'" data-unit="kg" aria-pressed="'+(customUnit==='kg')+'" aria-label="Kilograms">kg</button></div></div>'+
     '<div class="weight-total" role="status" aria-live="polite" aria-atomic="true">'+
     '<span>Estimated bullion value</span><strong id="weight-result">'+initialValue+'</strong>'+
     '<small id="weight-result-basis">'+(published?'Based on national IBJA '+selected.unit+' benchmark':'Waiting for a verified rate')+'</small></div></div>'+
@@ -202,16 +207,27 @@ function wireWeightCalculator(){
       if(grams>=1000){customWeight=String(grams/1000);customUnit='kg';}
       else{customWeight=String(grams);customUnit='g';}
       const input=document.querySelector('#custom-weight');
-      const unit=document.querySelector('#weight-unit');
       if(input)input.value=customWeight;
-      if(unit)unit.value=customUnit;
+      syncUnitButtons();
       updateCustomWeight();
     })
   );
   const input=document.querySelector('#custom-weight');
-  const unit=document.querySelector('#weight-unit');
   if(input)input.addEventListener('input',()=>{customWeight=input.value;updateCustomWeight();});
-  if(unit)unit.addEventListener('change',()=>{customUnit=unit.value;updateCustomWeight();});
+  document.querySelectorAll('.unit-button').forEach(button=>
+    button.addEventListener('click',()=>{
+      customUnit=button.dataset.unit;
+      syncUnitButtons();
+      updateCustomWeight();
+    })
+  );
+}
+function syncUnitButtons(){
+  document.querySelectorAll('.unit-button').forEach(button=>{
+    const active=button.dataset.unit===customUnit;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
 }
 
 function spotRow(symbol,label) {
@@ -254,7 +270,7 @@ function compare() {
     '<div class="reference-value">'+(Number.isFinite(selected.value)?price(selected.value):'Unavailable')+'</div>'+
     '<p class="muted">IBJA '+(india()?sourceDate(india().date):'rates unavailable')+'. This is one India-wide reference rate, not a verified rate for any individual city.</p></article>'+
     '<article class="card section"><h2>City retail rates</h2>'+
-    cities.map(c=>'<div class="city-row '+(c===select.value?'selected':'')+'"><strong>'+c+'</strong><span class="muted">Shop quote not connected</span><span class="muted">—</span></div>').join('')+'</article>'+
+    cities.map(c=>'<div class="city-row '+(c===currentCity?'selected':'')+'"><strong>'+c+'</strong><span class="muted">Shop quote not connected</span><span class="muted">—</span></div>').join('')+'</article>'+
     weightPriceSection()+note();
 }
 function insights() {
@@ -313,7 +329,60 @@ async function loadData() {
   }
   render();
 }
-select.addEventListener('change',render);
+function setCityMenu(open, focusSelection=false){
+  cityMenu.hidden=!open;
+  cityTrigger.setAttribute('aria-expanded',String(open));
+  cityPicker.classList.toggle('is-open',open);
+  if(open && focusSelection){
+    cityMenu.querySelector('[aria-pressed="true"]')?.focus();
+  }
+}
+function setupCityMenu(){
+  cityTrigger.addEventListener('click',()=>setCityMenu(cityMenu.hidden));
+  cityTrigger.addEventListener('keydown',event=>{
+    if(event.key==='ArrowDown' || event.key==='Enter' && !cityMenu.hidden){
+      event.preventDefault();
+      setCityMenu(true,true);
+    }
+  });
+  cityMenu.addEventListener('click',event=>{
+    const option=event.target.closest('[data-city]');
+    if(!option || !cityMenu.contains(option) || !cities.includes(option.dataset.city))return;
+    currentCity=option.dataset.city;
+    selectedCity.textContent=currentCity;
+    cityTrigger.setAttribute('aria-label','Choose city; currently '+currentCity);
+    cityMenu.querySelectorAll('[data-city]').forEach(button=>
+      button.setAttribute('aria-pressed',String(button.dataset.city===currentCity))
+    );
+    setCityMenu(false);
+    cityTrigger.focus();
+    render();
+  });
+  cityMenu.addEventListener('keydown',event=>{
+    const buttons=[...cityMenu.querySelectorAll('[data-city]')];
+    const index=buttons.indexOf(document.activeElement);
+    if(event.key==='ArrowDown' || event.key==='ArrowUp'){
+      event.preventDefault();
+      const step=event.key==='ArrowDown'?1:-1;
+      buttons[(index+step+buttons.length)%buttons.length].focus();
+    }
+    if(event.key==='Home' || event.key==='End'){
+      event.preventDefault();
+      buttons[event.key==='Home'?0:buttons.length-1].focus();
+    }
+  });
+  document.addEventListener('pointerdown',event=>{
+    if(!cityMenu.hidden && !cityPicker.contains(event.target))setCityMenu(false);
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape' && !cityMenu.hidden){
+      event.preventDefault();
+      setCityMenu(false);
+      cityTrigger.focus();
+    }
+  });
+}
+setupCityMenu();
 window.addEventListener('hashchange',render);
 render();
 loadData();

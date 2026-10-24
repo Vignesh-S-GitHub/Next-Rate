@@ -59,6 +59,7 @@ jobs:
           node --check weights.js
           node --check app.js
           node --test tests/weights.test.cjs
+          node --test tests/ui-controls.test.cjs
           test -s index.html
           test -s data/latest.json
           test -s assets/nextrate-icon.png

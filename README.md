@@ -70,3 +70,8 @@ No API keys or database are required. HTML, CSS and vanilla JavaScript are hoste
 To run collector tests locally: `python -m unittest discover -s tests -v`.
 
 For production or commercial usage, verify any publication/redistribution licence applicable to each data provider before relying on that source.
+
+## Theme-consistent mobile menus
+
+City choice and gram/kilogram selection use NextRate-styled controls rather than Android's default system selection sheet. Buttons keep the existing white, charcoal, gold and silver theme, support touch and keyboard interaction (including Escape and arrow navigation in the city menu), and indicate the active selection. Selecting a city highlights it on the Compare page but does not fabricate a city-specific price.
+
