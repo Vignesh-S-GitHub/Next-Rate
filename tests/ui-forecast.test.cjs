@@ -23,7 +23,7 @@ test('Forecast is server-sourced, dated, and clearly experimental',()=>{
   assert.match(app,/forecast\.based_on_date/);
   assert.match(app,/Experimental forecast/);
   assert.match(app,/not<\/strong> a validated confidence interval/);
-  assert.match(app,/Forecast for/);
+  assert.match(app,/Next IBJA publication outlook|Next expected IBJA publication/);
 });
 test('All three metals have an estimate and scenario range',()=>{
   assert.match(app,/forecastMetalCard\('gold24'/);
@@ -38,6 +38,7 @@ test('Forecast does not imply official unavailable exchanges are predictors',()=
   assert.match(app,/Context/);
   assert.match(app,/IBJA/);
   assert.match(app,/city premiums are excluded/);
+  assert.match(app,/used_in_estimate/);
 });
 test('Both publication paths ship dated forecast output',()=>{
   for(const wf of [pages,daily]){
@@ -52,4 +53,24 @@ test('Mobile forecast has its own readable card layout',()=>{
   assert.match(css,/\.forecast-metal/);
   assert.match(css,/@media\(max-width:680px\)/);
   assert.match(css,/\.forecast-direction\.is-down/);
+  assert.match(css,/\.market-trend-svg/);
+  assert.match(css,/\.forecast-metal\.selected/);
+});
+
+test('Stock-market-style chart selects only actual observations and a clearly dashed outlook',()=>{
+  assert.match(app,/function marketGraph\(\)/);
+  assert.match(app,/data-forecast-metal/);
+  assert.match(app,/activeForecastMetal=button\.dataset\.forecastMetal/);
+  assert.match(app,/r\.date<=forecast\.based_on_date/);
+  assert.match(app,/stroke-dasharray/);
+  assert.match(app,/Model estimate/);
+  assert.match(app,/Published rate/);
+});
+test('Home shows compact watchlist, chart, referenced quotes and disclosed caveats',()=>{
+  assert.match(app,/METAL WATCHLIST/);
+  assert.match(app,/marketSnapshot\(\)/);
+  assert.match(app,/market-chart-title/);
+  assert.match(app,/<details class="forecast-details"/);
+  assert.match(app,/Not yet model inputs/);
+  assert.match(css,/\.forecast-market-layout/);
 });

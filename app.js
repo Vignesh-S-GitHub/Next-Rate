@@ -19,6 +19,7 @@ let customUnit = 'g';
 let rates = null;
 let history = null;
 let forecast = null;
+let activeForecastMetal = 'gold24';
 let loadFailure = null;
 let forecastLoadFailure = false;
 
@@ -258,89 +259,184 @@ function forecastDataIsCurrent(){
     forecast.target_date >= indiaTodayISO() && forecast.metals && forecast.metals.gold24 &&
     forecast.metals.gold22 && forecast.metals.silver;
 }
+
 function forecastMetalCard(key, title, unit, iconFile){
-  const data=forecast.metals[key];
-  const hasNumbers=['estimate','low','high','baseline'].every(k=>
-    typeof data[k]==='number' && Number.isFinite(data[k]) && data[k]>0);
-  if(!hasNumbers)return '<article class="forecast-metal"><h3>'+title+'</h3><p>Estimate unavailable</p></article>';
-  const direction=['Up','Down','Mostly steady'].includes(data.direction)
-    ? data.direction : 'No direction';
+  const data=forecast?.metals?.[key];
+  const valid=data&&['estimate','low','high','baseline'].every(k=>
+    typeof data[k]==='number' && Number.isFinite(data[k]) && data[k]>0
+  );
+  const selected=activeForecastMetal===key;
+  if(!valid)return '<div class="forecast-metal"><strong>'+title+'</strong><span>Estimate unavailable</span></div>';
+  const direction=['Up','Down','Mostly steady'].includes(data.direction)?data.direction:'Mostly steady';
   const dirClass=direction==='Up'?'is-up':direction==='Down'?'is-down':'is-steady';
-  const move=data.expected_change_pct;
-  const pct=typeof move==='number'&&Number.isFinite(move)?
-    (move>0?'+':'')+move.toFixed(2)+'%':'—';
+  const change=typeof data.expected_change_pct==='number'&&Number.isFinite(data.expected_change_pct)
+    ? data.expected_change_pct : (data.estimate/data.baseline-1)*100;
+  const percent=(change>0?'+':'')+change.toFixed(2)+'%';
+  const diff=data.estimate-data.baseline;
+  const delta=(diff>0?'+':'−')+price(Math.abs(diff));
   const quickWeights=(key==='silver'?[1,100]:[1,8]).map(grams=>
-    '<span><b>'+grams+' g</b> · '+
-    NextRateWeights.formatINR(NextRateWeights.calculate(data.estimate,key,grams).amount)+
-    '</span>'
+    '<span>'+grams+' g <b>'+NextRateWeights.formatINR(NextRateWeights.calculate(data.estimate,key,grams).amount)+'</b></span>'
   ).join('');
-  return '<article class="forecast-metal" aria-label="'+title+' forecast">'+
-    '<div class="forecast-metal-head">'+
-    '<img src="./assets/'+iconFile+'?v=20261025-prediction" width="42" height="42" alt="" class="forecast-metal-img" loading="eager">'+
-    '<div><h3>'+title+'</h3><span>'+unit+'</span></div></div>'+
-    '<div class="forecast-price">'+price(data.estimate)+'</div>'+
-    '<span class="forecast-direction '+dirClass+'">'+escapeHTML(direction)+' · '+pct+'</span>'+
-    '<div class="forecast-quick-weights" aria-label="Estimated price for familiar Indian weights">'+
-      quickWeights+'</div>'+
-    '<div class="forecast-range"><span>Estimated range</span><strong>'+
-      price(data.low)+' – '+price(data.high)+'</strong></div>'+
-    '</article>';
+  return '<button type="button" class="forecast-metal'+(selected?' selected':'')+
+    '" data-forecast-metal="'+key+'" aria-pressed="'+selected+'" aria-label="'+title+
+    ' expected '+price(data.estimate)+', '+direction+' '+percent+', tap to view trend">'+
+    '<span class="forecast-metal-head"><img class="forecast-metal-img" src="./assets/'+iconFile+
+    '?v=20261025-market2" width="38" height="38" alt="" loading="eager">'+
+    '<span class="forecast-metal-name"><strong>'+title+'</strong><small>'+unit+'</small></span></span>'+
+    '<span class="forecast-metal-quote"><strong>'+price(data.estimate)+'</strong>'+
+    '<span class="forecast-direction '+dirClass+'">'+(change>0?'▲ ':change<0?'▼ ':'● ')+
+    percent+' <small>'+delta+'</small></span></span>'+
+    '<span class="forecast-range"><span>Estimated range</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
+    '<span class="forecast-quick-weights">'+quickWeights+'</span></button>';
+}
+function marketGraph(){
+  const data=forecast?.metals?.[activeForecastMetal];
+  const field={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'}[activeForecastMetal];
+  const title={gold24:'24K Gold',gold22:'22K Gold',silver:'Silver 999'}[activeForecastMetal];
+  if(!data||!field)return '<div class="empty-chart">Select a metal to view its trend.</div>';
+  const observed=series().filter(r=>
+    r.date<=forecast.based_on_date &&
+    typeof r[field]==='number' && Number.isFinite(r[field]) && r[field]>0
+  ).slice(-7);
+  if(observed.length<2)return '<div class="empty-chart">The historical chart will appear after two published IBJA observations.</div>';
+  const low=Math.min(...observed.map(r=>r[field]),data.low,data.estimate);
+  const high=Math.max(...observed.map(r=>r[field]),data.high,data.estimate);
+  const margin=Math.max((high-low)*.12,high*.003);
+  const floor=low-margin,ceil=high+margin;
+  const y=value=>205-((value-floor)/(ceil-floor))*158;
+  const x0=55,xEnd=480,xPred=590;
+  const pts=observed.map((r,i)=>({x:x0+(xEnd-x0)*i/(observed.length-1),y:y(r[field]),date:r.date,value:r[field]}));
+  const last=pts[pts.length-1];
+  const currentLabel=sourceDate(observed[observed.length-1].date);
+  const startLabel=sourceDate(observed[0].date);
+  const shortDate=iso=>{
+    const d=new Date(iso+'T12:00:00+05:30');
+    return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',timeZone:'Asia/Kolkata'});
+  };
+  const numLabel=value=>{
+    if(value>=100000)return '₹'+(value/100000).toFixed(2)+'L';
+    if(value>=1000)return '₹'+(value/1000).toFixed(1)+'K';
+    return price(value);
+  };
+  const color=activeForecastMetal==='silver'?'#7d8d9f':'#c49430';
+  const moveClass=data.estimate>=last.value?'#12846b':'#cf5252';
+  const line=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
+  const fill=line+' L'+last.x+' 214 L'+x0+' 214 Z';
+  const ticks=[0,.25,.5,.75,1].map(f=>{
+    const value=floor+(ceil-floor)*f;
+    const yy=y(value);
+    return '<line x1="55" y1="'+yy.toFixed(1)+'" x2="617" y2="'+yy.toFixed(1)+'" stroke="#ebedf2" stroke-width="1"/>'+
+       '<text x="47" y="'+(yy+5).toFixed(1)+'" text-anchor="end" font-size="12" fill="#8a96a6">'+numLabel(value)+'</text>';
+  }).join('');
+  const candles=pts.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#fff" stroke="'+color+'" stroke-width="2.5"/>').join('');
+  const rangeTop=y(data.high),rangeBottom=y(data.low);
+  const rectY=Math.min(rangeTop,rangeBottom),rectH=Math.abs(rangeBottom-rangeTop);
+  const projectedY=y(data.estimate);
+  const areaColor=activeForecastMetal==='silver'?'#c7d0d9':'#efcf80';
+  return '<div class="market-chart-title"><div><strong>'+title+' Price Trend</strong>'+
+    '<span>Published IBJA sessions → '+shortDate(forecast.target_date)+' outlook</span></div>'+
+    '<span class="market-chart-metadata">₹ / '+(activeForecastMetal==='silver'?'kg':'10 g')+'</span></div>'+
+    '<svg class="market-trend-svg" viewBox="0 0 640 257" role="img" aria-label="'+title+
+    ' actual dated IBJA close from '+startLabel+' to '+currentLabel+
+    '. Dashed section indicates estimated '+forecastDate(forecast.target_date)+
+    ' price '+price(data.estimate)+', scenario range '+price(data.low)+' to '+price(data.high)+'">'+
+    '<defs><linearGradient id="market-actual-fill" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0" stop-color="'+areaColor+'" stop-opacity=".30"/>'+
+    '<stop offset="1" stop-color="'+areaColor+'" stop-opacity="0"/></linearGradient></defs>'+
+    ticks+
+    '<path d="'+fill+'" fill="url(#market-actual-fill)" />'+
+    '<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>'+
+    candles+
+    '<line x1="533" y1="40" x2="533" y2="218" stroke="#bbc3cf" stroke-width="1" stroke-dasharray="3 5"/>'+
+    '<rect x="'+(xPred-16)+'" y="'+rectY.toFixed(1)+'" width="32" height="'+Math.max(rectH,2).toFixed(1)+
+       '" rx="5" fill="'+areaColor+'" fill-opacity=".45" stroke="#c7ac70" stroke-width="1"/>'+
+    '<path d="M'+last.x.toFixed(1)+' '+last.y.toFixed(1)+' L'+xPred+' '+projectedY.toFixed(1)+
+    '" fill="none" stroke="'+moveClass+'" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/>'+
+    '<circle cx="'+xPred+'" cy="'+projectedY.toFixed(1)+'" r="6" fill="'+moveClass+'" stroke="white" stroke-width="2"/>'+
+    '<text x="'+x0+'" y="242" font-size="13" fill="#8492a3">'+shortDate(observed[0].date)+'</text>'+
+    '<text x="'+xEnd+'" y="242" text-anchor="middle" font-size="13" fill="#8492a3">'+shortDate(observed.at(-1).date)+'</text>'+
+    '<text x="'+xPred+'" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#aa7416">'+shortDate(forecast.target_date)+'</text>'+
+    '</svg>'+
+    '<div class="market-legend"><span><i class="market-legend-line"></i>Published rate</span>'+
+    '<span><i class="market-legend-dash"></i>Model estimate</span>'+
+    '<span><i class="market-legend-band"></i>Scenario range</span></div>';
+}
+function marketSnapshot(){
+  const xau=rates?.spot?.XAU;
+  const xag=rates?.spot?.XAG;
+  const fx=rates?.fx;
+  const items=[
+    ['GOLD / USD',xau?usd(xau.usd_per_troy_ounce):'—',xau?sourceTime(xau.as_of):'Unavailable'],
+    ['SILVER / USD',xag?usd(xag.usd_per_troy_ounce):'—',xag?sourceTime(xag.as_of):'Unavailable'],
+    ['USD / INR',fx?Number(fx.inr_per_usd).toFixed(3):'—',fx?sourceDate(fx.date):'Unavailable']
+  ];
+  return '<div class="market-reference"><div class="market-reference-label">'+
+    '<strong>MARKET REFERENCES</strong><small>Not yet model inputs</small></div>'+
+    items.map(([name,value,date])=>
+      '<div class="market-reference-item"><span>'+name+'</span><strong>'+value+
+      '</strong><small>'+date+'</small></div>'
+    ).join('')+
+    '<a class="market-reference-link" href="#markets" aria-label="View all market details">View Markets →</a></div>';
 }
 function forecastPanel(){
   const headingText='<div class="forecast-topline"><div>'+
-    '<div class="forecast-eyebrow">NEXT RATE OUTLOOK</div>'+
+    '<div class="forecast-eyebrow">MARKET OUTLOOK · INDIA</div>'+
     '<h2 id="forecast-title">Tomorrow’s Gold &amp; Silver Prediction</h2>'+
     '</div><span class="forecast-tag">Experimental forecast</span></div>';
   if(!forecastDataIsCurrent()){
     const reason=forecast?.status==='unavailable'
-      ? escapeHTML(forecast.reason||'A validated forecast is unavailable.')
-      : 'A current, verified forecast has not been published yet.';
+      ?escapeHTML(forecast.reason||'Forecast unavailable for this session.')
+      :'A current published outlook is unavailable.';
     return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
-      '<div class="forecast-empty"><strong>Prediction temporarily unavailable</strong>'+
-      '<p>'+reason+' Actual rates below remain available.</p></div></section>';
+      '<div class="forecast-empty"><strong>Next-session estimate unavailable</strong>'+
+      '<p>'+reason+' Verified published rates are shown below.</p></div></section>';
   }
   const tomorrowIsTarget=forecast.calendar_tomorrow===forecast.target_date;
-  const dateText=forecastDate(forecast.target_date);
+  const label=forecastDate(forecast.target_date);
   const reference=forecastDate(forecast.based_on_date);
-  const observationCount=Number.isInteger(forecast.observations)?forecast.observations:0;
+  const sampleSize=Number.isInteger(forecast.observations)?forecast.observations:0;
   const tradingNote=tomorrowIsTarget
-    ? 'Forecast for '+dateText+' · expected next Indian bullion publication'
-    : 'No regular IBJA publication expected tomorrow. Outlook for '+dateText+
-      ', the next expected IBJA publication day.';
+    ? 'Next expected IBJA publication · '+label
+    : 'Next IBJA publication outlook · '+label+' (no regular publication tomorrow)';
   const calendarNote=forecast.holiday_calendar_verified
-    ? 'Weekends and IBJA’s published 2026 exchange holidays excluded.'
-    : 'Future-year holiday calendar not verified; publication could shift.';
-  const notes=(Array.isArray(forecast.signal_summary)?forecast.signal_summary:[])
-     .slice(0,4).map(item=>
-       '<div class="forecast-factor"><span class="forecast-factor-dot '+(item.used_in_estimate?'active':'')+'"></span>'+
-       '<div><strong>'+escapeHTML(item.name)+'</strong>'+
-       '<p>'+escapeHTML(item.details)+'</p></div>'+
-       '<span class="forecast-factor-badge">'+(item.used_in_estimate?'Used':'Context')+'</span></div>'
-     ).join('');
+    ? '2026 IBJA holiday calendar applied.' : 'Holiday calendar requires verification.';
+  const signals=Array.isArray(forecast.signal_summary)?forecast.signal_summary.slice(0,4):[];
   const tracking=forecast.accuracy_tracking||{};
   const n=Number.isInteger(tracking.evaluated_issuances)?tracking.evaluated_issuances:0;
-  const accuracyText=n>=10&&tracking.gold24?
-    'Gold 24K historical mean absolute percentage error: '+Number(tracking.gold24.mean_absolute_percentage_error).toFixed(2)+
-      '% across '+tracking.gold24.sample_size+' evaluated forecasts.'
-    : 'Accuracy tracking: '+n+' forecast'+(n===1?'':'s')+' evaluated; at least 10 are required before publishing an error summary.';
+  const accuracyText=n>=10&&tracking.gold24
+    ? '24K gold forecast mean absolute percentage error: '+
+      Number(tracking.gold24.mean_absolute_percentage_error).toFixed(2)+
+      '% across '+tracking.gold24.sample_size+' scored sessions.'
+    : n+' forecast'+(n===1?'':'s')+' evaluated so far; accuracy history still insufficient.';
+  const notes=signals.map(item=>
+    '<div class="forecast-factor"><i class="forecast-factor-dot '+(item.used_in_estimate?'active':'')+'"></i>'+
+    '<div><strong>'+escapeHTML(item.name)+'</strong><p>'+escapeHTML(item.details)+'</p></div>'+
+    '<span class="forecast-factor-badge">'+(item.used_in_estimate?'Model':'Context')+'</span></div>'
+  ).join('');
   return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
-    '<p class="forecast-subtitle">'+tradingNote+
-      ' <span class="forecast-calendar">'+calendarNote+'</span></p>'+
-    '<div class="forecast-grid">'+
-      forecastMetalCard('gold24','24K Gold','per 10 grams','gold-bar.webp')+
-      forecastMetalCard('gold22','22K Gold','per 10 grams','gold-bar.webp')+
-      forecastMetalCard('silver','Silver 999','per kilogram','silver-bar.webp')+
-    '</div>'+
-    '<div class="forecast-under"><div class="forecast-method">'+
-      '<div class="forecast-method-title"><strong>Why these prices?</strong>'+
-      '<span class="forecast-evidence">Limited history: '+observationCount+' dates</span></div>'+
-      '<div class="forecast-factors">'+notes+'</div></div>'+
-    '<div class="forecast-disclosure"><strong>Forecast basis</strong>'+
-      '<p>Derived from published IBJA '+reference+' ('+escapeHTML(forecast.based_on_session||'last')+
-      ') using a damped recent-price trend and a broad volatility-based scenario range.</p>'+
-      '<p>The estimated range is <strong>not</strong> a validated confidence interval. It is an India-wide reference estimate, not a jewellery-store price. GST, making charges and city premiums are excluded.</p>'+
-      '<p class="forecast-accuracy">'+escapeHTML(accuracyText)+'</p>'+
-      '</div></div></section>';
+    '<div class="forecast-subtitle"><span class="forecast-session">'+tradingNote+'</span>'+
+    '<span>Last IBJA close: '+reference+' ('+escapeHTML(forecast.based_on_session||'PM')+')</span></div>'+
+    '<div class="forecast-market-layout">'+
+      '<div class="forecast-board"><div class="forecast-board-header"><strong>METAL WATCHLIST</strong>'+
+      '<small>Next-session estimates</small></div>'+
+      '<div class="forecast-grid" role="group" aria-label="Choose metal for chart">'+
+        forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
+        forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
+        forecastMetalCard('silver','Silver 999','1 kg','silver-bar.webp')+
+      '</div></div>'+
+      '<div class="forecast-chart-box">'+marketGraph()+'</div>'+
+    '</div>'+marketSnapshot()+
+    '<details class="forecast-details"><summary>Market analysis &amp; forecast limitations <span>⌄</span></summary>'+
+      '<div class="forecast-details-content"><div class="forecast-method">'+
+        '<div class="forecast-method-title"><strong>What influences this estimate?</strong>'+
+        '<span class="forecast-evidence">'+sampleSize+' IBJA dates</span></div>'+
+        '<div class="forecast-factors">'+notes+'</div></div>'+
+        '<div class="forecast-disclosure"><strong>Model notes</strong>'+
+        '<p>Derived from published IBJA rates on '+reference+
+        ' using a damped recent-price trend and heuristic volatility range. '+calendarNote+'</p>'+
+        '<p>The estimated range is <strong>not</strong> a validated confidence interval. Rates are India-wide bullion benchmarks, not city retail rates. GST, making charges and city premiums are excluded.</p>'+
+        '<p class="forecast-accuracy">'+escapeHTML(accuracyText)+'</p></div></div></details>'+
+    '</section>';
 }
 
 function home() {
@@ -417,6 +513,12 @@ function render() {
     activeMetal=b.dataset.metal;
     render();
   }));
+  app.querySelectorAll('[data-forecast-metal]').forEach(button=>
+    button.addEventListener('click',()=>{
+      activeForecastMetal=button.dataset.forecastMetal;
+      render();
+    })
+  );
   wireWeightCalculator();
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }

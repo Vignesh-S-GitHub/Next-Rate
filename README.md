@@ -26,7 +26,7 @@ The regular Pages workflow `.github/workflows/pages.yml` continues to publish or
 
 ## Tomorrow / next expected publication forecast
 
-**NextRate now puts an experimental tomorrow-price outlook first on the Home screen**, ahead of actual prices and the weight calculator. A separate transparent forecasting script runs after market-data collection on GitHub Actions:
+**NextRate now puts an experimental tomorrow-price outlook first on the Home screen**, presented as a compact stock-market-style watchlist beside a trend chart, ahead of actual prices and the weight calculator. Tapping 24K, 22K or silver switches the chart without altering stored forecasts. A separate transparent forecasting script runs after market-data collection on GitHub Actions:
 
 - **Predictions:** 24K gold and 22K gold in rupees per 10 g, Silver 999 in rupees per kg, plus simple conversions to 1 g and 8 g (gold) or 1 g and 100 g (silver).
 - **Model:** Damped median of the last 2–7 published IBJA price changes, with a deliberately broad heuristic range based on recent price variation and sensible minimum widths. Does not infer fake LBMA, COMEX or MCX futures prices.
@@ -89,3 +89,7 @@ For production or commercial usage, verify any publication/redistribution licenc
 
 City choice and gram/kilogram selection use NextRate-styled controls rather than Android's default system selection sheet. Buttons keep the existing white, charcoal, gold and silver theme, support touch and keyboard interaction (including Escape and arrow navigation in the city menu), and indicate the active selection. Selecting a city highlights it on the Compare page but does not fabricate a city-specific price.
 
+
+## Stock-market-style Home interface
+
+The Home outlook presents three selectable quote rows, recent IBJA closing-rate chart points, a separately dashed model estimate with a shaded heuristic range, and small attributed spot/FX reference quotes. On narrow phones the watchlist appears above the chart. Source facts, model-only signals, unvalidated uncertainty and accuracy status remain accessible inside an expandable methodology panel. International spot/FX reference values are explicitly not represented as inputs to the current IBJA-only baseline.
