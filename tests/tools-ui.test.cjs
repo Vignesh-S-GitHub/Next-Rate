@@ -48,14 +48,14 @@ test('source destinations are official sites and no fabricated exchanges',()=>{
 });
 test('app navigation and both Pages builds include scripts and tests',()=>{
  assert.match(app,/tools:toolsPage/);
- assert.match(app,/NextRateModules\.wire/);
- assert.match(app,/data-open-tool/);
+ assert.match(app,/NextRateFeatures\.mount/);
+ assert.match(app,/data-feature-link/);
  assert.match(app,/getJSON\('forecast_history\.json'\)/);
  assert.match(html,/data-route="tools"/);
- for(const script of ['tools-core.js','tools-ui.js'])assert.match(html,new RegExp(script.replace('.','\\.')));
+ for(const script of ['features-core.js','features.js'])assert.match(html,new RegExp(script.replace('.','\\.')));
  for(const wf of [pages,daily]){
   assert.match(wf,/node --test tests\/tools-core\.test\.cjs/);
   assert.match(wf,/node --test tests\/tools-ui\.test\.cjs/);
-  assert.match(wf,/cp index\.html .*tools-ui\.js.*_site\//);
+  assert.match(wf,/cp index\.html .*features\.js.*_site\//);
  }
 });

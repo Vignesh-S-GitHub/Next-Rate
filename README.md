@@ -137,3 +137,7 @@ The gold icons for both 24K and 22K use the same two-bullion-bar silhouette as t
 ## Date and quote accuracy
 
 On weekends the Markets page explicitly says markets are closed. A Gold API `updatedAt` timestamp means **the source fetched a quote at that time**, not that a gold futures contract or spot transaction occurred then. USD/INR is a *daily reference*, not a continuously traded tick. Last published IBJA AM/PM rates remain dated to the original session. Forecast results cannot be evaluated until the **target-date IBJA PM close** is available; historical model error is not a guarantee for the coming day.
+
+## Consolidated nine-tool interface
+
+The Tools screen uses `features-core.js` and `features.js` with the new `features.css` layout. It provides nine verified reference-based workflows: page-open price alerts, CBIC-style 3% jewellery bill calculation, forecast accuracy, user-input shop comparison, private portfolio and local JSON backup/restore, resale/exchange estimates, BIS Care HUID handoff, AMFI ETF NAV comparison with manual quoted premium, and transparently sourced global spot/FX references. The old `tools-ui.js` remains only for compatibility tests and is not loaded in the website. There is **no background web-push service**, no live verified shop checkout feed, no direct HUID API and no licensed LBMA/COMEX/MCX live feed. No unsupported prices are invented. All user-entered records stay on the device.

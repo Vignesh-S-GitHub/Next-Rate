@@ -601,17 +601,19 @@ function wireHomeCompact(){
   if(buy)buy.addEventListener('toggle',()=>{homeBuyExpanded=buy.open;});
 }
 function home(){
-  const items=[['alerts','Price Alerts'],['bill','Jewellery Bill'],['accuracy','Accuracy'],['portfolio','My Gold']];
+  const items=[['alerts','Price Alerts'],['jewellery','Jewellery Bill'],['accuracy','Accuracy'],['portfolio','My Gold']];
   const links='<section class="home-tool-links section" aria-label="NextRate tools">'+
-    items.map(([key,label])=>'<a href="#tools" data-open-tool="'+key+'">'+label+' ↗</a>').join('')+'</section>';
+    items.map(([key,label])=>'<a href="#tools" data-feature-link="'+key+'">'+label+' ↗</a>').join('')+'</section>';
   return '<div class="home-dashboard">'+forecastPanel()+homeTodayPanel()+
     homeWeightPanel()+homeBuyPanel()+links+'</div>';
 }
+function featuresContext(){
+  return {rates,history,forecast,forecastHistory:issuedForecasts,cities:cityRates,funds,
+    city:currentCity,language:appLanguage,refresh:render};
+}
 function toolsPage(){
-  return window.NextRateModules?.render({
-    rates,history,forecast,forecastHistory:issuedForecasts,cityRates,funds,
-    city:currentCity,language:appLanguage
-  })||'<section class="card">Tools unavailable</section>';
+  return window.NextRateFeatures?.page(featuresContext())||
+    '<section class="card"><h2>Tools unavailable</h2><p>Reload the page.</p></section>';
 }
 function marketCard(label,value,unit,date,link) {
   return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
@@ -731,7 +733,9 @@ function render() {
     a.classList.toggle('active',active);
     if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
   });
-  if (!rates && !loadFailure) {
+  if (route==='tools') {
+    app.innerHTML=toolsPage();
+  } else if (!rates && !loadFailure) {
     app.innerHTML='<section class="card"><h2>Loading verified market data and tomorrow’s forecast…</h2></section>';
   } else if (!rates) {
     app.innerHTML=errorScreen();
@@ -751,12 +755,7 @@ function render() {
   wireWeightCalculator();
   wireBuyPanel();
   wireHomeCompact();
-  if(route==='tools'&&window.NextRateModules){
-    window.NextRateModules.wire(app,{
-      rates,history,forecast,forecastHistory:issuedForecasts,cityRates,funds,
-      city:currentCity,language:appLanguage
-    },render);
-  }
+  if(route==='tools')window.NextRateFeatures?.mount(app.querySelector('.toolspage'),featuresContext());
   updateLanguageControl();
   if(window.NextRateI18n)window.NextRateI18n.apply(document.body,appLanguage);
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
@@ -784,6 +783,7 @@ async function loadData(){
   navLoadFailure=!funds;
   issuedForecasts=issued.status==='fulfilled'&&issued.value.schema_version===1?issued.value:null;
   cityRates=city.status==='fulfilled'&&city.value.schema_version===1?city.value:null;
+  window.NextRateFeatures?.checkAlerts(featuresContext());
   render();
 }
 function setCityMenu(open, focusSelection=false){
@@ -857,8 +857,11 @@ document.querySelectorAll('[data-language]').forEach(button=>{
 });
 setupCityMenu();
 document.addEventListener('click',event=>{
-  const link=event.target.closest('[data-open-tool]');
-  if(link)window.NextRateModules?.open(link.dataset.openTool);
+  const link=event.target.closest('[data-feature-link]');
+  if(link)window.NextRateFeatures?.select(link.dataset.featureLink);
+});
+window.addEventListener('focus',()=>{
+  if(rates&&window.NextRateFeatures?.checkAlerts(featuresContext())&&location.hash==='#tools')render();
 });
 window.addEventListener('hashchange',render);
 render();
