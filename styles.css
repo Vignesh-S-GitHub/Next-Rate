@@ -441,5 +441,6 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
    The shared silver two-bullion illustration is tinted gold only.
    This preserves identical bar count, angle and footprint on all cards. */
 .bullion-gold{
-  filter: sepia(1) saturate(3.5) hue-rotate(-12deg) brightness(1.09) contrast(1.12);
+  /* Soft warm gold finish; keep the silver asset's two-bar detail visible. */
+  filter: sepia(0.75) saturate(1.8) hue-rotate(-8deg) brightness(0.98) contrast(1.02);
 }
