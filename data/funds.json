@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "checked_at": null,
+  "source": "https://www.amfiindia.com/net-asset-value/nav-download",
+  "status": "published_snapshot",
+  "funds": {
+    "goldbees": {
+      "scheme_code": 140088,
+      "name": "Nippon India ETF Gold BeES",
+      "kind": "Gold ETF",
+      "nav_inr_per_unit": 116.0136,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
+    },
+    "hdfcgold": {
+      "scheme_code": 113049,
+      "name": "HDFC Gold ETF",
+      "kind": "Gold ETF",
+      "nav_inr_per_unit": 119.9108,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
+    },
+    "sbigold": {
+      "scheme_code": 111954,
+      "name": "SBI Gold ETF",
+      "kind": "Gold ETF",
+      "nav_inr_per_unit": 119.6861,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
+    },
+    "goldfund": {
+      "scheme_code": 120685,
+      "name": "ICICI Prudential Gold ETF FOF",
+      "kind": "Gold Fund",
+      "nav_inr_per_unit": 44.7772,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
+    },
+    "silveretf": {
+      "scheme_code": 149758,
+      "name": "Nippon India Silver ETF",
+      "kind": "Silver ETF",
+      "nav_inr_per_unit": 184.3876,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
+    },
+    "hdfcsilver": {
+      "scheme_code": 150556,
+      "name": "HDFC Silver ETF",
+      "kind": "Silver ETF",
+      "nav_inr_per_unit": 184.3954,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
+    }
+  }
+}
