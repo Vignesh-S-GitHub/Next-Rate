@@ -353,7 +353,7 @@ def refresh(now=None):
             records["spot"][symbol] = append_history(rows, [{
                 "date": now.astimezone(IST).date().isoformat(),
                 **spot,
-            }], ("date",))
+            }], ("as_of",))
             snapshot["sources_checked"][symbol.lower()] = "ok"
             succeeded += 1
         except Exception as exc:
