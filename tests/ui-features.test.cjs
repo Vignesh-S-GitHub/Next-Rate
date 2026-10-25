@@ -15,8 +15,8 @@ test('Tools route is reachable on desktop and phone without losing logo and four
  assert.match(index,/data-route="tools".+>Tools<\/a>/s);
  assert.match(index,/assets\/nextrate-icon\.png/);
  assert.match(css,/repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(app,/NextRateFeatures\.page/);
- assert.match(app,/NextRateFeatures\.mount/);
+ assert.match(app,/NextRateFeatures\?\.page/);
+ assert.match(app,/NextRateFeatures\?\.mount/);
 });
 test('Nine features are implemented as working panels with meaningful form handlers',()=>{
  for(const key of ['alerts','jewellery','accuracy','shops','portfolio','resale','hallmark','etfs','signals']){
