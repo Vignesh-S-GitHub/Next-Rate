@@ -42,6 +42,10 @@ test('Android alerts use service worker, explicit consent and test delivery',()=
  assert.match(feature,/a[.]notifiedAt/);
  assert.match(feature,/if\(demo[.]ok\)checkAlerts\(context\(\)\)/);
  assert.match(index,/browser-notifications[.]js/);
+ assert.match(feature,/data-notification-status/);
+ assert.match(feature,/notificationRequestPending/);
+ assert.match(feature,/watchPermission/);
+ assert.match(feature,/Request sent/);
 });
 test('BIS verification is official external handoff rather than fake verification',()=>{
  assert.match(require('../source-logos.js').badge('biscare'),/www\.bis\.gov\.in\/bis-apps/);

@@ -42,3 +42,18 @@ test('worker handles notification tap without intercepting fetch or caching rate
  assert.match(sw,/clients\.openWindow/);
  assert.doesNotMatch(sw,/addEventListener\('fetch'/);
 });
+
+test('Chrome site controls permission changes are observable without a second prompt',async()=>{
+ const f=mock();
+ let listener;
+ f.env.navigator.permissions={query:async arg=>{
+  assert.equal(arg.name,'notifications');
+  return {state:'granted',addEventListener:(name,fn)=>{assert.equal(name,'change');listener=fn;}};
+ }};
+ const notifier=createNotifier(f.env),seen=[];
+ assert.equal(await notifier.watchPermission(state=>seen.push(state)),true);
+ assert.equal(notifier.permissionState(),'default');
+ listener();
+ assert.deepEqual(seen,['granted']);
+ assert.deepEqual(f.calls,[]);
+});

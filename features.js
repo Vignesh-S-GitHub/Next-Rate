@@ -25,7 +25,7 @@ const SECTIONS=[
  ['signals','globe','Global Signals','World markets'],
 ];
 let memory={alerts:[],shops:[],holdings:[],etfQuotes:{},preferred:'alerts',notifications:false};
-let message='',ctxCache=null;
+let message='',ctxCache=null,notificationRequestPending=false,permissionWatchStarted=false;
 function read(){
  try{
   const data=JSON.parse(root.localStorage.getItem(KEY)||'null');
@@ -108,8 +108,13 @@ function alertPanel(){
   '<div class="tool-list" aria-label="Saved price alerts">'+(items||'<p class="tool-note">No alerts yet.</p>')+'</div>'+
   '<button type="button" class="tool-plain" data-feature-action="notify">'+
     (memory.notifications&&Notifications?.permitted()?'Send test notification':'Enable browser notifications')+'</button>'+
-  '<p class="tool-note">'+(memory.notifications&&Notifications?.permitted()?
-    'Notifications enabled on this device.':'Notifications require Chrome permission.')+'</p>'+
+  '<p class="tool-note" role="status" aria-live="polite" data-notification-status>'+
+    (Notifications?.permissionState?.()==='granted'?
+      'Chrome permission: Allowed. Tap to send a test notification.':
+      Notifications?.permissionState?.()==='denied'?
+      'Chrome permission: Blocked. Change this site to Allow in Chrome Site settings.':
+      'Chrome may show a small notification request near its address bar, not a popup.')+
+   '</p>'+
   note('<b>Important:</b> Targets are checked when this page opens or regains focus. '+
     'GitHub Pages cannot send guaranteed background push alerts without a notification server. '+
     'No alert is triggered from rates older than 7 days.');
@@ -560,31 +565,50 @@ function onClick(event){
   return;
  }
  if(t.dataset.featureAction==='notify'){
-  if(!Notifications){updateStatus('Browser notifications unsupported here.');return;}
-  // Starts permission request synchronously within the user's click.
-  void Notifications.enable().then(async result=>{
+  const panel=t.closest('.tools-panel');
+  const status=panel?.querySelector('[data-notification-status]');
+  const report=text=>{
+   if(status&&status.isConnected!==false){
+    status.textContent=text;
+    root.NextRateI18n?.apply(status,ctxCache?.language);
+   }else updateStatus(text);
+  };
+  if(notificationRequestPending){
+   report('Notification request still pending. Check the icon beside the address bar.');
+   return;
+  }
+  if(!Notifications){report('Browser notifications unsupported here.');return;}
+  notificationRequestPending=true;
+  const before=Notifications.permissionState?.()||'unsupported';
+  // Permission request must start inside this tap, before updating the UI.
+  const activation=Notifications.enable();
+  report(before==='granted'?'Permission already allowed. Sending test notification…':
+    before==='denied'?'Chrome blocked notifications earlier. Use site info → Permissions → Notifications → Allow.':
+    'Request sent. Chrome may show a small prompt beside the address bar, not a popup.');
+  void activation.then(async result=>{
    if(!result.ok){
     memory.notifications=false;save();
     const errors={
-     denied:'Notifications blocked. Chrome site settings → Permissions → Notifications → Allow. Also enable Chrome notifications in Android settings.',
-     'not-allowed':'Permission not granted. Allow notifications in Chrome site settings.',
+     denied:'Blocked by Chrome. Open site info → Permissions → Notifications → Allow. Also allow Chrome in Android Settings.',
+     'not-allowed':'Not allowed yet. Check the address-bar permission icon, or site info → Permissions → Notifications → Allow.',
      insecure:'Notifications require HTTPS.',
-     unsupported:'Browser notifications are not supported here.',
+     unsupported:'Notifications are unsupported in this browser.',
      'service-worker-unavailable':'Use Android Chrome or a browser with service worker support.',
-     'worker-error':'Could not start notifications. Reload and try again.',
-     'permission-error':'Notification permission request failed.'
+     'worker-error':'Notification service could not start. Reload and retry.',
+     'permission-error':'Chrome permission request failed.'
     };
-    updateStatus(errors[result.reason]||'Notifications unavailable.');
+    report(errors[result.reason]||'Notifications unavailable.');
     return;
    }
    memory.notifications=true;save();
    const demo=await Notifications.show('NextRate notifications ready',
      'Test notice. Price alerts are checked when NextRate opens or resumes.');
-   if(demo.ok)checkAlerts(context());
-   updateStatus(demo.ok?
-     'Test notification sent. Price alerts appear when a saved target is reached while NextRate checks rates.':
-     'Permission allowed, but the test could not display. Check Android Settings → Apps → Chrome → Notifications.');
-  }).catch(()=>updateStatus('Could not enable notifications. Reload and try again.'));
+   if(demo.ok){checkAlerts(context());t.textContent='Send test notification';}
+   report(demo.ok?
+     'Test sent to Chrome. Open the Android notification shade if no banner appeared.':
+     'Permission allowed, but the test failed. Check Android Settings → Apps → Chrome → Notifications.');
+  }).catch(()=>report('Could not start notification. Check Chrome site permissions.'))
+   .finally(()=>{notificationRequestPending=false;});
   return;
  }else if(t.dataset.featureAction==='export'){
   const blob=new Blob([JSON.stringify({version:1,...memory},null,2)],{type:'application/json'});
@@ -598,6 +622,28 @@ function onClick(event){
 function mount(container,ctx){
  ctxCache=ctx;
  if(!container)return;
+ if(!permissionWatchStarted&&Notifications?.watchPermission){
+  permissionWatchStarted=true;
+  // Chrome 155 may grant later via Site Controls rather than a blocking prompt.
+  void Notifications.watchPermission(async state=>{
+   if(state!=='granted'){
+    memory.notifications=false;save();
+    const label=root.document?.querySelector('.tools-panel [data-notification-status]');
+    if(label)label.textContent='Chrome permission not allowed. Check Site settings → Notifications.';
+    return;
+   }
+   memory.notifications=true;save();
+   if(notificationRequestPending)return;
+   const demo=await Notifications.show('NextRate notifications ready',
+    'Permission enabled from Chrome site controls. Targets are checked on page visits.');
+   const label=root.document?.querySelector('.tools-panel [data-notification-status]');
+   if(label)label.textContent=demo.ok?'Chrome allowed notifications. Test sent.':
+    'Chrome allows permission, but the test did not display.';
+   const button=root.document?.querySelector('.tools-panel [data-feature-action="notify"]');
+   if(button)button.textContent='Send test notification';
+   if(demo.ok)checkAlerts(context());
+  });
+ }
  container.addEventListener('click',onClick);
  container.addEventListener('keydown',onPickerKey);
  container.addEventListener('submit',onSubmit);

@@ -6,6 +6,22 @@ function createNotifier(env){
  const notification=()=>env.Notification;
  const workers=()=>env.navigator?.serviceWorker;
  const permitted=()=>notification()?.permission==='granted';
+ const permissionState=()=>notification()?.permission||'unsupported';
+ let watcher=null;
+ function watchPermission(onChange){
+  if(watcher)return watcher;
+  if(!env.navigator?.permissions?.query)return Promise.resolve(false);
+  watcher=(async()=>{
+   try{
+    const status=await env.navigator.permissions.query({name:'notifications'});
+    const listener=()=>onChange(status.state);
+    if(typeof status.addEventListener==='function')status.addEventListener('change',listener);
+    else status.onchange=listener;
+    return true;
+   }catch{return false;}
+  })();
+  return watcher;
+ }
  async function worker(){
   if(!workers()?.register)throw new Error('service-worker-unavailable');
   const reg=await workers().register('./notification-sw.js',{scope:'./'});
@@ -36,7 +52,7 @@ function createNotifier(env){
    return {ok:true,reason:'shown'};
   }catch{return {ok:false,reason:'display-error'};}
  }
- return Object.freeze({enable,show,permitted});
+ return Object.freeze({enable,show,permitted,permissionState,watchPermission});
 }
 const api=Object.freeze({createNotifier,...createNotifier(root)});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
