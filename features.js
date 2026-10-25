@@ -8,6 +8,8 @@
 'use strict';
 const C=root.NextRateCore || (typeof module!=='undefined'?require('./features-core.js'):null);
 const Sources=root.NextRateSources || (typeof module!=='undefined'?require('./source-logos.js'):null);
+const Notifications=root.NextRateNotifications ||
+ (typeof module!=='undefined'?require('./browser-notifications.js'):null);
 const official=(id,options)=>Sources?.badge(id,options)||'';
 const KEY='nextrate-tools-v1';
 const CITIES=['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad'];
@@ -95,7 +97,7 @@ function alertPanel(){
    (reached?' · Reached '+h(a.triggeredAt):'')+'</small></div>'+
    '<button type="button" class="tool-delete" data-delete-kind="alerts" data-delete-id="'+h(a.id)+'" aria-label="Remove price alert">×</button></div>';
  }).join('');
- return '<div class="tool-feature-heading"><h2>Price Alerts</h2><p>Check targets whenever NextRate is open.</p></div>'+
+ return '<div class="tool-feature-heading"><h2>Price Alerts</h2><p>Check targets when NextRate opens or resumes.</p></div>'+
   infoAlert()+
   '<form data-feature-form="alert"><div class="tool-form-grid">'+
   opt('metal',metalOptions,'Metal')+
@@ -105,8 +107,10 @@ function alertPanel(){
   '</div>'+btn('Save price alert')+'</form>'+
   '<div class="tool-list" aria-label="Saved price alerts">'+(items||'<p class="tool-note">No alerts yet.</p>')+'</div>'+
   '<button type="button" class="tool-plain" data-feature-action="notify">'+
-    'Enable browser notifications</button>'+
-  note('<b>Important:</b> Targets are checked when this page is open or revisited. '+
+    (memory.notifications&&Notifications?.permitted()?'Send test notification':'Enable browser notifications')+'</button>'+
+  '<p class="tool-note">'+(memory.notifications&&Notifications?.permitted()?
+    'Notifications enabled on this device.':'Notifications require Chrome permission.')+'</p>'+
+  note('<b>Important:</b> Targets are checked when this page opens or regains focus. '+
     'GitHub Pages cannot send guaranteed background push alerts without a notification server. '+
     'No alert is triggered from rates older than 7 days.');
 }
@@ -337,9 +341,10 @@ function page(ctx){
      (panels[memory.preferred]||alertPanel)()+'</section></div></div>';
 }
 function refresh(){if(ctxCache?.refresh)ctxCache.refresh();}
-function notifyUser(text){
- if(!memory.notifications||!root.Notification||root.Notification.permission!=='granted')return;
- try{new root.Notification('NextRate price alert',{body:text,tag:'nextrate-target'});}catch{}
+function notifyUser(text,alertId){
+ if(!memory.notifications||!Notifications?.permitted())return;
+ // Android Chrome requires serviceWorkerRegistration.showNotification.
+ void Notifications.show('NextRate price alert',text,'nextrate-target-'+alertId);
 }
 function checkAlerts(ctx){
  ctxCache=ctx||ctxCache;
@@ -351,7 +356,7 @@ function checkAlerts(ctx){
    const outcome=C.triggered(a,ctx);
    if(outcome?.hit){
     a.triggeredAt=ctx.rates.india.date; a.triggerPrice=outcome.current;found++;
-    notifyUser(a.metal+' '+a.grams+'g reached '+m(outcome.current)+' ('+a.triggeredAt+')');
+    notifyUser(a.metal+' '+a.grams+'g reached '+m(outcome.current)+' ('+a.triggeredAt+')',a.id);
    }
   }catch{}
  }
@@ -540,15 +545,31 @@ function onClick(event){
   return;
  }
  if(t.dataset.featureAction==='notify'){
-  if(!('Notification' in root)){updateStatus('Browser notifications are not supported here.');return;}
-  if(root.Notification.permission==='granted'){
-    memory.notifications=true;save();updateStatus('On-open browser notices enabled.');return;
-  }
-  if(root.Notification.permission==='denied'){updateStatus('Enable notifications from your browser site settings.');return;}
-  root.Notification.requestPermission().then(permission=>{
-    memory.notifications=permission==='granted';save();
-    updateStatus(permission==='granted'?'On-open notices enabled.':'Notifications not allowed.');
-  }).catch(()=>updateStatus('Notifications unavailable.'));
+  if(!Notifications){updateStatus('Browser notifications unsupported here.');return;}
+  // Starts permission request synchronously within the user's click.
+  void Notifications.enable().then(async result=>{
+   if(!result.ok){
+    memory.notifications=false;save();
+    const errors={
+     denied:'Notifications blocked. Chrome site settings → Permissions → Notifications → Allow. Also enable Chrome notifications in Android settings.',
+     'not-allowed':'Permission not granted. Allow notifications in Chrome site settings.',
+     insecure:'Notifications require HTTPS.',
+     unsupported:'Browser notifications are not supported here.',
+     'service-worker-unavailable':'Use Android Chrome or a browser with service worker support.',
+     'worker-error':'Could not start notifications. Reload and try again.',
+     'permission-error':'Notification permission request failed.'
+    };
+    updateStatus(errors[result.reason]||'Notifications unavailable.');
+    return;
+   }
+   memory.notifications=true;save();
+   const demo=await Notifications.show('NextRate notifications ready',
+     'Test notice. Price alerts are checked when NextRate opens or resumes.');
+   updateStatus(demo.ok?
+     'Test notification sent. Price alerts appear when a saved target is reached while NextRate checks rates.':
+     'Permission allowed, but the test could not display. Check Android Settings → Apps → Chrome → Notifications.');
+  }).catch(()=>updateStatus('Could not enable notifications. Reload and try again.'));
+  return;
  }else if(t.dataset.featureAction==='export'){
   const blob=new Blob([JSON.stringify({version:1,...memory},null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
