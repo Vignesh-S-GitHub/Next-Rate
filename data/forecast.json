@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "model_version": 2,
-  "generated_at": "2026-10-25T16:09:52+00:00",
+  "generated_at": "2026-10-25T16:14:12+00:00",
   "today_ist": "2026-10-25",
   "calendar_tomorrow": "2026-10-26",
   "target_date": "2026-10-26",
@@ -141,6 +141,8 @@
   "issuance_key": "v2:2026-10-26:2026-10-23:PM",
   "accuracy_tracking": {
     "evaluated_issuances": 0,
+    "independent_target_dates": 0,
+    "model_version": 2,
     "status": "collecting"
   }
 }
