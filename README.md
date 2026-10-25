@@ -74,6 +74,10 @@ If an individual source fails validation, its last validated observation is reta
 
 ## Deployment
 
+UI/source changes run only the standard Pages workflow; the market-data refresher runs on its two daily cron schedules or from the **Run workflow** button. This avoids competing builds overwriting a more recent market snapshot. Market updates deploy the site directly from the refresh workflow, and both workflows share a deployment concurrency lock.
+
+
+
 - Main website: https://vignesh-s-github.github.io/Next-Rate/
 - Deployment workflow: [Pages](.github/workflows/pages.yml)
 - Scheduled collection and deployment: [Refresh rates](.github/workflows/refresh-rates.yml)
