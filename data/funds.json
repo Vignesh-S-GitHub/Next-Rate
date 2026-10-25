@@ -63,6 +63,16 @@
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
+    },
+    "silverfund": {
+      "scheme_code": 152735,
+      "name": "SBI Silver ETF Fund of Fund",
+      "kind": "Silver Fund",
+      "nav_inr_per_unit": 20.4946,
+      "nav_date": "2026-10-23",
+      "source": "AMFI published NAV",
+      "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
+      "quote_type": "NAV, not exchange trading price"
     }
   }
 }
