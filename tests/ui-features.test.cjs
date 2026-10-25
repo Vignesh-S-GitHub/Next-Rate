@@ -65,3 +65,33 @@ test('Both deployments stage tool scripts, stylesheet and run tests',()=>{
    assert.match(workflow,/tests\/ui-features\.test\.cjs/);
  }
 });
+
+test('Every tool panel renders using a dated India market snapshot',()=>{
+ const module=require('../features.js');
+ const context={
+  rates:{india:{date:'2026-10-23',gold24_inr_10g:141630,gold22_inr_10g:129733,
+   silver999_inr_kg:194415},
+   spot:{XAU:{usd_per_troy_ounce:3996.9,as_of:'2026-10-23T08:00:00Z'},
+         XAG:{usd_per_troy_ounce:54.05,as_of:'2026-10-23T08:00:00Z'}},
+   fx:{inr_per_usd:94.76,date:'2026-10-23'}},
+  funds:{funds:{goldbees:{name:'Nippon India ETF Gold BeES',kind:'Gold ETF',nav_inr_per_unit:116.0136,nav_date:'2026-10-23'}}},
+  cities:{cities:{Chennai:{gold22_inr_g:13070}},dates:{gold:'2026-10-23'}},
+  forecast:{metals:{gold24:{backtest:{status:'walk_forward',holdout_mape_pct:0.629,holdout_naive_mape_pct:0.629}}}},
+  forecastHistory:{forecasts:[{target_date:'2026-10-26',metals:{gold24:{estimate:141630}}}]},
+  city:'Chennai',language:'en',refresh:()=>{}
+ };
+ assert.equal(module.sections.length,9);
+ for(const [id] of module.sections){
+   module.select(id);
+   const markup=module.page(context);
+   assert.match(markup,/class="toolspage"/);
+   assert.match(markup,new RegExp('data-tool-select="'+id+'"'));
+   assert.ok(markup.length>950,id);
+ }
+ module.select('alerts');
+ assert.match(module.page(context),/GitHub Pages cannot send guaranteed background push alerts/);
+ module.select('hallmark');
+ assert.match(module.page(context),/official BIS Care/);
+ module.select('signals');
+ assert.match(module.page(context),/Official feed not connected/);
+});
