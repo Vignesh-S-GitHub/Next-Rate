@@ -51,6 +51,106 @@
           "interval_calibrated": false
         }
       }
+    },
+    {
+      "issuance_key": "v2:2026-10-26:2026-10-23:PM",
+      "model_version": 2,
+      "issued_at": "2026-10-25T06:54:57+00:00",
+      "target_date": "2026-10-26",
+      "based_on_date": "2026-10-23",
+      "based_on_session": "PM",
+      "metals": {
+        "gold24": {
+          "label": "24K gold",
+          "unit": "10 g",
+          "baseline": 141630,
+          "estimate": 141630,
+          "low": 139500,
+          "high": 143800,
+          "expected_change_pct": 0.0,
+          "direction": "Mostly steady",
+          "scenario_width_pct": 1.5,
+          "history_returns_used": 7,
+          "history_rows_used": 90,
+          "model_name": "last_close",
+          "model_version": 2,
+          "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+          "backtest": {
+            "status": "walk_forward",
+            "selected_model": "last_close",
+            "source_observations": 90,
+            "validation_samples": 52,
+            "validation_mape_pct": 0.826,
+            "validation_naive_mape_pct": 0.826,
+            "holdout_samples": 23,
+            "holdout_mape_pct": 0.616,
+            "holdout_naive_mape_pct": 0.616,
+            "holdout_beats_naive": false,
+            "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
+          },
+          "interval_calibrated": false
+        },
+        "gold22": {
+          "label": "22K gold",
+          "unit": "10 g",
+          "baseline": 129733,
+          "estimate": 129733,
+          "low": 127700,
+          "high": 131700,
+          "expected_change_pct": 0.0,
+          "direction": "Mostly steady",
+          "scenario_width_pct": 1.5,
+          "history_returns_used": 7,
+          "history_rows_used": 90,
+          "model_name": "last_close",
+          "model_version": 2,
+          "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+          "backtest": {
+            "status": "walk_forward",
+            "selected_model": "last_close",
+            "source_observations": 90,
+            "validation_samples": 52,
+            "validation_mape_pct": 0.826,
+            "validation_naive_mape_pct": 0.826,
+            "holdout_samples": 23,
+            "holdout_mape_pct": 0.616,
+            "holdout_naive_mape_pct": 0.616,
+            "holdout_beats_naive": false,
+            "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
+          },
+          "interval_calibrated": false
+        },
+        "silver": {
+          "label": "Silver 999",
+          "unit": "1 kg",
+          "baseline": 194415,
+          "estimate": 194415,
+          "low": 185000,
+          "high": 204000,
+          "expected_change_pct": 0.0,
+          "direction": "Mostly steady",
+          "scenario_width_pct": 4.77,
+          "history_returns_used": 7,
+          "history_rows_used": 90,
+          "model_name": "last_close",
+          "model_version": 2,
+          "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+          "backtest": {
+            "status": "walk_forward",
+            "selected_model": "last_close",
+            "source_observations": 90,
+            "validation_samples": 52,
+            "validation_mape_pct": 1.286,
+            "validation_naive_mape_pct": 1.286,
+            "holdout_samples": 23,
+            "holdout_mape_pct": 1.439,
+            "holdout_naive_mape_pct": 1.439,
+            "holdout_beats_naive": false,
+            "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
+          },
+          "interval_calibrated": false
+        }
+      }
     }
   ]
 }
