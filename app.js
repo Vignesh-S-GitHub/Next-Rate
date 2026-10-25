@@ -22,6 +22,9 @@ let forecast = null;
 let funds = null;
 let buyMetal = 'gold';
 let buyGrams = 8;
+let homeBuyExpanded = false;
+let homeWeightExpanded = false;
+let chartDays = 7;
 let activeForecastMetal = 'gold24';
 let loadFailure = null;
 let forecastLoadFailure = false;
@@ -300,7 +303,7 @@ function marketGraph(){
   const observed=series().filter(r=>
     r.date<=forecast.based_on_date &&
     typeof r[field]==='number' && Number.isFinite(r[field]) && r[field]>0
-  ).slice(-7);
+  ).slice(-chartDays);
   if(observed.length<2)return '<div class="empty-chart">The historical chart will appear after two published IBJA observations.</div>';
   const low=Math.min(...observed.map(r=>r[field]),data.low,data.estimate);
   const high=Math.max(...observed.map(r=>r[field]),data.high,data.estimate);
@@ -381,6 +384,21 @@ function marketSnapshot(){
     ).join('')+
     '<a class="market-reference-link" href="#markets" aria-label="View all market details">View Markets →</a></div>';
 }
+function forecastProof(){
+  const metal=forecast?.metals?.[activeForecastMetal];
+  const evidence=metal?.backtest;
+  const count=Number(metal?.history_rows_used)||0;
+  if(evidence?.status==='walk_forward'&&Number.isFinite(evidence.holdout_mape_pct)){
+    const error=Number(evidence.holdout_mape_pct).toFixed(2);
+    const naive=Number(evidence.holdout_naive_mape_pct).toFixed(2);
+    const better=evidence.holdout_beats_naive;
+    return '<span>'+count+' past rates</span>'+
+      '<span>Test error '+error+'% · Last-close '+naive+'%</span>'+
+      '<span>'+(better?'Lower error on test':'No tested improvement')+'</span>';
+  }
+  return '<span>'+count+' past rates · Accuracy being tested</span>';
+}
+
 function forecastPanel(){
   const valid=forecastDataIsCurrent();
   const date=valid?forecastDate(forecast.target_date):'—';
@@ -400,10 +418,14 @@ function forecastPanel(){
     forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('silver','Silver','1 kg','silver-bar.webp')+'</div>'+
-    '<div class="nr-chart">'+marketGraph()+'</div>'+
-    '<details class="nr-small-details"><summary>How?</summary>'+
-    '<p>IBJA '+forecast.observations+' dates · Test model. Range is not a guarantee.</p>'+
-    '<p>LBMA, COMEX and MCX are not yet model inputs. Shop prices vary.</p></details></section>';
+    '<div class="nr-chart"><div class="home-chart-controls" role="group" aria-label="Chart history">'+
+       [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
+       '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
+      '</div>'+marketGraph()+'</div>'+
+    '<div class="nr-prediction-proof">'+forecastProof()+'</div>'+
+    '<details class="nr-small-details"><summary>About this estimate</summary>'+
+    '<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>'+
+    '<p>History source: <a href="https://trackliveprice.com/methodology/" target="_blank" rel="noopener noreferrer">TrackLivePrice (IBJA archive)</a>. LBMA, COMEX and MCX are not yet model inputs.</p></details></section>';
   return content;
 }
 
@@ -493,12 +515,73 @@ function wireBuyPanel(){
     })
   );
 }
+/* All essential figures are visible; deep comparison tools expand in-place. */
+function homeTodayPanel(){
+  const labels=[['gold24','24K Gold','10g'],['gold22','22K Gold','10g'],['silver','Silver','1kg']];
+  const cells=labels.map(([key,label,unit])=>{
+    const b=benchmark(key);
+    const available=typeof b.value==='number'&&Number.isFinite(b.value)&&b.value>0;
+    return '<div class="home-today-item"><span>'+label+' <small>'+unit+'</small></span>'+
+      '<strong>'+(available?price(b.value):'—')+'</strong></div>';
+  }).join('');
+  return '<section class="home-brief section"><header><h2>Today · IBJA</h2>'+
+    '<span>'+(india()?sourceDate(india().date):'No quote')+'</span></header>'+
+    '<div class="home-today-grid">'+cells+'</div>'+
+    '<p class="home-brief-note">Actual national rate · <a target="_blank" rel="noopener noreferrer" href="https://www.ibjarates.com/">Source ↗</a></p></section>';
+}
+function homeWeightPanel(){
+  const tabs=[['gold24','24K'],['gold22','22K'],['silver','Silver']].map(([id,label])=>
+    '<button type="button" data-home-weight-metal="'+id+'" class="home-metal-tab'+(weightMetal===id?' active':'')+
+    '" aria-pressed="'+(weightMetal===id)+'">'+label+'</button>').join('');
+  const b=benchmark(weightMetal);
+  const items=weightMetal==='silver'?[1,10,100,1000]:[1,8,10,100];
+  const weights=items.map(g=>{
+    let value='—';
+    if(typeof b.value==='number'&&Number.isFinite(b.value)&&b.value>0){
+      value=NextRateWeights.formatINR(NextRateWeights.calculate(b.value,weightMetal,g).amount);
+    }
+    return '<div class="home-weight-cell"><span>'+NextRateWeights.gramLabel(g)+
+      (g===8&&weightMetal!=='silver'?' (Pavan)':'')+'</span><strong>'+value+'</strong></div>';
+  }).join('');
+  return '<section class="home-brief section"><header><h2>By Weight</h2>'+
+    '<div class="home-metal-tabs" role="group" aria-label="Metal for weights">'+tabs+'</div></header>'+
+    '<div class="home-weight-grid">'+weights+'</div>'+
+    '<details class="home-expand" id="home-weight-expand"'+(homeWeightExpanded?' open':'')+'>'+
+    '<summary>All weights & custom calculator</summary>'+weightPriceSection()+'</details></section>';
+}
+function homeBuyPanel(){
+  const g24=benchmark('gold24').value,g22=benchmark('gold22').value;
+  const physical=(type,rate)=>{
+    if(!Number.isFinite(rate)||rate<=0)return '—';
+    return '≈ '+NextRateWeights.formatINR(NextRateBuying.metalAndGST(rate,type,8).subtotal);
+  };
+  const etf=verifiedNav('goldbees');
+  const cells=[
+    ['Gold bar · 8g',physical('gold24',g24),'Metal + GST'],
+    ['22K jewellery · 8g',physical('gold22',g22),'Making extra'],
+    ['Gold ETF · 1 unit',etf?NextRateWeights.formatINR(etf.nav_inr_per_unit):'—','NAV, not trade']
+  ].map(([name,value,note])=>
+    '<div class="home-buy-cell"><span>'+name+'</span><strong>'+value+'</strong><small>'+note+'</small></div>').join('');
+  return '<section class="home-brief section"><header><h2>Buy Gold</h2>'+
+    '<span>Reference only</span></header><div class="home-buy-grid">'+cells+'</div>'+
+    '<details class="home-expand" id="home-buy-expand"'+(homeBuyExpanded?' open':'')+'>'+
+    '<summary>More: coins, bars, silver, ETFs, SGB</summary>'+buyPanel()+'</details></section>';
+}
+function wireHomeCompact(){
+  document.querySelectorAll('[data-home-weight-metal]').forEach(button=>
+    button.addEventListener('click',()=>{weightMetal=button.dataset.homeWeightMetal;render();})
+  );
+  document.querySelectorAll('[data-chart-days]').forEach(button=>
+    button.addEventListener('click',()=>{chartDays=Number(button.dataset.chartDays);render();})
+  );
+  const weight=document.querySelector('#home-weight-expand');
+  if(weight)weight.addEventListener('toggle',()=>{homeWeightExpanded=weight.open;});
+  const buy=document.querySelector('#home-buy-expand');
+  if(buy)buy.addEventListener('toggle',()=>{homeBuyExpanded=buy.open;});
+}
 function home(){
-  return forecastPanel()+buyPanel()+
-    '<section class="actual-rates-heading section"><div><h2>Today · IBJA</h2>'+
-    '<p>Actual Gold & Silver</p></div>'+availabilityTag()+'</section>'+
-    '<section class="grid three">'+['gold24','gold22','silver'].map(benchmarkCard).join('')+'</section>'+
-    weightPriceSection()+note();
+  return '<div class="home-dashboard">'+forecastPanel()+homeTodayPanel()+
+    homeWeightPanel()+homeBuyPanel()+'</div>';
 }
 function marketCard(label,value,unit,date,link) {
   return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
@@ -570,6 +653,7 @@ function render() {
   );
   wireWeightCalculator();
   wireBuyPanel();
+  wireHomeCompact();
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }
 async function getJSON(file) {
