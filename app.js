@@ -56,6 +56,17 @@ function daysOld(dateString) {
   const utcToday = new Date(part('year')+'-'+part('month')+'-'+part('day')+'T00:00:00Z');
   return Math.max(0, Math.floor((utcToday-date)/86400000));
 }
+// Dates on individual feeds are observation/fetch dates, not necessarily
+// active trading sessions. Weekends must not masquerade as live quotes.
+function isIndiaWeekend(){
+  const weekday=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Kolkata',weekday:'short'}).format(new Date());
+  return weekday==='Sat'||weekday==='Sun';
+}
+function marketStatusNote(){
+  return isIndiaWeekend()
+    ? '<div class="market-status-note" role="status"><strong>Markets closed (weekend).</strong> International spot timestamps show when the provider fetched its quote—not proof of Sunday trading. IBJA last publishes on working days.</div>'
+    : '<div class="market-status-note">Quotes are from different markets and may use different observation times. Spot USD/oz is not an Indian retail rate.</div>';
+}
 const india = () => rates?.india || null;
 const series = () => Array.isArray(history?.india) ? history.india.slice().sort((a,b)=>a.date.localeCompare(b.date)) : [];
 
@@ -428,7 +439,8 @@ function forecastPanel(){
        [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
        '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
       '</div>'+marketGraph()+'</div>'+
-    '<div class="nr-prediction-proof">'+forecastProof()+'</div>'+
+    '<div class="nr-prediction-proof">'+forecastProof()+
+      '<span>Actual result: pending until '+date+' IBJA closing rate</span></div>'+
     '<details class="nr-small-details"><summary>About this estimate</summary>'+
     '<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>'+
     '<p>History source: <a href="https://trackliveprice.com/methodology/" target="_blank" rel="noopener noreferrer">TrackLivePrice (IBJA archive)</a>. LBMA, COMEX and MCX are not yet model inputs.</p></details></section>';
@@ -593,11 +605,12 @@ function marketCard(label,value,unit,date,link) {
   return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
 }
 function marketsPage() {
-  return heading('Markets','Source-backed international and Indian reference observations.')+
+  return heading('Markets','Spot quotes · FX · India benchmark')+
+    marketStatusNote()+
     '<section class="grid four market-grid">'+
-    marketCard('Gold · XAU',rates?.spot?.XAU?usd(rates.spot.XAU.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAU?sourceTime(rates.spot.XAU.as_of):'','https://gold-api.com/docs')+
-    marketCard('Silver · XAG',rates?.spot?.XAG?usd(rates.spot.XAG.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAG?sourceTime(rates.spot.XAG.as_of):'','https://gold-api.com/docs')+
-    marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?sourceDate(rates.fx.date):'',rates?.fx?.source_url||'https://frankfurter.dev/')+
+    marketCard('Gold · XAU',rates?.spot?.XAU?usd(rates.spot.XAU.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAU?'Fetched '+sourceTime(rates.spot.XAU.as_of):'','https://gold-api.com/docs')+
+    marketCard('Silver · XAG',rates?.spot?.XAG?usd(rates.spot.XAG.usd_per_troy_ounce):'—','Indicative spot · USD / troy oz',rates?.spot?.XAG?'Fetched '+sourceTime(rates.spot.XAG.as_of):'','https://gold-api.com/docs')+
+    marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?'Reference '+sourceDate(rates.fx.date):'',rates?.fx?.source_url||'https://frankfurter.dev/')+
     marketCard('India 24K',india()?price(india().gold24_inr_10g):'—','IBJA national benchmark · ₹ / 10g',india()?sourceDate(india().date):'','https://www.ibjarates.com/')+
     '</section>'+
     '<section class="card section"><h2>Other market venues</h2><p>LBMA auction benchmarks, COMEX futures and MCX futures require separate authorised feeds. They are not equivalent to international spot quotes or the IBJA physical-market benchmark.</p><div class="source-links"><a href="https://www.lbma.org.uk/prices-and-data" target="_blank" rel="noopener noreferrer">LBMA ↗</a><a href="https://www.cmegroup.com/markets/metals/precious/gold.html" target="_blank" rel="noopener noreferrer">COMEX ↗</a><a href="https://www.mcxindia.com/" target="_blank" rel="noopener noreferrer">MCX ↗</a></div></section>'+

@@ -115,3 +115,7 @@ The Home screen retains the NextRate white, gold and navy brand in a compact mar
 ## Consistent two-bar metal artwork
 
 The gold icons for both 24K and 22K use the same two-bullion-bar silhouette as the Silver icon. A gold-only CSS tone filter preserves the highlights, composition, and exact double-bar geometry of the original silver illustration. This applies to both actual-rate cards and next-session forecast rows. The original approved NextRate brand logo is unchanged.
+
+## Date and quote accuracy
+
+On weekends the Markets page explicitly says markets are closed. A Gold API `updatedAt` timestamp means **the source fetched a quote at that time**, not that a gold futures contract or spot transaction occurred then. USD/INR is a *daily reference*, not a continuously traded tick. Last published IBJA AM/PM rates remain dated to the original session. Forecast results cannot be evaluated until the **target-date IBJA PM close** is available; historical model error is not a guarantee for the coming day.

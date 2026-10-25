@@ -553,3 +553,8 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
  .home-buy-cell>strong{font-size:12px}
  .home-metal-tab{padding:5px}
 }
+
+/* Clearly label feed freshness, especially during weekends. */
+.market-status-note{padding:11px 14px;border:1px solid #ece2c9;background:#fffaf0;border-radius:12px;color:#806329;font-size:12px;line-height:1.65;margin:0 0 14px}
+.market-status-note strong{font-weight:800;color:#76551a}
+@media(max-width:680px){.market-status-note{font-size:11px;padding:10px 12px;line-height:1.55}}

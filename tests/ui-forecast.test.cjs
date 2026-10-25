@@ -73,3 +73,13 @@ test('Today and next-open-day forecasts cannot be mislabelled Tomorrow',()=>{
  assert.match(app,/Next open day/);
  assert.match(app,/markerStep/);
 });
+
+test('Markets distinguish provider fetch times from market trade times, especially Sundays',()=>{
+  assert.match(app,/function isIndiaWeekend\(\)/);
+  assert.match(app,/function marketStatusNote\(\)/);
+  assert.match(app,/Markets closed \(weekend\)/);
+  assert.match(app,/spot timestamps show when the provider fetched/);
+  assert.match(app,/Fetched /);
+  assert.match(app,/Reference /);
+  assert.match(app,/Actual result: pending until/);
+});
