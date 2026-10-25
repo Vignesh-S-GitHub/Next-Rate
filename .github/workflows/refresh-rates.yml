@@ -111,7 +111,11 @@ jobs:
           node --check weights.js
           node --check buy-options.js
           node --check i18n.js
+          node --check tools-core.js
+          node --check tools-ui.js
           node --check app.js
+          node --test tests/tools-core.test.cjs
+          node --test tests/tools-ui.test.cjs
           node --test tests/i18n.test.cjs
           node --test tests/ui-cities.test.cjs
           node --test tests/weights.test.cjs
@@ -142,7 +146,7 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p _site/assets _site/data
-          cp index.html styles.css app.js i18n.js weights.js buy-options.js _site/
+          cp index.html styles.css app.js i18n.js tools-core.js tools-ui.js weights.js buy-options.js _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json data/cities.json _site/data/
           touch _site/.nojekyll
