@@ -1,14 +1,6 @@
 name: Refresh market rates and publish NextRate
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "scripts/update_rates.py"
-      - "scripts/forecast.py"
-      - "tests/**"
-      - ".github/workflows/refresh-rates.yml"
-      - "app.js"
   schedule:
     # After the Indian AM and PM bullion price publications (UTC times).
     - cron: "15 7 * * *"
