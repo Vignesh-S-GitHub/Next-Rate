@@ -164,3 +164,57 @@
 @media(min-width:751px){
  .desktop-nav a:focus-visible{outline:2px solid #d19d31;outline-offset:4px;border-radius:4px}
 }
+
+
+/* Sourced, clickable publisher identities. External logos are always
+   presented in their own unaltered image container; no claim of endorsement. */
+.source-logo-link{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-height:39px;padding:5px 9px;border:1px solid #eadfc8;border-radius:11px;background:#fffaf0;color:#91691d;font-size:12px;font-weight:750;text-decoration:none!important;line-height:1.25;white-space:normal;vertical-align:middle;transition:border-color .16s,background .16s}
+.source-logo-link:hover{background:#fff3d5;border-color:#dab765}
+.source-logo-link:focus-visible{outline:2px solid #bd8623;outline-offset:2px}
+.source-logo-link--compact{gap:5px;min-height:31px;padding:3px 7px;font-size:11px}
+.source-logo-symbol{position:relative;display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border-radius:7px;background:#fff;box-shadow:inset 0 0 0 1px #e9e9e6;overflow:hidden}
+.source-logo-link--compact .source-logo-symbol{flex-basis:26px;width:26px;height:26px}
+.source-logo-fallback{font-weight:900;font-size:9px;letter-spacing:-.3px;color:#916726}
+.source-logo-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:white}
+.source-logo-img[hidden]{display:none!important}
+.source-logo-label{display:block;min-width:0;overflow-wrap:anywhere}
+.source-logo-external{font-weight:700;color:#ad8c53}
+.source-logo-link--biscare .source-logo-symbol{background:#e9eff8}
+.source-logo-link--biscare .source-logo-fallback{font-size:17px;color:#234a86}
+.source-logo-link--amfi .source-logo-symbol{background:#eef4fb}
+.source-logo-link--amfi .source-logo-fallback{font-size:10px;color:#205d97}
+.home-source-note,.market-source-logos,.buy-provider-note,.comparison-source-mark{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:10px;font-size:11px;color:#8693a2}
+.home-source-note{justify-content:space-between}
+.market-source-logos{padding:0 4px 8px;margin:0 0 13px}
+.comparison-source-mark{margin-top:12px}
+.buy-provider-note{padding:12px 0 0;border-top:1px solid #edeae1}
+.tool-provider-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-5px 0 16px}
+.tool-provider-row .source-logo-link{flex:0 1 auto}
+.tool-hallmark{gap:15px;align-items:flex-start}
+.tool-app-mark{display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.tool-app-mark .source-logo-link{display:flex;flex-direction:column;justify-content:center;min-height:110px;width:96px;padding:8px;gap:6px;font-size:11px;text-align:center;border-radius:13px}
+.tool-app-mark .source-logo-symbol{width:54px;height:54px;flex-basis:54px;border-radius:13px}
+.tool-app-mark .source-logo-fallback{font-size:26px}
+.tool-app-mark .source-logo-external{display:none}
+.tool-hallmark-body{min-width:0;flex:1}
+.tool-hallmark-body p{line-height:1.5}
+.tool-app-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tool-app-links a{display:inline-flex;align-items:center;min-height:35px;padding:7px 10px;border:1px solid #eadbbd;border-radius:9px;background:#fff;color:#926b21;font-size:11px;font-weight:750;text-decoration:none}
+.tool-app-links a:hover{background:#fff2d8}
+.tool-mark-notice{color:#8590a0;font-size:11px;line-height:1.5;margin:0 0 16px}
+.tool-reference .source-logo-link{margin-left:5px}
+@media(max-width:750px){
+ .tool-provider-row{gap:8px}
+ .tool-app-mark .source-logo-link{width:83px;min-height:98px;padding:6px}
+ .tool-app-mark .source-logo-symbol{width:45px;height:45px;flex-basis:45px}
+ .tool-hallmark{gap:11px;padding:12px}
+ .tool-hallmark-body strong{font-size:14px}
+ .tool-app-links{gap:6px}
+ .tool-app-links a{padding:7px 8px}
+}
+@media(max-width:370px){
+ .home-source-note{flex-direction:column;align-items:flex-start}
+ .tool-app-mark .source-logo-link{width:72px;min-height:90px;font-size:10px}
+ .tool-app-mark .source-logo-symbol{width:38px;height:38px;flex-basis:38px}
+ .tool-app-links a{font-size:10px}
+}

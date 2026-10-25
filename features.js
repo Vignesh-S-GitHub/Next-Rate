@@ -7,6 +7,8 @@
 (function(root) {
 'use strict';
 const C=root.NextRateCore || (typeof module!=='undefined'?require('./features-core.js'):null);
+const Sources=root.NextRateSources || (typeof module!=='undefined'?require('./source-logos.js'):null);
+const official=(id,options)=>Sources?.badge(id,options)||'';
 const KEY='nextrate-tools-v1';
 const CITIES=['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad'];
 const SECTIONS=[
@@ -177,7 +179,7 @@ function shopsPanel(){
  return '<div class="tool-feature-heading"><h2>Shop Comparison</h2>'+
     '<p>'+h(ct)+' · Compare your own shop quotes.</p></div>'+
     '<p class="tool-reference">City 22K reference: '+(q?m(q.rate)+' / g · '+h(q.date):'Unavailable')+
-    ' · '+link('City source','https://www.goodreturns.in/gold-rates/')+'</p>'+
+    ' · '+official('goodreturns',{label:'City source',compact:true})+'</p>'+
     '<form data-feature-form="shops"><div class="tool-form-grid">'+
     field('name','Jeweller / shop','', 'text','maxlength="55" placeholder="Shop name"')+
     opt('metal',[['gold22','22K'],['gold24','24K']],'Purity')+
@@ -248,11 +250,15 @@ function resalePanel(){
    'not an IBJA-published 18K selling quote.');
 }
 function hallmarkPanel(){
- return '<div class="tool-feature-heading"><h2>Verify Hallmark</h2><p>Official BIS Care app.</p></div>'+
-  '<div class="tool-hallmark"><div class="tool-bis">BIS<br><small>HUID</small></div>'+
-  '<div><strong>Check gold jewellery HUID</strong><p>Use Verify HUID in the official BIS Care app. '+
-   'Only BIS can confirm whether an ID is valid.</p>'+
-   link('Open official BIS Care','https://www.bis.gov.in/bis-apps/')+'</div></div>'+
+ return '<div class="tool-feature-heading"><h2>Verify Hallmark</h2><p>Open the official BIS Care app.</p></div>'+
+  '<div class="tool-hallmark"><div class="tool-app-mark">'+official('biscare',{label:'BIS Care App'})+'</div>'+
+  '<div class="tool-hallmark-body"><strong>Check gold jewellery HUID</strong>'+
+   '<p>Use Verify HUID in the official BIS Care app. Only BIS can confirm whether an ID is valid.</p>'+
+   '<div class="tool-app-links">'+
+    link('Android · Google Play','https://play.google.com/store/apps/details?id=com.bis.bisapp')+
+    link('iPhone · App Store','https://apps.apple.com/in/app/bis-care-app/id6443724891')+
+    '</div></div></div>'+
+  '<p class="tool-mark-notice">BIS Care verification opens outside NextRate. This is not an official BIS app or certification service.</p>'+
   '<form data-feature-form="huid"><div class="tool-form-grid">'+
     field('code','6-character HUID','', 'text','maxlength="6" minlength="6" pattern="[A-Za-z0-9]{6}" placeholder="HUID"')+
     '</div>'+btn('Copy HUID to check in BIS Care')+'</form>'+
@@ -277,6 +283,8 @@ function etfPanel(){
  }).join('');
  const products=all.map(([id,row])=>[id,row.name]);
  return '<div class="tool-feature-heading"><h2>ETF Comparison</h2><p>Published AMFI NAV. Trade price may differ.</p></div>'+
+  '<div class="tool-provider-row">'+official('amfi',{label:'AMFI NAV source'})+
+    official('nse',{label:'NSE ETF market information'})+'</div>'+
   '<div class="tool-etf-list">'+(table||'<p class="tool-note">AMFI feed unavailable.</p>')+'</div>'+
   (products.length?'<form data-feature-form="etf"><div class="tool-form-grid">'+
     opt('fund',products,'ETF / Fund')+

@@ -1,3 +1,18 @@
+
+## Official app and data-source identity links
+
+NextRate now displays **unaltered externally hosted IBJA, Goodreturns and NSE source images** directly alongside the references they identify, with clickable links to the respective publishers. On Home and Compare, IBJA identifies the India national bullion benchmark; Goodreturns identifies *indicative* city quotes; on ETF Comparison, NSE identifies exchange information, **not** an exchange-price feed provided to NextRate.
+
+**BIS Care:** Links to official [BIS Care information](https://www.bis.gov.in/bis-apps/?lang=en), the verified [Android app (Bureau of Indian Standards)](https://play.google.com/store/apps/details?id=com.bis.bisapp) and the verified [iOS app](https://apps.apple.com/in/app/bis-care-app/id6443724891). NextRate never claims to perform HUID verification. [BIS logo usage rules](https://www.bis.gov.in/bis-logo-guidelines/?lang=en) require prior authorization for an independent website, so the linked badge uses a generic icon and text, *not* the official BIS certification mark.
+
+**AMFI:** Provides a text/financial-source badge linking to the [official AMFI homepage](https://www.amfiindia.com/) and distinguishes dated NAV from executable exchange prices. The [AMFI linking and logo terms](https://www.amfiindia.com/terms-of-use) require written logo permission, so the actual AMFI mark is not copied to NextRate.
+
+**Source image URLs:** 
+- IBJA: \`https://www.ibja.co/images/IBJA_logo-big.png\` (publisher site)
+- Goodreturns: \`https://images.goodreturns.in/images/goodreturns-og-image-1727936148894.jpg\`
+- NSE: \`https://nsearchives.nseindia.com/web/sites/default/files/2019-07/NSE%404x-100.jpg\` (NSE media resource)
+The images are kept unedited, loaded on demand, and accompanied by source names; where a third-party server blocks or removes an image, NextRate displays a plain-text fallback. The logos are source identifications, **not endorsements or partnerships**. \`source-logos.js\` centralizes these link destinations and branding restrictions.
+
 ## Nine mobile tools added
 
 NextRate now has a **Tools** screen (English / தமிழ்) with **Price Alerts**, **Jewellery Bill**, **Accuracy**, **Compare Shops**, **My Gold**, **Sell / Exchange**, **Hallmark**, **Gold & Silver ETF**, and **World Markets**. Home has compact shortcuts; existing prices, graphics and daily refresh are unchanged.

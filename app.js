@@ -33,6 +33,7 @@ let loadFailure = null;
 let forecastLoadFailure = false;
 let navLoadFailure = false;
 
+const sourceBadge = (provider,options) => window.NextRateSources?.badge(provider,options)||'';
 const INR = new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 0});
 const USD = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 2});
 const icon = (name, cls='icon') => '<svg class="' + cls + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
@@ -519,7 +520,8 @@ function buyPanel(){
     '<span>Price</span><span>Extra</span></div>'+list+'</div>'+
     '<p class="buy-foot">Bars, coins & jewellery: <b>IBJA + 3% GST only</b>. Shop charges extra. '+
     'ETF & funds: <b>AMFI NAV per unit</b>, not live buy price. Bonds: market quote.</p>'+
-    '</section>';
+    '<div class="buy-provider-note">'+sourceBadge('amfi',{label:'AMFI NAV source',compact:true})+
+      '<small>Fund NAVs are not stock-exchange buying prices.</small></div></section>';
 }
 function wireBuyPanel(){
   document.querySelectorAll('[data-buy-metal]').forEach(button=>
@@ -548,7 +550,7 @@ function homeTodayPanel(){
   return '<section class="home-brief section"><header><h2>Today · IBJA</h2>'+
     '<span>'+(india()?sourceDate(india().date):'No quote')+'</span></header>'+
     '<div class="home-today-grid">'+cells+'</div>'+homeCityPrice()+
-    '<p class="home-brief-note">Actual national rate · <a target="_blank" rel="noopener noreferrer" href="https://www.ibjarates.com/">Source ↗</a></p></section>';
+    '<div class="home-source-note"><span>Actual national rate · IBJA published close</span>'+sourceBadge('ibja',{label:'IBJA source',compact:true})+'</div></section>';
 }
 function homeWeightPanel(){
   const tabs=[['gold24','24K'],['gold22','22K'],['silver','Silver']].map(([id,label])=>
@@ -627,6 +629,8 @@ function marketsPage() {
     marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?'Reference '+sourceDate(rates.fx.date):'',rates?.fx?.source_url||'https://frankfurter.dev/')+
     marketCard('India 24K',india()?price(india().gold24_inr_10g):'—','IBJA national benchmark · ₹ / 10g',india()?sourceDate(india().date):'','https://www.ibjarates.com/')+
     '</section>'+
+    '<div class="market-source-logos">'+sourceBadge('ibja',{label:'IBJA national rates',compact:true})+
+    '<span>24K reference shown above is a dated Indian national rate.</span></div>'+
     '<section class="card section"><h2>Other market venues</h2><p>LBMA auction benchmarks, COMEX futures and MCX futures require separate authorised feeds. They are not equivalent to international spot quotes or the IBJA physical-market benchmark.</p><div class="source-links"><a href="https://www.lbma.org.uk/prices-and-data" target="_blank" rel="noopener noreferrer">LBMA ↗</a><a href="https://www.cmegroup.com/markets/metals/precious/gold.html" target="_blank" rel="noopener noreferrer">COMEX ↗</a><a href="https://www.mcxindia.com/" target="_blank" rel="noopener noreferrer">MCX ↗</a></div></section>'+
     '<section class="card section"><h2>What affects tomorrow?</h2>'+
     [['International metal quotes','Global spot prices reflect precious-metal demand and market expectations.'],['Currency movement','The USD/INR rate changes the rupee value of globally priced metals.'],['Domestic physical-market demand','Local premiums, import policies, taxes and jewellery demand affect final retail prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</section>'+note();
@@ -651,7 +655,7 @@ function citySourceLink(metal){
   const group=metal==='silver'?'silver':'gold';
   const url=group==='silver'?'https://www.goodreturns.in/silver-rates/':
     'https://www.goodreturns.in/gold-rates/';
-  return '<a class="city-source" target="_blank" rel="noopener noreferrer" href="'+url+'">Goodreturns ↗</a>';
+  return sourceBadge('goodreturns',{label:'City-rate source',href:url,compact:true});
 }
 function homeCityPrice(){
   const c=currentCity;
@@ -706,7 +710,8 @@ function compare() {
     '<h2>India benchmark: '+selected.label+'</h2><span class="muted">'+selected.unit+'</span></div>'+
     '<div class="reference-value">'+national+'</div>'+
     '<p class="muted">IBJA '+(india()?sourceDate(india().date):'rates unavailable')+
-    ' · One India-wide reference. City indicative quotes differ.</p></article>'+
+    ' · One India-wide reference. City indicative quotes differ.</p>'+
+    '<div class="comparison-source-mark">'+sourceBadge('ibja',{label:'Official rate source',compact:true})+'</div></article>'+
     weightPriceSection();
 }
 function insights() {

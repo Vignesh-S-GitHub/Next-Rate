@@ -95,3 +95,28 @@ test('Every tool panel renders using a dated India market snapshot',()=>{
  module.select('signals');
  assert.match(module.page(context),/Official feed not connected/);
 });
+
+
+test('Official source identities appear in the relevant tools without pretending endorsement',()=>{
+ const provider=require('../source-logos.js');
+ const coreContext={rates:{india:{date:'2026-10-23'}},
+   cities:{cities:{Chennai:{gold22_inr_g:13070}},dates:{gold:'2026-10-23'}},
+   funds:{funds:{goldbees:{name:'Gold BeES',kind:'Gold ETF',nav_inr_per_unit:116.0,nav_date:'2026-10-23'}}},
+   forecastHistory:{forecasts:[]},city:'Chennai',language:'en',refresh:()=>{}};
+ const feature=require('../features.js');
+ feature.select('hallmark');
+ const hallmark=feature.page(coreContext);
+ assert.match(hallmark,/data-tool-select="hallmark"/);
+ assert.match(hallmark,/play\.google\.com\/store\/apps\/details\?id=com\.bis\.bisapp/);
+ assert.match(hallmark,/apps\.apple\.com\/in\/app\/bis-care-app\/id6443724891/);
+ assert.match(hallmark,/BIS Care verification opens outside NextRate/);
+ assert.doesNotMatch(provider.badge('biscare'),/<img/);
+ feature.select('etfs');
+ const etf=feature.page(coreContext);
+ assert.match(etf,/NSE ETF market information/);
+ assert.match(etf,/AMFI NAV source/);
+ assert.match(etf,/nsearchives\.nseindia\.com/);
+ assert.doesNotMatch(provider.badge('amfi'),/<img/);
+ feature.select('shops');
+ assert.match(feature.page(coreContext),/images\.goodreturns\.in/);
+});
