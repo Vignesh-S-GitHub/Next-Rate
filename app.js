@@ -88,7 +88,7 @@ function heading(title,sub) {
 function benchmarkCard(which) {
   const b=benchmark(which);
   const ok=Number.isFinite(b.value);
-  return '<article class="card"><div class="price-top">'+'<img class="metal metal-photo" src="./assets/'+(b.icon==='silver'?'silver-bar.webp':'gold-bar.webp')+'?v=20261025-theme2" width="52" height="52" alt="" decoding="async">'+
+  return '<article class="card"><div class="price-top">'+'<img class="metal metal-photo'+(b.icon==='silver'?'':' bullion-gold')+'" src="./assets/silver-bar.webp?v=20261025-doublebars" width="52" height="52" alt="" decoding="async">'+
     '<div><strong>'+b.label+'</strong><div class="muted">'+b.unit+'</div></div></div>'+
     '<div class="price">'+(ok?price(b.value):'—')+'</div>'+
     '<div class="price-change">'+(ok?movement(b.key,b.value):'<span class="muted">Awaiting validated quote</span>')+'</div>'+
@@ -284,8 +284,7 @@ function forecastMetalCard(key, title, unit, iconFile){
   return '<button type="button" class="forecast-metal'+(selected?' selected':'')+
     '" data-forecast-metal="'+key+'" aria-pressed="'+selected+'" aria-label="'+title+
     ' expected '+price(data.estimate)+', '+direction+' '+percent+', tap to view trend">'+
-    '<span class="forecast-metal-head"><img class="forecast-metal-img" src="./assets/'+iconFile+
-    '?v=20261025-market2" width="38" height="38" alt="" loading="eager">'+
+    '<span class="forecast-metal-head"><img class="forecast-metal-img'+(iconFile==='gold-bar.webp'?' bullion-gold':'')+'" src="./assets/silver-bar.webp?v=20261025-doublebars" width="38" height="38" alt="" loading="eager">'+
     '<span class="forecast-metal-name"><strong>'+title+'</strong><small>'+unit+'</small></span></span>'+
     '<span class="forecast-metal-quote"><strong>'+price(data.estimate)+'</strong>'+
     '<span class="forecast-direction '+dirClass+'">'+(change>0?'▲ ':change<0?'▼ ':'● ')+

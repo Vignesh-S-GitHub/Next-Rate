@@ -101,3 +101,7 @@ The Home outlook presents three selectable quote rows, recent IBJA closing-rate 
 ## Stock-market dashboard UI
 
 The Home screen retains the NextRate white, gold and navy brand in a compact market-board layout: an interactive watchlist for 24K gold, 22K gold and silver, red/green expected movements, a dated historical IBJA line chart with a **dashed** next-session experimental outlook, and a mini reference strip of international spot and currency observations. They include source dates and are not presented as live futures, official LBMA/COMEX/MCX rates or inputs to the short-history forecast model. Analysis methodology and uncertainty notes are expandable. On mobile, the watchlist shows stacked rows followed by the responsive chart, and the actual rate/weight calculator remain below.
+
+## Consistent two-bar metal artwork
+
+The gold icons for both 24K and 22K use the same two-bullion-bar silhouette as the Silver icon. A gold-only CSS tone filter preserves the highlights, composition, and exact double-bar geometry of the original silver illustration. This applies to both actual-rate cards and next-session forecast rows. The original approved NextRate brand logo is unchanged.

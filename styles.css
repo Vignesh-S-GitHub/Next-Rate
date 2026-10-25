@@ -435,3 +435,11 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
  .buy-weight{padding:7px 8px}
  .forecast-metal-quote>strong{font-size:17px}
 }
+
+
+/* Same two-bar silhouette as Silver for 24K and 22K Gold.
+   The shared silver two-bullion illustration is tinted gold only.
+   This preserves identical bar count, angle and footprint on all cards. */
+.bullion-gold{
+  filter: sepia(1) saturate(3.5) hue-rotate(-12deg) brightness(1.09) contrast(1.12);
+}

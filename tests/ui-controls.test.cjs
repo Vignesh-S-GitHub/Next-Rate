@@ -28,8 +28,12 @@ test('Site keeps both live calculations and transparent bullion icons',()=>{
   assert.match(app,/NextRateWeights\.calculate/);
   assert.match(app,/gold-bar\.webp/);
   assert.match(app,/silver-bar\.webp/);
+  assert.match(app,/bullion-gold/);
+  assert.match(css,/\.bullion-gold\s*\{/);
+  assert.match(app,/src="\.\/assets\/silver-bar\.webp\?v=20261025-doublebars"/);
   assert.match(app,/getJSON\('latest\.json'\)/);
-  assert.match(html,/\?v=20261025-theme2/);
+  assert.match(html,/styles\.css\?v=20261025-doublebars/);
+  assert.match(html,/app\.js\?v=20261025-doublebars/);
 });
 test('Menu supports close on Escape and tap outside',()=>{
   assert.match(app,/event\.key==='Escape'/);
