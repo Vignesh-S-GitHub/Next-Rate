@@ -88,7 +88,7 @@ If an individual source fails validation, its last validated observation is reta
 
 ## Deployment
 
-UI/source changes run only the standard Pages workflow; the market-data refresher runs on its two daily cron schedules or from the **Run workflow** button. This avoids competing builds overwriting a more recent market snapshot. Market updates deploy the site directly from the refresh workflow, and both workflows share a deployment concurrency lock.
+UI/source changes use the standard Pages workflow. Market collection runs twice daily, can be started manually, and also bootstraps when the archive scripts or scheduled workflow change. Market refreshes have a **separate concurrency queue** so they are not cancelled by UI-only builds. Both workflows publish a compact website; the scheduled market workflow also commits the permanent annual archives.
 
 
 
