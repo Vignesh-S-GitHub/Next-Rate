@@ -189,6 +189,12 @@
     "1kg":"1 கிலோ"
 
   };
+  Object.assign(TA,{
+    "Tools":"கருவிகள்","Price Alerts":"விலை அறிவிப்புகள்",
+    "Jewellery Bill":"நகை பில்","Accuracy":"கணிப்பு துல்லியம்",
+    "My Gold":"எனது தங்கம்","All 9 features":"9 அம்சங்கள்",
+    "Open tools":"கருவிகளைத் திறக்க"
+  });
   const keys=Object.keys(TA).sort((a,b)=>b.length-a.length);
   const textOriginals=new WeakMap();
   const attrOriginals=new WeakMap();
