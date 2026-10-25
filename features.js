@@ -53,7 +53,7 @@ const note=(text)=>'<p class="tool-note">'+text+'</p>';
 const link=(label,url)=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+h(label)+' ↗</a>';
 const metalOptions=[['gold24','24K gold'],['gold22','22K gold'],['silver','Silver 999']];
 function context(){return ctxCache||{};}
-function date(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+function date(){const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const part=n=>parts.find(p=>p.type===n)?.value;return part('year')+'-'+part('month')+'-'+part('day');}
 function id(){return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);}
 function validBenchmark(kind,contextObj=context()){
  const rate=C.publishedRate(contextObj.rates,kind);
