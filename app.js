@@ -334,7 +334,9 @@ function marketGraph(){
     return '<line x1="55" y1="'+yy.toFixed(1)+'" x2="617" y2="'+yy.toFixed(1)+'" stroke="#ebedf2" stroke-width="1"/>'+
        '<text x="47" y="'+(yy+5).toFixed(1)+'" text-anchor="end" font-size="12" fill="#8a96a6">'+numLabel(value)+'</text>';
   }).join('');
-  const candles=pts.map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#fff" stroke="'+color+'" stroke-width="2.5"/>').join('');
+  const markerStep=Math.max(1,Math.ceil(pts.length/12));
+  const candles=pts.filter((p,i)=>i%markerStep===0||i===pts.length-1)
+    .map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#fff" stroke="'+color+'" stroke-width="2.5"/>').join('');
   const rangeTop=y(data.high),rangeBottom=y(data.low);
   const rectY=Math.min(rangeTop,rangeBottom),rectH=Math.abs(rangeBottom-rangeTop);
   const projectedY=y(data.estimate);
@@ -403,9 +405,13 @@ function forecastPanel(){
   const valid=forecastDataIsCurrent();
   const date=valid?forecastDate(forecast.target_date):'—';
   const based=valid?sourceDate(forecast.based_on_date):'—';
+  const panelTitle=valid && forecast.target_date===indiaTodayISO()
+    ? 'Today outlook'
+    : valid && forecast.target_date>forecast.calendar_tomorrow
+      ? 'Next open day' : 'Tomorrow';
   let content='<section class="forecast-shell" aria-labelledby="forecast-title">'+
     '<div class="nr-top"><div><span class="nr-kicker">INDIA · NEXT RATE</span>'+
-    '<h1 id="forecast-title">Tomorrow</h1></div><span class="forecast-tag">Estimate</span></div>';
+    '<h1 id="forecast-title">'+panelTitle+'</h1></div><span class="forecast-tag">Estimate</span></div>';
   if(!valid){
     const reason=forecast?.status==='unavailable'?
       escapeHTML(forecast.reason||'No forecast'): 'Next forecast not ready';
