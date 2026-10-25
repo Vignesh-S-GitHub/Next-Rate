@@ -117,7 +117,7 @@ def update(now: datetime | None=None):
     old_date=stored.get("as_of") if stored.get("schema_version")==1 else None
     data={}
     errors=[]
-    source_dates=[]
+    days={}
     for metal,url in (("gold",SOURCE_GOLD),("silver",SOURCE_SILVER)):
         try:
             day,values=extract_city_values(download(url).decode("utf-8",errors="replace"),
@@ -125,7 +125,7 @@ def update(now: datetime | None=None):
             if old_date and day.isoformat()<old_date:
                 raise ValueError(f"Source date {day} older than stored {old_date}")
             data[metal]=values
-            source_dates.append(day)
+            days[metal]=day.isoformat()
         except (ValueError,OSError,RuntimeError) as exc:
             errors.append(f"{metal}: {exc}")
             LOG.warning("City source %s unavailable: %s",metal,exc)
@@ -144,14 +144,8 @@ def update(now: datetime | None=None):
             }
         # A source may have updated a day before the other: separate each
         # price observation date so partial updates never get a fake timestamp.
-        gold_day=(source_dates[0].isoformat() if "gold" in data else None)
-        # Map by metal, not relative order of success.
-        days={}
-        for metal,url in (("gold",SOURCE_GOLD),("silver",SOURCE_SILVER)):
-            if metal in data:
-                day,_=extract_city_values(download(url).decode("utf-8",errors="replace"),metal,today)
-                days[metal]=day.isoformat()
-            else:
+        for metal in ("gold","silver"):
+            if metal not in days:
                 days[metal]=stored.get("dates",{}).get(metal,old_date)
         status="ok" if len(data)==2 else "partial"
     else:
