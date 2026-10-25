@@ -7,12 +7,14 @@ const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
 const daily=fs.readFileSync(path.join(root,'.github/workflows/refresh-rates.yml'),'utf8');
 
-test('Home shows tomorrow then where to buy then today and weight converter',()=>{
+test('Home shows tomorrow, today, weights and buy together',()=>{
  const s=app.slice(app.indexOf('function home(){'),app.indexOf('function marketCard(',app.indexOf('function home(){')));
- assert.ok(s.includes('forecastPanel()+buyPanel()'));
- assert.ok(s.indexOf('forecastPanel()')<s.indexOf('buyPanel()'));
- assert.ok(s.indexOf('buyPanel()')<s.indexOf('Today · IBJA'));
- assert.ok(s.indexOf('Today · IBJA')<s.indexOf('weightPriceSection()'));
+ assert.ok(s.includes('forecastPanel()+homeTodayPanel()'));
+ assert.ok(s.indexOf('forecastPanel()')<s.indexOf('homeTodayPanel()'));
+ assert.ok(s.indexOf('homeTodayPanel()')<s.indexOf('homeWeightPanel()'));
+ assert.ok(s.indexOf('homeWeightPanel()')<s.indexOf('homeBuyPanel()'));
+ assert.match(app,/home-weight-expand/);
+ assert.match(app,/home-buy-expand/);
 });
 test('Predictions are dated model files, not live official exchange quotes',()=>{
  assert.match(app,/getJSON\('forecast\.json'\)/);
@@ -50,4 +52,16 @@ test('Both workflows generate archived dated forecasts',()=>{
   assert.match(wf,/data\/forecast_history\.json/);
   assert.match(wf,/ui-forecast\.test\.cjs/);
  }
+});
+
+test('Chart periods and measured model error stay visible and compact',()=>{
+ assert.match(app,/function forecastProof\(\)/);
+ assert.match(app,/holdout_mape_pct/);
+ assert.match(app,/holdout_naive_mape_pct/);
+ assert.match(app,/data-chart-days/);
+ assert.match(app,/chartDays = 7/);
+ assert.match(css,/\.home-dashboard/);
+ assert.match(css,/\.home-today-item/);
+ assert.match(css,/\.home-weight-cell/);
+ assert.match(css,/\.home-buy-cell/);
 });

@@ -1,3 +1,13 @@
+## Verified IBJA history and measured accuracy
+
+The first NextRate release kept four dated IBJA PM closes. The backfill now downloads older actual published IBJA closing-rate series from [TrackLivePrice](https://trackliveprice.com/methodology/) with required attribution. Individual endpoints cover [24K](https://trackliveprice.com/api/gold/999.json), [22K](https://trackliveprice.com/api/gold/916.json), and [Silver](https://trackliveprice.com/api/silver.json). Purity, dates, units, overlapping official rates and source freshness are validated. Conflicts are rejected; no unknown 22K history is guessed. Archived silver rates converted from INR/g can differ by up to ₹5/kg due to source rounding. The original IBJA PM observations always take priority.
+
+Both deployment workflows backfill before forecasting; the scheduled updater commits dated records. Historical daily PM observations are **not** real-time exchange ticks, and LBMA/COMEX/MCX are not yet forecast inputs.
+
+Model v2 tests multiple simple one-step methods against an unchanged last-close baseline. When 55+ historical sessions are available for a metal, a strategy is chosen on earlier chronological validation and tested on a later untouched holdout, with separate MAPE scores. If candidates do not clearly beat the baseline on validation, the model chooses last-close. Historical test improvement **does not guarantee a more accurate future forecast**.
+
+The compact Home page shows Tomorrow, Today, gram weights and quick buying prices. Detailed calculators and all buying options expand within Home rather than filling the screen.
+
 # NextRate
 
 [NextRate web application](https://vignesh-s-github.github.io/Next-Rate/) — a minimal, mobile-first Indian gold and silver dashboard with **actual dated market observations**, using the approved NextRate logo and theme.

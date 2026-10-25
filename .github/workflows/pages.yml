@@ -47,6 +47,11 @@ jobs:
           python scripts/update_funds.py
           python -m json.tool data/funds.json >/dev/null
 
+      - name: Backfill IBJA PM history from attributed archive
+        run: |
+          python scripts/backfill_rates.py
+          python -m json.tool data/history.json >/dev/null
+
       - name: Build experimental outlook from published rates
         run: |
           python scripts/forecast.py

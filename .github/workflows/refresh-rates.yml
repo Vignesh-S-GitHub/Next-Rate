@@ -1,6 +1,14 @@
 name: Refresh market rates and publish NextRate
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/backfill_rates.py"
+      - "scripts/forecast_models.py"
+      - "tests/test_backfill_rates.py"
+      - "tests/test_forecast_models.py"
+      - ".github/workflows/refresh-rates.yml"
   schedule:
     # After the Indian AM and PM bullion price publications (UTC times).
     - cron: "15 7 * * *"
@@ -33,6 +41,9 @@ jobs:
 
       - name: Fetch validated rates and retain dated history
         run: python scripts/update_rates.py
+
+      - name: Backfill IBJA PM history from attributed archive
+        run: python scripts/backfill_rates.py
 
       - name: Refresh AMFI fund NAVs
         run: python scripts/update_funds.py
