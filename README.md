@@ -1,3 +1,11 @@
+## City gold/silver prices and Tamil language
+
+The **Compare** screen now shows published *indicative* gold/silver rates for Chennai, Mumbai, Delhi, Bengaluru and Hyderabad. The five-city table comes from [Goodreturns Gold](https://www.goodreturns.in/gold-rates/) and [Goodreturns Silver](https://www.goodreturns.in/silver-rates/); each metal retains its original publication date. Unlike the [IBJA national benchmark](https://www.ibjarates.com/), city references are informational and are **not authenticated individual jeweller checkout prices**. GST, jewellery making charges, seller premiums and levies are additional. City gold is displayed per 1 gram and 8 gram (pavan); city silver per 1 kilogram. The Home screen shows the currently selected city's 22K reference beside national prices.
+
+`scripts/update_cities.py` fetches city tables on the scheduled updates; `data/cities.json` is the published, dated snapshot. A failed or missing source does not result in invented prices: old values keep the original dates and values older than seven days are hidden. This collector uses public third-party pages with link attribution, not an official shop feed; automated scraping can become unavailable if the publisher changes its markup or access terms.
+
+Select **EN** or **தமிழ்** in the header to translate screen labels into Tamil. Language preference is retained in the browser where storage is available. The site loads `i18n.js` before `app.js` on both deployment paths. Gold/FX values remain in INR/USD numerals. Tests: `tests/test_city_rates.py`, `tests/i18n.test.cjs` and `tests/ui-cities.test.cjs`.
+
 ## Long-term verified data storage
 
 Historical gold, silver, USD/INR and issued predictions are now stored in permanent **yearly archives** under `data/archive/`. The website receives only the most recent 120 market rows (per stream) and 90 forecasts to stay fast. No historical year is automatically deleted. `data/archive/manifest.json` validates archive counts and SHA-256 hashes before compaction; old history is restored automatically when forecasting. See [Data retention and recovery](docs/DATA_RETENTION.md).

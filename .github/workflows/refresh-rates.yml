@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
     paths:
+      - "scripts/update_cities.py"
+      - "tests/test_city_rates.py"
+      - "i18n.js"
+      - "tests/i18n.test.cjs"
+      - "tests/ui-cities.test.cjs"
       - "scripts/backfill_rates.py"
       - "scripts/archive_data.py"
       - "tests/test_archive_data.py"
@@ -49,6 +54,9 @@ jobs:
       - name: Backfill IBJA PM history from attributed archive
         run: python scripts/backfill_rates.py
 
+      - name: Refresh dated city prices
+        run: python scripts/update_cities.py
+
       - name: Refresh AMFI fund NAVs
         run: python scripts/update_funds.py
 
@@ -73,7 +81,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Archive files are canonical; history.json and forecast_history.json
           # are only recent browser caches. Never delete annual shards.
-          git add data/archive data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json
+          git add data/archive data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json data/cities.json
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh actual rates and forecast [skip ci]"
             # A source-code update may land while this scheduled job is
@@ -102,7 +110,10 @@ jobs:
         run: |
           node --check weights.js
           node --check buy-options.js
+          node --check i18n.js
           node --check app.js
+          node --test tests/i18n.test.cjs
+          node --test tests/ui-cities.test.cjs
           node --test tests/weights.test.cjs
           node --test tests/buy-options.test.cjs
           node --test tests/ui-buy.test.cjs
@@ -111,6 +122,7 @@ jobs:
           test -s index.html
           test -s data/latest.json
           test -s data/funds.json
+          test -s data/cities.json
           test -s data/forecast.json
           test -s data/forecast_history.json
           test -s data/archive/manifest.json
@@ -119,6 +131,7 @@ jobs:
           test -s assets/silver-bar.webp
           python -m json.tool data/latest.json >/dev/null
           python -m json.tool data/funds.json >/dev/null
+          python -m json.tool data/cities.json >/dev/null
           python -m json.tool data/history.json >/dev/null
           python -m json.tool data/forecast.json >/dev/null
           python -m json.tool data/forecast_history.json >/dev/null
@@ -129,9 +142,9 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p _site/assets _site/data
-          cp index.html styles.css app.js weights.js buy-options.js _site/
+          cp index.html styles.css app.js i18n.js weights.js buy-options.js _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
-          cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json _site/data/
+          cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json data/cities.json _site/data/
           touch _site/.nojekyll
 
       - name: Upload Pages artifact
