@@ -37,7 +37,7 @@ test('Alerts explain foreground-only behavior and require permission on a click'
  assert.match(feature,/a\.triggeredAt/);
 });
 test('BIS verification is official external handoff rather than fake verification',()=>{
- assert.match(feature,/www\.bis\.gov\.in\/bis-apps\//);
+ assert.match(require('../source-logos.js').badge('biscare'),/www\.bis\.gov\.in\/bis-apps/);
  assert.match(feature,/cannot verify HUID by itself/);
  assert.match(feature,/Not yet verified/);
  assert.doesNotMatch(feature,/HUID verified successfully/);
