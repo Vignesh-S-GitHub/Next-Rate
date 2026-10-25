@@ -75,8 +75,18 @@ function holdingValuation(entry,ctx) {
 function premium(quote,nav) {
  return round((number(quote,0.01,1e7)/number(nav,0.01,1e7)-1)*100);
 }
+function alertObservationDate(rule,ctx){
+ if(rule?.source==='city')return ctx?.cities?.dates?.[rule.metal==='silver'?'silver':'gold']||null;
+ return ctx?.rates?.india?.date||null;
+}
 function alertValue(rule,ctx) {
  const qty=number(rule.grams,.01,100000);
+ if(rule?.source==='city'){
+   const row=ctx?.cities?.cities?.[rule.city];
+   const field={gold24:'gold24_inr_g',gold22:'gold22_inr_g',silver:'silver999_inr_kg'}[rule.metal];
+   const rate=field?row?.[field]:null;
+   return Number.isFinite(rate)&&rate>0?round(rate*qty/(rule.metal==='silver'?1000:1)):null;
+ }
  return bullionValue(ctx.rates,rule.metal,qty);
 }
 function triggered(rule,ctx){
@@ -113,7 +123,7 @@ function ageDays(iso,now=new Date()){
 }
 const api=Object.freeze({money,esc,number,round,publishedRate,bullionValue,
  jewelleryBill,resaleQuote,manualShopBill,holdingValuation,premium,
- alertValue,triggered,historicalAccuracy,ageDays});
+ alertValue,alertObservationDate,triggered,historicalAccuracy,ageDays});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.NextRateCore=api;
 })(typeof window==='undefined'?globalThis:window);
