@@ -22,8 +22,10 @@ permissions:
   pages: write
   id-token: write
 
+# Market archiving must not be cancelled by concurrent UI-only Pages builds.
+# Published source archives remain canonical; the Pages site uses recent caches.
 concurrency:
-  group: pages
+  group: nextrate-market-archive
   cancel-in-progress: false
 
 jobs:
