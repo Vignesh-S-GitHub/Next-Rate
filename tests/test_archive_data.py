@@ -122,8 +122,29 @@ class ArchiveTests(unittest.TestCase):
         store.update_storage(self.data)
         rows=store.complete_history({"india":[],"spot":{},"fx":[]},
                                     self.annual)["india"]
-        self.assertEqual(rows[0]["session"],"PM")
-        self.assertEqual(rows[0]["gold24_inr_10g"],140000)
+        self.assertEqual(len(rows),2)
+        self.assertEqual([r["session"] for r in rows],["AM","PM"])
+        self.assertEqual(rows[1]["gold24_inr_10g"],140000)
+        browser=json.loads((self.data/"history.json").read_text())
+        self.assertEqual(len(browser["india"]),1)
+        self.assertEqual(browser["india"][0]["session"],"PM")
+
+    def test_morning_and_evening_sessions_survive_multiple_days(self):
+        first=ibja("2026-10-23")
+        morning={**first,"session":"AM","gold24_inr_10g":139500}
+        evening={**first,"session":"PM","gold24_inr_10g":140000}
+        self.seed([morning])
+        store.update_storage(self.data)
+        self.seed([evening])
+        m=store.update_storage(self.data)
+        self.assertEqual(m["totals"]["ibja"],2)
+        snapshot=json.loads((self.data/"history.json").read_text())
+        self.assertEqual(len(snapshot["india"]),1)
+        self.assertEqual(snapshot["india"][0]["session"],"PM")
+        rows=store.complete_history(snapshot,self.annual)["india"]
+        self.assertEqual([row["session"] for row in rows],["AM","PM"])
+        self.assertEqual(rows[0]["gold24_inr_10g"],139500)
+        self.assertEqual(rows[1]["gold24_inr_10g"],140000)
 
     def test_duplicate_spot_timestamps_are_kept_only_once(self):
         spot={"XAU":[{
