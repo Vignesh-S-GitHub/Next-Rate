@@ -60,7 +60,7 @@ class ArchiveTests(unittest.TestCase):
                                                  "india": india[-1]})
 
     def test_first_migration_keeps_all_380_days_and_compacts_120(self):
-        start=date(2025,11,15)
+        start=date(2025,9,15)
         india=[ibja((start+timedelta(days=i)).isoformat(),i)
                for i in range(380)]
         archived_forecasts=[forecast(i,2025) for i in range(150)]
