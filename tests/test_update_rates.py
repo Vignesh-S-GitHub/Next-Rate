@@ -38,6 +38,23 @@ class RatesTests(unittest.TestCase):
         self.assertEqual(current["date"], "2026-10-23")
         self.assertEqual(current["session"], "PM")
 
+    def test_exchange_holiday_keeps_real_previous_dated_close(self):
+        doc = SAMPLE.replace("23/10/2026", "19/10/2026").replace(
+            "22/10/2026", "16/10/2026")
+        result, history = parse_ibja(
+            doc, datetime(2026, 10, 20, 14, tzinfo=timezone.utc))
+        self.assertEqual(result["date"], "2026-10-19")
+        self.assertEqual(result["session"], "PM")
+        self.assertNotIn("2026-10-20", [row["date"] for row in history])
+
+    def test_prolonged_stale_page_does_not_fabricate_today(self):
+        doc = SAMPLE.replace("23/10/2026", "13/10/2026").replace(
+            "22/10/2026", "12/10/2026")
+        result, history = parse_ibja(
+            doc, datetime(2026, 10, 23, 14, tzinfo=timezone.utc))
+        self.assertEqual(result["date"], "2026-10-13")
+        self.assertFalse(any(row["date"] == "2026-10-23" for row in history))
+
     def test_spot_preserves_real_timestamp(self):
         now = datetime(2026, 10, 24, 14, tzinfo=timezone.utc)
         data = {"symbol": "XAU", "currency": "USD", "price": 4102.5, "updatedAt": "2026-10-23T17:30:00Z"}

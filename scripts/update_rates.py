@@ -18,6 +18,11 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
+# Share the already-reviewed IBJA commodity holiday calendar with forecasts.
+try:
+    from scripts.forecast import IBJA_2026_EXCHANGE_HOLIDAYS
+except ModuleNotFoundError:
+    from forecast import IBJA_2026_EXCHANGE_HOLIDAYS
 
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data" / "latest.json"
@@ -201,7 +206,13 @@ def parse_ibja(html: str, now: datetime):
         current = None
         today_rows = current_session_rows(parser)
         local = now.astimezone(IST)
-        if local.weekday() < 5 and (local.hour >= 13) and today_rows:
+        # The undated AM/PM table may still contain the last working day's
+        # rates. Never re-label that table as a new publication on a known
+        # exchange holiday or after a prolonged source outage.
+        last_dated = date.fromisoformat(max(history)) if history else None
+        prior_recent = last_dated is not None and (today-last_dated).days <= 4
+        if (local.weekday() < 5 and today_iso not in IBJA_2026_EXCHANGE_HOLIDAYS
+                and (local.hour >= 13) and today_rows and prior_recent):
             session = "PM" if local.hour >= 18 and "PM" in today_rows else "AM"
             if session in today_rows:
                 current = {
