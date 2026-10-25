@@ -457,7 +457,7 @@ function buyPanel(){
     list+=buyingRow('Silver Bar','Bullion dealer',metalPrice('silver',silver),'999 · Metal + GST','Premium extra');
     list+=buyingRow('Silver Coin','Jeweller',metalPrice('silver',silver),'999 · Metal + GST','Minting extra');
     list+=fundLine('Silver ETF','silveretf','Stock broker');
-    list+=fundLine('Silver Fund','hdfcsilver','HDFC Silver ETF');
+    list+=fundLine('Silver Fund','silverfund','Fund house / SIP');
   }
   const weights=(gold?[1,5,8,10,20]:[10,100,500,1000]).map(n=>
     '<button type="button" class="buy-weight'+(n===grams?' active':'')+
