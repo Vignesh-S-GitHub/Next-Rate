@@ -1,3 +1,7 @@
+## Long-term verified data storage
+
+Historical gold, silver, USD/INR and issued predictions are now stored in permanent **yearly archives** under `data/archive/`. The website receives only the most recent 120 market rows (per stream) and 90 forecasts to stay fast. No historical year is automatically deleted. `data/archive/manifest.json` validates archive counts and SHA-256 hashes before compaction; old history is restored automatically when forecasting. See [Data retention and recovery](docs/DATA_RETENTION.md).
+
 ## Verified IBJA history and measured accuracy
 
 The first NextRate release kept four dated IBJA PM closes. The backfill now downloads older actual published IBJA closing-rate series from [TrackLivePrice](https://trackliveprice.com/methodology/) with required attribution. Individual endpoints cover [24K](https://trackliveprice.com/api/gold/999.json), [22K](https://trackliveprice.com/api/gold/916.json), and [Silver](https://trackliveprice.com/api/silver.json). Purity, dates, units, overlapping official rates and source freshness are validated. Conflicts are rejected; no unknown 22K history is guessed. Archived silver rates converted from INR/g can differ by up to ₹5/kg due to source rounding. The original IBJA PM observations always take priority.
