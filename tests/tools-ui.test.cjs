@@ -48,7 +48,7 @@ test('source destinations are official sites and no fabricated exchanges',()=>{
 });
 test('app navigation and both Pages builds include scripts and tests',()=>{
  assert.match(app,/tools:toolsPage/);
- assert.match(app,/NextRateFeatures\.mount/);
+ assert.match(app,/NextRateFeatures\?\.mount/);
  assert.match(app,/data-feature-link/);
  assert.match(app,/getJSON\('forecast_history\.json'\)/);
  assert.match(html,/data-route="tools"/);
