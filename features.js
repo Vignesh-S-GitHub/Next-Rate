@@ -46,8 +46,18 @@ const m=x=>C.money(x),h=x=>C.esc(x);
 const field=(name,label,value='',type='number',attrs='')=>
  '<label class="tool-field"><span>'+h(label)+'</span>'+
  '<input name="'+h(name)+'" type="'+type+'" value="'+h(value)+'" '+attrs+' required></label>';
-const opt=(name,values,label)=>'<label class="tool-field"><span>'+h(label)+'</span><select name="'+h(name)+'">'+
- values.map(v=>'<option value="'+h(v[0])+'">'+h(v[1])+'</option>').join('')+'</select></label>';
+const opt=(name,values,label)=>{
+ const first=values[0]||['','Unavailable'],key='tool-picker-'+name;
+ return '<div class="tool-field"><span id="'+key+'-label">'+h(label)+'</span>'+
+  '<div class="tool-picker" data-tool-picker><input type="hidden" name="'+h(name)+'" value="'+h(first[0])+'">'+
+  '<button type="button" class="tool-picker-trigger" data-tool-picker-toggle aria-haspopup="listbox" aria-expanded="false"'+
+  ' aria-labelledby="'+key+'-label '+key+'-current" aria-controls="'+key+'-options">'+
+  '<span id="'+key+'-current">'+h(first[1])+'</span><span class="tool-picker-arrow" aria-hidden="true">⌄</span></button>'+
+  '<div class="tool-picker-menu" id="'+key+'-options" role="listbox" aria-labelledby="'+key+'-label" hidden>'+
+  values.map((v,i)=>'<button type="button" role="option" class="tool-picker-option" data-tool-picker-option'+
+    ' data-value="'+h(v[0])+'" aria-selected="'+(i===0)+'" tabindex="'+(i===0?0:-1)+'">'+h(v[1])+'</button>').join('')+
+  '</div></div></div>';
+};
 const btn=(label)=>'<button type="submit" class="tool-primary">'+h(label)+'</button>';
 const note=(text)=>'<p class="tool-note">'+text+'</p>';
 const link=(label,url)=>'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+h(label)+' ↗</a>';
@@ -442,7 +452,67 @@ function importBackup(file){
  };
  reader.readAsText(file);
 }
+function closePicker(picker,restoreFocus=false){
+ if(!picker)return;
+ const button=picker.querySelector('[data-tool-picker-toggle]');
+ const panel=picker.querySelector('.tool-picker-menu');
+ if(!button||!panel)return;
+ panel.hidden=true;button.setAttribute('aria-expanded','false');
+ if(restoreFocus)button.focus();
+}
+function closeAllPickers(except=null){
+ root.document?.querySelectorAll('.tool-picker').forEach(picker=>{
+  if(picker!==except)closePicker(picker);
+ });
+}
+function togglePicker(picker,keyboard=false){
+ if(!picker)return;
+ const button=picker.querySelector('[data-tool-picker-toggle]');
+ const panel=picker.querySelector('.tool-picker-menu');
+ if(!button||!panel)return;
+ const willOpen=panel.hidden;
+ closeAllPickers(picker);
+ panel.hidden=!willOpen;button.setAttribute('aria-expanded',String(willOpen));
+ if(willOpen&&keyboard)panel.querySelector('.tool-picker-option[aria-selected="true"]')?.focus();
+}
+function onPickerKey(event){
+ const picker=event.target.closest?.('[data-tool-picker]');
+ if(!picker)return;
+ const options=[...picker.querySelectorAll('[data-tool-picker-option]')];
+ const menu=picker.querySelector('.tool-picker-menu');
+ const current=options.indexOf(event.target);
+ if(event.key==='Escape'&&!menu.hidden){
+  event.preventDefault();closePicker(picker,true);return;
+ }
+ if((event.key==='ArrowDown'||event.key==='ArrowUp')&&event.target.matches('[data-tool-picker-toggle]')){
+  event.preventDefault();
+  if(menu.hidden)togglePicker(picker,true);
+  else options[event.key==='ArrowDown'?0:options.length-1]?.focus();
+ }else if(!menu.hidden&&current>=0&&['ArrowDown','ArrowUp','Home','End'].includes(event.key)){
+  event.preventDefault();
+  const next=event.key==='Home'?0:event.key==='End'?options.length-1:
+   (current+(event.key==='ArrowDown'?1:-1)+options.length)%options.length;
+  options[next]?.focus();
+ }
+}
 function onClick(event){
+ const pickerOption=event.target.closest('[data-tool-picker-option]');
+ if(pickerOption){
+  const picker=pickerOption.closest('[data-tool-picker]');
+  if(!picker)return;
+  picker.querySelector('input[type="hidden"]').value=pickerOption.dataset.value;
+  const current=picker.querySelector('.tool-picker-trigger>span:first-child');
+  if(current)current.textContent=pickerOption.textContent;
+  picker.querySelectorAll('[data-tool-picker-option]').forEach(option=>{
+   const active=option===pickerOption;
+   option.setAttribute('aria-selected',String(active));
+   option.tabIndex=active?0:-1;
+  });
+  closePicker(picker,true);return;
+ }
+ const pickerTrigger=event.target.closest('[data-tool-picker-toggle]');
+ if(pickerTrigger){togglePicker(pickerTrigger.closest('[data-tool-picker]'));return;}
+ closeAllPickers();
  const t=event.target.closest('[data-tool-select],[data-delete-kind],[data-feature-action],[data-feature-link]');
  if(!t)return;
  if(t.dataset.toolSelect){
@@ -484,11 +554,15 @@ function mount(container,ctx){
  ctxCache=ctx;
  if(!container)return;
  container.addEventListener('click',onClick);
+ container.addEventListener('keydown',onPickerKey);
  container.addEventListener('submit',onSubmit);
  container.addEventListener('change',e=>{
   if(e.target.matches('[data-feature-import]'))importBackup(e.target.files?.[0]);
  });
 }
+if(root.document)root.document.addEventListener('pointerdown',event=>{
+ if(!event.target.closest?.('[data-tool-picker]'))closeAllPickers();
+});
 const api=Object.freeze({page,mount,checkAlerts,sections:SECTIONS,
  select(id){if(SECTIONS.some(x=>x[0]===id)){memory.preferred=id;message='';save();}},
  getState(){return JSON.parse(JSON.stringify(memory));}});
