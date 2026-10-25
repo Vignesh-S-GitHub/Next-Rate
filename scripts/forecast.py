@@ -16,8 +16,10 @@ import sys
 
 try:
     from scripts.forecast_models import estimate as next_estimate, walk_forward
+    from scripts.archive_data import complete_history, complete_forecasts
 except ModuleNotFoundError:
     from forecast_models import estimate as next_estimate, walk_forward
+    from archive_data import complete_history, complete_forecasts
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -118,7 +120,9 @@ def prepare_history(latest: dict, history: dict, as_of: date):
         return [], None
     items[last["date"]] = last.copy()
     rows = [items[k] for k in sorted(items)]
-    return rows[-90:], last
+    # Keep a bounded but substantially larger training window while the
+    # annual archive retains the complete older historical record.
+    return rows[-365:], last
 
 
 MODEL_VERSION = 2
@@ -276,8 +280,13 @@ def score_archive(archive: list, history: dict, now: datetime):
 def publish(now=None):
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     latest = read_json(LATEST)
-    history = read_json(HISTORY)
-    archive = read_json(ARCHIVE, {"schema_version": 1, "forecasts": []})
+    # Rehydrate historic annual archives before estimating or evaluating.
+    # The public recent caches deliberately contain only 120 / 90 rows.
+    history = complete_history(read_json(HISTORY), HISTORY.parent / "archive")
+    archive = complete_forecasts(
+        read_json(ARCHIVE, {"schema_version": 1, "forecasts": []}),
+        ARCHIVE.parent / "archive",
+    )
     records = archive.get("forecasts", [])
     scored = score_archive(records, history, now)
     fresh = generate(latest, history, now)
@@ -312,7 +321,9 @@ def publish(now=None):
                     }
     # Preserve older issued predictions for retrospective scoring.
     archive["schema_version"] = 1
-    archive["forecasts"] = scored[-300:]
+    archive["forecasts"] = scored
+    # scripts/archive_data.py persists every issuance to annual shards before
+    # reducing this public cache to the most recent 90 predictions.
     FORECAST.parent.mkdir(parents=True, exist_ok=True)
     FORECAST.write_text(json.dumps(fresh, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     ARCHIVE.write_text(json.dumps(archive, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
