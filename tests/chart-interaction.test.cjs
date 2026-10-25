@@ -94,7 +94,7 @@ test('Selection of forecast never labels estimated rate as actual or claims guar
  assert.match(tooltip,/₹1,41,630/);
  assert.doesNotMatch(tooltip,/Range|Not a guarantee/);
  assert.match(html,/Estimate only · Not guaranteed/);
- assert.match(html,/value="7"/);
+ assert.match(html,/data-chart-point="7"/);
 });
 test('Silver uses silver unit and gray theme, and fails safely on missing actual history',()=>{
  const html=UI.render({...ctx0,metal:'silver',history:sampleHistory()});
