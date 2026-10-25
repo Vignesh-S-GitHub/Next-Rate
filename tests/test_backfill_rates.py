@@ -11,12 +11,12 @@ def payload(metal,purity,values):
 
 class BackfillTests(unittest.TestCase):
     def test_restores_gram_to_correct_ibja_unit(self):
-        values=[14000+i*3.1 for i in range(21)]
+        values=[14000+i*3.1 for i in range(30)]
         hist=get_close_values(payload("gold","999",values),"gold","999",10,NOW.date())
         self.assertEqual(hist["2026-09-01"],140000)
         self.assertEqual(hist["2026-09-09"],140248)
     def test_silver_rounded_gram_precision(self):
-        val=[194.415+i*.17 for i in range(21)]
+        val=[194.415+i*.17 for i in range(30)]
         hist=get_close_values(payload("silver","999",val),"silver","999",1000,NOW.date())
         self.assertEqual(hist["2026-09-01"],194415)
     def test_wrong_purity_not_used_as_22k(self):
