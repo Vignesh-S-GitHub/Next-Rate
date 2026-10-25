@@ -278,9 +278,9 @@ function forecastDate(value){
   return /^20\d\d-\d\d-\d\d$/.test(value||'') ? sourceDate(value) : 'Date unavailable';
 }
 function forecastDataIsCurrent(){
-  return forecast && forecast.schema_version===1 && forecast.status==='experimental' &&
-    forecast.target_date >= indiaTodayISO() && forecast.metals && forecast.metals.gold24 &&
-    forecast.metals.gold22 && forecast.metals.silver;
+  // A forecast generated from an older price snapshot must never appear current.
+  return window.NextRateDataQuality?.forecastIsConsistent(
+    forecast,rates,indiaTodayISO())===true;
 }
 
 function forecastMetalCard(key, title, unit, iconFile){
@@ -737,23 +737,40 @@ async function getJSON(file) {
   return res.json();
 }
 async function loadData(){
-  const [market,model,nav,city,issued]=await Promise.allSettled([
-    Promise.all([getJSON('latest.json'),getJSON('history.json')]),
+  // Independent assets may fail at a CDN or cache layer. A missing history
+  // file must not blank an otherwise verified national price snapshot.
+  const [market,historical,model,nav,city,issued]=await Promise.allSettled([
+    getJSON('latest.json'),
+    getJSON('history.json'),
     getJSON('forecast.json'),
     getJSON('funds.json'),
     getJSON('cities.json'),
     getJSON('forecast_history.json')
   ]);
-  if(market.status==='fulfilled' &&
-      market.value[0].schema_version===1 && market.value[1].schema_version===1){
-    rates=market.value[0];history=market.value[1];loadFailure=null;
-  }else{loadFailure=new Error('Market rates unavailable');}
-  forecast=model.status==='fulfilled' && model.value.schema_version===1?model.value:null;
+  const quality=window.NextRateDataQuality;
+  const clean=market.status==='fulfilled'?quality?.market(market.value):null;
+  if(clean){
+    rates=clean;
+    history=quality.history(historical.status==='fulfilled'?historical.value:null,
+      clean.india);
+    loadFailure=null;
+  }else{
+    rates=null;history=null;
+    loadFailure=new Error('Verified market rates unavailable');
+  }
+  // Only render the model if its date, baseline and entire range match
+  // the published IBJA snapshot. Unavailable forecasts remain labelled.
+  forecast=model.status==='fulfilled'&&model.value?.schema_version===1?
+    model.value:null;
+  if(forecast?.status==='experimental'&&
+     !quality?.forecastIsConsistent(forecast,rates,indiaTodayISO()))forecast=null;
   forecastLoadFailure=!forecast;
-  funds=nav.status==='fulfilled' && nav.value.schema_version===1?nav.value:null;
+  funds=nav.status==='fulfilled'&&nav.value?.schema_version===1?nav.value:null;
   navLoadFailure=!funds;
-  issuedForecasts=issued.status==='fulfilled'&&issued.value.schema_version===1?issued.value:null;
-  cityRates=city.status==='fulfilled'&&city.value.schema_version===1?city.value:null;
+  issuedForecasts=issued.status==='fulfilled'&&issued.value?.schema_version===1?
+    issued.value:null;
+  cityRates=city.status==='fulfilled'&&city.value?.schema_version===1?
+    city.value:null;
   window.NextRateFeatures?.checkAlerts(featuresContext());
   render();
 }
