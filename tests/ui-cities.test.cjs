@@ -15,7 +15,8 @@ test('all five city labels and source attribution are actually displayed',()=>{
  }
  assert.match(app,/cityComparison\(\)/);
  assert.match(app,/cityQuote\(c,key\)/);
- assert.match(app,/Goodreturns ↗/);
+ assert.match(app,/sourceBadge\('goodreturns',\{label:'City-rate source'/);
+ assert.match(require('../source-logos.js').badge('goodreturns'),/goodreturns\.in/);
  assert.match(app,/Published city estimates, not individual jeweller quotations/);
  assert.match(app,/IBJA national rate is different from city indicative rates/);
 });
