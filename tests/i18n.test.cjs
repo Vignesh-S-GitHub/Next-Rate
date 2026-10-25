@@ -26,3 +26,10 @@ test('Translation dictionary is substantive and static, no fabricated price stri
  assert.ok(!translate('22K Gold ₹13,070','ta').includes('Gold'));
  assert.ok(translate('22K Gold ₹13,070','ta').includes('₹13,070'));
 });
+
+test('Tamil translates chart controls and illustrated metal price factors',()=>{
+ for(const name of ['Move slider','Estimate only · Not guaranteed','Gold drivers',
+ 'Silver drivers','World gold','Solar power','Real yields','Jewellery demand','Mine supply']){
+  assert.notEqual(translate(name,'ta'),name,name);
+ }
+});

@@ -105,3 +105,22 @@ test('Actual dates and forecast range are independently inspectable on mobile',(
  assert.match(model,/function indexAtX\(/);
  assert.match(model,/date<=forecast\.based_on_date|r\.date>forecast\.based_on_date/);
 });
+
+test('Insights teaches price drivers visually using gold/silver images',()=>{
+ assert.match(app,/function factorIcon/);
+ assert.match(app,/class="factor-svg"/);
+ assert.match(app,/class="factor-card"/);
+ assert.match(app,/\.\/assets\/'\+metal\+'-bar\.webp/);
+ assert.match(app,/Gold drivers/);
+ assert.match(app,/Silver drivers/);
+ assert.match(app,/Solar panels use silver/);
+ assert.match(app,/Higher real yields/);
+ assert.match(app,/not the proven cause/);
+ assert.match(css,/\.insights-metal-grid/);
+ assert.match(css,/\.factor-symbol/);
+});
+test('Forecast details no longer occupy Home until expanded',()=>{
+ const section=app.slice(app.indexOf('function forecastPanel()'),app.indexOf('function verifiedNav('));
+ assert.doesNotMatch(section,/nr-prediction-explainer/);
+ assert.ok(section.indexOf('nr-small-details')<section.indexOf('nr-prediction-proof'));
+});

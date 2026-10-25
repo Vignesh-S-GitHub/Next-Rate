@@ -732,3 +732,47 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
  .forecast-metal-quote .forecast-prediction-label{font-size:9px}
  .forecast-range>span{font-size:10px}
 }
+
+/* Illustrated price-factor lessons: Insights only. */
+.insight-primer{padding:17px 20px;margin-top:13px}
+.insight-primer h2,.factor-section h2{font-size:18px;letter-spacing:-.3px;margin:0}
+.insight-price-flow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:15px 0 10px}
+.insight-price-flow span{display:grid;place-items:center;flex:1;min-height:56px;min-width:0;padding:8px;background:#fff8e8;border:1px solid #f0e4c9;border-radius:11px;color:#766028;text-align:center;font-size:12px;font-weight:750}
+.insight-price-flow b{color:#c39b45;flex:0 0 auto;font-size:18px}
+.insights-metal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.factor-section{min-width:0;padding:18px}
+.factor-section-header{display:flex;align-items:center;gap:11px;padding-bottom:13px;border-bottom:1px solid #f0f1f4}
+.factor-section-header img{object-fit:contain;flex:0 0 auto;width:57px;height:57px}
+.factor-section-header p{font-size:12px;color:#8090a1;margin:3px 0 0}
+.factor-list{display:grid;gap:7px;padding-top:13px}
+.factor-card{display:flex;gap:10px;align-items:center;border:1px solid #f0f1f4;border-radius:11px;background:#fff;min-height:67px;padding:9px 10px}
+.factor-symbol{flex:0 0 39px;width:39px;height:39px;border-radius:10px;background:#fff5df;color:#ae8124;display:grid;place-items:center}
+.factor-silver .factor-symbol{background:#f1f4f8;color:#6c7f99}
+.factor-svg{width:23px;height:23px}
+.factor-copy{min-width:0;flex:1}
+.factor-copy h3{font-size:13px;letter-spacing:-.1px;color:#23344c;margin:0 0 4px}
+.factor-copy p{font-size:11px;color:#7b899a;line-height:1.35;margin:0}
+.factor-direction{display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:50%;font-size:17px;font-weight:700}
+.factor-up{background:#e8f6f0;color:#23836b}
+.factor-down{background:#fbece8;color:#b56852}
+.factor-mixed{background:#eef2f8;color:#73849c}
+.insight-note{font-size:12px;color:#798698;line-height:1.5;margin:11px 2px 4px}
+.insight-fineprint{font-size:11px;color:#8b97a8;line-height:1.5;margin:6px 2px}
+.insight-policy{padding:15px 19px}
+.insight-policy summary{cursor:pointer;font-size:13px;font-weight:750;color:#5c6d82}
+.insight-policy p{font-size:12px}
+@media(max-width:680px){
+ .insights-metal-grid{grid-template-columns:1fr;gap:12px}
+ .insight-primer{padding:13px}
+ .insight-primer h2,.factor-section h2{font-size:16px}
+ .insight-price-flow{gap:5px}
+ .insight-price-flow span{min-height:53px;padding:6px 4px;font-size:10px}
+ .factor-section{padding:13px}
+ .factor-section-header{padding-bottom:8px}
+ .factor-section-header img{width:49px;height:49px}
+ .factor-card{min-height:58px;padding:7px 9px}
+ .factor-symbol{width:35px;height:35px;flex-basis:35px}
+ .factor-svg{width:20px;height:20px}
+ .factor-copy h3{font-size:12px}
+ .factor-copy p{font-size:10.5px}
+}

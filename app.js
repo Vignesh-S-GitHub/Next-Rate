@@ -386,13 +386,11 @@ function forecastPanel(){
        [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
        '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
       '</div>'+marketGraph()+'</div>'+
-    '<div class="nr-prediction-explainer"><strong>How to read this prediction</strong>'+
-      '<span>The large number is a forecast, not a confirmed future price. The range is only a possible scenario, not guaranteed limits.</span></div>'+
-    '<div class="nr-prediction-proof">'+forecastProof()+
-      '<span>Actual result: pending until '+date+' IBJA closing rate</span></div>'+
     '<details class="nr-small-details"><summary>About this estimate</summary>'+
-    '<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>'+
-    '<p>History source: <a href="https://trackliveprice.com/methodology/" target="_blank" rel="noopener noreferrer">TrackLivePrice (IBJA archive)</a>. LBMA, COMEX and MCX are not yet model inputs.</p></details></section>';
+     '<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>'+
+     '<div class="nr-prediction-proof">'+forecastProof()+
+      '<span>Actual result: pending until '+date+' IBJA closing rate</span></div>'+
+     '<p>History source: <a href="https://trackliveprice.com/methodology/" target="_blank" rel="noopener noreferrer">TrackLivePrice (IBJA archive)</a>. LBMA, COMEX and MCX are not yet model inputs.</p></details></section>';
   return content;
 }
 
@@ -660,17 +658,38 @@ function compare() {
     '<div class="comparison-source-mark">'+sourceBadge('ibja',{label:'Official rate source',compact:true})+'</div></article>'+
     weightPriceSection();
 }
+function factorIcon(key){
+ const paths={"global":"<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c-5 5-5 13 0 18 5-5 5-13 0-18Z\"/>","rupee":"<path d=\"M5 5h14M5 9h14M8 5h4a5 5 0 0 1 0 10H8l9 6\"/>","yields":"<path d=\"M4 19V6h16M7 16l5-5 4 3 4-7M20 7v5h-5\"/>","shield":"<path d=\"M12 2 4 6v6c0 6 4 9 8 10 4-1 8-4 8-10V6Z\"/><path d=\"m8 12 3 3 5-6\"/>","bank":"<path d=\"M3 10h18L12 3Zm2 0v9m4-9v9m6-9v9m4-9v9M3 21h18\"/>","gift":"<rect x=\"3\" y=\"9\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M12 9v12M3 13h18M12 9c-8 0-8-7-4-7 3 0 4 4 4 7Zm0 0c8 0 8-7 4-7-3 0-4 4-4 7Z\"/>","solar":"<rect x=\"3\" y=\"10\" width=\"18\" height=\"9\" rx=\"1\"/><path d=\"M5 14h14M9 10l-2 9m8-9 2 9M12 2v4m-5-2 2 2m10-2-2 2\"/>","chip":"<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"2\"/><rect x=\"10\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"/><path d=\"M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4\"/>","factory":"<path d=\"M3 21V10l6 4v-4l6 4V7h6v14ZM15 7V3h6v4M7 18h2m3 0h2m4 0h2\"/>","mine":"<path d=\"M3 20h18M5 20l3-10 5 3 4-8 3 15M10 4l6 8M8 6l3-3\"/>","invest":"<path d=\"M4 19V5m0 14h17M7 16l4-5 4 3 5-8m-5 0h5v5\"/>"};
+ return '<svg class="factor-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths[key]+'</svg>';
+}
+function factorCard(row){
+ const [title,desc,icon,effect]=row;
+ const impactText={up:'May lift',down:'May lower',mixed:'Varies'};
+ const arrows={up:'↗',down:'↘',mixed:'↔'};
+ return '<article class="factor-card"><div class="factor-symbol">'+factorIcon(icon)+'</div>'+
+  '<div class="factor-copy"><h3>'+title+'</h3><p>'+desc+'</p></div>'+
+  '<span class="factor-direction factor-'+effect+'" aria-label="'+impactText[effect]+'">'+arrows[effect]+'</span></article>';
+}
 function insights() {
-  return heading('Insights','How global and Indian markets influence gold and silver prices.')+
-    '<div class="grid two"><article class="card"><h2>Gold price drivers</h2>'+
-    [['Global benchmark prices','London benchmarks and US futures can influence global bullion trends; their official quotations are not yet integrated.'],
-    ['Indian market','IBJA publishes India’s physical-market reference for multiple gold purities.'],['Currency','A weaker rupee can lift INR-denominated prices even if USD gold prices are flat.'],
-    ['Monetary policy','US real yields, inflation expectations, policy rates and risk sentiment can change demand.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</article>'+
-    '<article class="card"><h2>Silver price drivers</h2>'+
-    [['Industrial use','Solar panels, electronics and industrial output contribute to silver demand.'],
-    ['Investors','Fund holdings, futures positioning and risk sentiment can influence prices.'],
-    ['Local conversion','USD/INR, physical-market premiums and taxes can change Indian prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</article></div>'+
-    '<section class="card section"><h2>Data and forecasting policy</h2><p>The live data collection runs automatically on GitHub Actions, normally twice daily. The data labels show the publisher’s observation date, not the most recent page visit. On market holidays and weekends the last published IBJA rate is retained with its original date. No city premiums, model confidence, futures settlements or tomorrow’s predicted prices are fabricated.</p><p>IBJA benchmark rates exclude GST and making charges. International spot and FX quotes are separate markets and do not directly represent Indian jewellery prices.</p></section>'+note();
+ const gold=[["World gold","Global ↑ → India often ↑","global","up"],["Rupee","INR weakens → local gold may rise","rupee","up"],["Real yields","Higher real yields often pressure gold","yields","down"],["Safe-haven demand","Uncertainty may lift gold","shield","up"],["Central banks","More buying can support gold","bank","up"],["Jewellery demand","Festivals may lift shop premiums","gift","mixed"]], silver=[["Solar power","Solar panels use silver","solar","up"],["Electronics","Devices add to silver demand","chip","up"],["Industry","Growth may increase silver use","factory","mixed"],["Mine supply","More supply may pressure prices","mine","down"],["Rupee","Weak INR may lift local silver","rupee","up"],["Investors","Fund flows can move silver","invest","mixed"]];
+ const factorSection=(metal,items)=>'<section class="card factor-section factor-'+metal+'">'+
+   '<header class="factor-section-header"><img src="./assets/'+metal+'-bar.webp" alt="'+
+   (metal==='gold'?'Gold':'Silver')+' bars" loading="lazy" width="62" height="62">'+
+   '<div><h2>'+(metal==='gold'?'Gold drivers':'Silver drivers')+'</h2>'+
+   '<p>What may change '+metal+' prices</p></div></header>'+
+   '<div class="factor-list">'+items.map(factorCard).join('')+'</div></section>';
+ return heading('Insights','Learn what moves metal prices')+
+  '<section class="insight-primer card"><h2>How India prices move</h2>'+
+  '<div class="insight-price-flow" role="group" aria-label="Global market quotes, currency and local charges influence prices">'+
+  '<span>World price</span><b aria-hidden="true">→</b><span>USD / INR</span>'+
+  '<b aria-hidden="true">→</b><span>India + costs</span></div>'+
+  '<p class="insight-fineprint">Global markets, FX and local premiums shape Indian prices. GST and making charges are extra.</p></section>'+
+  '<div class="insights-metal-grid">'+factorSection('gold',gold)+factorSection('silver',silver)+'</div>'+
+  '<p class="insight-note">↗ May lift · ↘ May lower · ↔ Depends on conditions</p>'+
+  '<p class="insight-fineprint">Common relationships, not the proven cause of today’s move.</p>'+
+  '<details class="card section insight-policy"><summary>Data and forecasting policy</summary>'+
+  '<p>Data updates automatically. Source dates are shown; holidays retain the last IBJA close. Forecasts are experimental, not guaranteed.</p>'+
+  '<p>IBJA rates exclude GST and making charges. Global spot and FX are not Indian shop rates.</p></details>'+note();
 }
 function errorScreen() {
   return heading('Latest Gold & Silver Rates','Waiting for the first validated market data publication.')+
