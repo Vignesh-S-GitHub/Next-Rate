@@ -305,10 +305,10 @@ function forecastMetalCard(key, title, unit, iconFile){
     ' expected '+price(data.estimate)+', '+direction+' '+percent+', tap to view trend">'+
     '<span class="forecast-metal-head"><img class="forecast-metal-img'+(iconFile==='gold-bar.webp'?' bullion-gold':'')+'" src="./assets/silver-bar.webp?v=20261025-doublebars" width="38" height="38" alt="" loading="eager">'+
     '<span class="forecast-metal-name"><strong>'+title+'</strong><small>'+unit+'</small></span></span>'+
-    '<span class="forecast-metal-quote"><small class="forecast-prediction-label">Prediction · not actual</small><strong>'+price(data.estimate)+'</strong>'+
+    '<span class="forecast-metal-quote"><small class="forecast-prediction-label">Estimate</small><strong>'+price(data.estimate)+'</strong>'+
     '<span class="forecast-direction '+dirClass+'">'+(diff===0?'● Same as last close':
       (change>0?'▲ ':change<0?'▼ ':'● ')+percent+' '+delta)+'</span></span>'+
-    '<span class="forecast-range"><span>Possible range · not guaranteed</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
+    '<span class="forecast-range"><span>Range</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
     '<span class="forecast-quick-weights">'+quickWeights+'</span></button>';
 }
 function marketGraph(){

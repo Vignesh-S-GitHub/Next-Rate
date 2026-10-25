@@ -90,8 +90,8 @@ test('Actual dates and forecast range are independently inspectable on mobile',(
  assert.match(app,/ui\.render\(\{/);
  assert.match(app,/wireChartInspection\(\)/);
  assert.match(app,/chartSelectedDate=null/);
- assert.match(app,/Possible range · not guaranteed/);
- assert.match(app,/Prediction · not actual/);
+ assert.match(app,/<span class="forecast-range"><span>Range<\/span>/);
+ assert.match(app,/class="forecast-prediction-label">Estimate/);
  assert.match(app,/Same as last close/);
  assert.match(chart,/data-chart-point/);
  assert.match(chart,/data-chart-slider/);
