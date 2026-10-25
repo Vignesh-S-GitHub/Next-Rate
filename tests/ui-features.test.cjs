@@ -29,12 +29,16 @@ test('Nine features are implemented as working panels with meaningful form handl
  assert.match(feature,/data-delete-kind/);
  assert.match(feature,/onSubmit/);
 });
-test('Alerts explain foreground-only behavior and require permission on a click',()=>{
+test('Android alerts use service worker, explicit consent and test delivery',()=>{
  assert.match(feature,/GitHub Pages cannot send guaranteed background push alerts/);
- assert.match(feature,/Notification\.requestPermission/);
- assert.match(feature,/checkAlerts\(ctx\)/);
- assert.match(feature,/C\.ageDays\(ctx\.rates\.india\.date\)>7/);
- assert.match(feature,/a\.triggeredAt/);
+ assert.match(feature,/Notifications[.]enable/);
+ assert.match(feature,/Notifications[.]show/);
+ assert.match(feature,/Send test notification/);
+ assert.doesNotMatch(feature,/new root[.]Notification/);
+ assert.match(feature,/checkAlerts/);
+ assert.match(feature,/C[.]ageDays/);
+ assert.match(feature,/a[.]triggeredAt/);
+ assert.match(index,/browser-notifications[.]js/);
 });
 test('BIS verification is official external handoff rather than fake verification',()=>{
  assert.match(require('../source-logos.js').badge('biscare'),/www\.bis\.gov\.in\/bis-apps/);
@@ -58,11 +62,12 @@ test('Market signals never fabricate COMEX LBMA or MCX and ETFs never fake LTP',
 });
 test('Both deployments stage tool scripts, stylesheet and run tests',()=>{
  for(const workflow of [pages,daily]){
-   for(const script of ['features.js','features-core.js','features.css']){
+   for(const script of ['features.js','features-core.js','features.css','browser-notifications.js','notification-sw.js']){
     assert.ok(workflow.includes(script),script+' staged');
    }
    assert.match(workflow,/tests\/features-core\.test\.cjs/);
    assert.match(workflow,/tests\/ui-features\.test\.cjs/);
+   assert.ok(workflow.includes('tests/browser-notifications.test.cjs'));
  }
 });
 
