@@ -136,6 +136,17 @@
  const footer=txt=>'<p class="nt-foot">'+t(txt)+'</p>';
  const quotes=()=>C.buildQuotes({india:ctx.rates?.india,funds:ctx.funds,cityRates:ctx.cityRates,city:ctx.city});
  const cityDate=()=>ctx.cityRates?.dates?.gold||'';
+ const cityPerGram=(city,metal)=>{
+   const entry=ctx.cityRates?.cities?.[city];
+   const date=ctx.cityRates?.dates?.[metal==='silver'?'silver':'gold'];
+   if(!entry||!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(date||''))return null;
+   const age=Math.floor((Date.now()-Date.parse(date+'T00:00:00Z'))/86400000);
+   if(age<0||age>7)return null;
+   const base=metal==='gold24'?entry.gold24_inr_g:
+     metal==='gold22'?entry.gold22_inr_g:
+     metal==='silver'?entry.silver999_inr_kg/1000:null;
+   return Number.isFinite(base)&&base>0?base:null;
+ };
  const reference=(metal='gold22')=>{
    const q=quotes(),value=q[metal],dataDate=ctx.rates?.india?.date;
    const isCity=ctx.cityRates?.cities?.[ctx.city];
@@ -155,14 +166,8 @@
  };
  function alerts(){
    const all=C.localRead('alerts');
-   const q=quotes();
-   const pairs={};
-   for(const [metal,mult] of [['gold22',1],['gold24',1],['silver',1]]){
-     const rate=q[metal];
-     if(Number.isFinite(rate))pairs[ctx.city+':'+metal]=rate;
-   }
    const rows=all.map((v,i)=>{
-     const perGram=pairs[v.city+':'+v.metal];
+     const perGram=cityPerGram(v.city,v.metal);
      const current=Number.isFinite(perGram)?C.round(perGram*v.grams):null;
      const match=current!==null&&C.statusMatch({key:'price',direction:v.direction,threshold:v.target},{price:current});
      return '<div class="nt-line"><span><b>'+h(v.city)+' · '+h(v.metal)+' · '+h(v.grams)+'g</b>'+
@@ -350,9 +355,14 @@
       if(!['gold22','gold24','silver'].includes(metal))throw new RangeError('Invalid metal');
       save('alerts',{id,city:ctx.city,metal,grams,target,direction:field(form,'alert-direction')});
     }else if(form.id==='nt-shop-form'){
-      save('shops',{id,city:ctx.city,name:field(form,'shop-name').trim().slice(0,72),
+      const shopName=field(form,'shop-name').trim().slice(0,72);
+      if(!shopName)throw new RangeError('Shop name is required');
+      const date=field(form,'shop-date');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||date>new Date().toISOString().slice(0,10))
+        throw new RangeError('Shop quote date is invalid');
+      save('shops',{id,city:ctx.city,name:shopName,
         rate:num(form,'shop-rate'),grams:num(form,'shop-grams'),making:num(form,'shop-making'),
-        date:field(form,'shop-date')});
+        date});
     }else if(form.id==='nt-holding-form'){
       const type=field(form,'holding-type'),scheme=field(form,'holding-scheme');
       if(!['gold22','gold24','silver','etf','fund'].includes(type))throw new RangeError('Invalid type');
@@ -419,15 +429,17 @@
      setTimeout(()=>URL.revokeObjectURL(url),1000);
    }
    if(e.target.closest('[data-nt-alert-check]')){
-     const records=C.localRead('alerts');
-     const q=quotes();
-     const hit=records.filter(a=>{
-       const rate=q[a.metal];
-       return a.city===ctx.city&&Number.isFinite(rate)&&C.statusMatch({
+     const hit=C.localRead('alerts').filter(a=>{
+       const rate=cityPerGram(a.city,a.metal);
+       return Number.isFinite(rate)&&C.statusMatch({
          key:'value',direction:a.direction,threshold:a.target},{value:rate*a.grams});
      });
-     say(hit.length?hit.length+' alert(s) reached using currently published data.':
-       'No matching alert at the current dated benchmark.');
+     if(hit.length&&root.Notification?.permission==='granted'){
+       try{new root.Notification('NextRate price target reached',{body:
+         hit.length+' saved city target(s) reached. Open NextRate for dated rates.'})}catch{}
+     }
+     say(hit.length?hit.length+' saved city alert(s) reached using published city prices.':
+       'No city price target reached. Missing or stale source prices are not treated as matches.');
    }
    if(e.target.closest('[data-nt-notifications]')){
      if(!('Notification' in root)){
