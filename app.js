@@ -19,9 +19,13 @@ let customUnit = 'g';
 let rates = null;
 let history = null;
 let forecast = null;
+let funds = null;
+let buyMetal = 'gold';
+let buyGrams = 8;
 let activeForecastMetal = 'gold24';
 let loadFailure = null;
 let forecastLoadFailure = false;
+let navLoadFailure = false;
 
 const INR = new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 0});
 const USD = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 2});
@@ -148,15 +152,15 @@ function weightPriceSection(){
   }catch{initialValue='—';}}
   return '<section class="card section weight-panel" data-selected-metal="'+weightMetal+
     '" aria-labelledby="weights-heading">'+
-    '<div class="weight-section-header"><div><h2 id="weights-heading">Prices by Weight</h2>'+
-    '<p class="muted">1 g, 8 g (pavan), 10 g and other common Indian weights</p></div>'+
+    '<div class="weight-section-header"><div><h2 id="weights-heading">By Weight</h2>'+
+    '<p class="muted">1 g · 8 g (Pavan) · 10 g</p></div>'+
     '<span class="weight-date">'+(india()?'IBJA · '+sourceDate(india().date):'Rates unavailable')+'</span></div>'+
     '<div class="weight-tabs" role="group" aria-label="Select metal for weight prices">'+tabs+'</div>'+
     '<p class="weight-rate-line">'+selected.label+' · '+selected.unit+' benchmark: <strong>'+
     (published?price(selected.value):'Unavailable')+'</strong></p>'+
     '<div class="weight-grid" aria-label="Common bullion weights">'+options+'</div>'+
-    '<div class="weight-calculator"><div class="weight-calculator-heading"><h3>Calculate your own weight</h3>'+
-    '<p class="muted">Enter any weight or tap a price above.</p></div>'+
+    '<div class="weight-calculator"><div class="weight-calculator-heading"><h3>Custom Weight</h3>'+
+    '<p class="muted">Enter grams or kg</p></div>'+
     '<div class="weight-custom-row"><div class="weight-entry">'+
     '<label for="custom-weight">Weight</label>'+
     '<input type="number" id="custom-weight" min="0.01" max="100000" step="any" inputmode="decimal" value="'+escapeHTML(customWeight)+'" placeholder="e.g. 8" aria-describedby="weight-error"></div>'+
@@ -165,7 +169,7 @@ function weightPriceSection(){
     '<button type="button" class="unit-button'+(customUnit==='g'?' active':'')+'" data-unit="g" aria-pressed="'+(customUnit==='g')+'" aria-label="Grams">g</button>'+
     '<button type="button" class="unit-button'+(customUnit==='kg'?' active':'')+'" data-unit="kg" aria-pressed="'+(customUnit==='kg')+'" aria-label="Kilograms">kg</button></div></div>'+
     '<div class="weight-total" role="status" aria-live="polite" aria-atomic="true">'+
-    '<span>Estimated bullion value</span><strong id="weight-result">'+initialValue+'</strong>'+
+    '<span>Metal value</span><strong id="weight-result">'+initialValue+'</strong>'+
     '<small id="weight-result-basis">'+(published?'Based on national IBJA '+selected.unit+' benchmark':'Waiting for a verified rate')+'</small></div></div>'+
     '<p id="weight-error" class="weight-error" aria-live="polite"></p></div>'+
     '<p class="weight-disclaimer">Reference metal value only · Excludes GST, making charges and local dealer premiums. Calculated from the IBJA '+escapeHTML(selected.unit)+' rate, not a retail shop quotation.</p>'+
@@ -286,7 +290,7 @@ function forecastMetalCard(key, title, unit, iconFile){
     '<span class="forecast-metal-quote"><strong>'+price(data.estimate)+'</strong>'+
     '<span class="forecast-direction '+dirClass+'">'+(change>0?'▲ ':change<0?'▼ ':'● ')+
     percent+' <small>'+delta+'</small></span></span>'+
-    '<span class="forecast-range"><span>Estimated range</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
+    '<span class="forecast-range"><span>Range</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
     '<span class="forecast-quick-weights">'+quickWeights+'</span></button>';
 }
 function marketGraph(){
@@ -334,7 +338,7 @@ function marketGraph(){
   const projectedY=y(data.estimate);
   const areaColor=activeForecastMetal==='silver'?'#c7d0d9':'#efcf80';
   return '<div class="market-chart-title"><div><strong>'+title+' Price Trend</strong>'+
-    '<span>Published IBJA sessions → '+shortDate(forecast.target_date)+' outlook</span></div>'+
+    '<span>Actual → '+shortDate(forecast.target_date)+' estimate</span></div>'+
     '<span class="market-chart-metadata">₹ / '+(activeForecastMetal==='silver'?'kg':'10 g')+'</span></div>'+
     '<svg class="market-trend-svg" viewBox="0 0 640 257" role="img" aria-label="'+title+
     ' actual dated IBJA close from '+startLabel+' to '+currentLabel+
@@ -357,9 +361,9 @@ function marketGraph(){
     '<text x="'+xEnd+'" y="242" text-anchor="middle" font-size="13" fill="#8492a3">'+shortDate(observed.at(-1).date)+'</text>'+
     '<text x="'+xPred+'" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#aa7416">'+shortDate(forecast.target_date)+'</text>'+
     '</svg>'+
-    '<div class="market-legend"><span><i class="market-legend-line"></i>Published rate</span>'+
-    '<span><i class="market-legend-dash"></i>Model estimate</span>'+
-    '<span><i class="market-legend-band"></i>Scenario range</span></div>';
+    '<div class="market-legend"><span><i class="market-legend-line"></i>Actual</span>'+
+    '<span><i class="market-legend-dash"></i>Estimate</span>'+
+    '<span><i class="market-legend-band"></i>Range</span></div>';
 }
 function marketSnapshot(){
   const xau=rates?.spot?.XAU;
@@ -379,79 +383,123 @@ function marketSnapshot(){
     '<a class="market-reference-link" href="#markets" aria-label="View all market details">View Markets →</a></div>';
 }
 function forecastPanel(){
-  const headingText='<div class="forecast-topline"><div>'+
-    '<div class="forecast-eyebrow">MARKET OUTLOOK · INDIA</div>'+
-    '<h2 id="forecast-title">Tomorrow’s Gold &amp; Silver Prediction</h2>'+
-    '</div><span class="forecast-tag">Experimental forecast</span></div>';
-  if(!forecastDataIsCurrent()){
-    const reason=forecast?.status==='unavailable'
-      ?escapeHTML(forecast.reason||'Forecast unavailable for this session.')
-      :'A current published outlook is unavailable.';
-    return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
-      '<div class="forecast-empty"><strong>Next-session estimate unavailable</strong>'+
-      '<p>'+reason+' Verified published rates are shown below.</p></div></section>';
+  const valid=forecastDataIsCurrent();
+  const date=valid?forecastDate(forecast.target_date):'—';
+  const based=valid?sourceDate(forecast.based_on_date):'—';
+  let content='<section class="forecast-shell" aria-labelledby="forecast-title">'+
+    '<div class="nr-top"><div><span class="nr-kicker">INDIA · NEXT RATE</span>'+
+    '<h1 id="forecast-title">Tomorrow</h1></div><span class="forecast-tag">Estimate</span></div>';
+  if(!valid){
+    const reason=forecast?.status==='unavailable'?
+      escapeHTML(forecast.reason||'No forecast'): 'Next forecast not ready';
+    return content+'<p class="nr-empty">'+reason+'</p></section>';
   }
-  const tomorrowIsTarget=forecast.calendar_tomorrow===forecast.target_date;
-  const label=forecastDate(forecast.target_date);
-  const reference=forecastDate(forecast.based_on_date);
-  const sampleSize=Number.isInteger(forecast.observations)?forecast.observations:0;
-  const tradingNote=tomorrowIsTarget
-    ? 'Next expected IBJA publication · '+label
-    : 'Next IBJA publication outlook · '+label+' (no regular publication tomorrow)';
-  const calendarNote=forecast.holiday_calendar_verified
-    ? '2026 IBJA holiday calendar applied.' : 'Holiday calendar requires verification.';
-  const signals=Array.isArray(forecast.signal_summary)?forecast.signal_summary.slice(0,4):[];
-  const tracking=forecast.accuracy_tracking||{};
-  const n=Number.isInteger(tracking.evaluated_issuances)?tracking.evaluated_issuances:0;
-  const accuracyText=n>=10&&tracking.gold24
-    ? '24K gold forecast mean absolute percentage error: '+
-      Number(tracking.gold24.mean_absolute_percentage_error).toFixed(2)+
-      '% across '+tracking.gold24.sample_size+' scored sessions.'
-    : n+' forecast'+(n===1?'':'s')+' evaluated so far; accuracy history still insufficient.';
-  const notes=signals.map(item=>
-    '<div class="forecast-factor"><i class="forecast-factor-dot '+(item.used_in_estimate?'active':'')+'"></i>'+
-    '<div><strong>'+escapeHTML(item.name)+'</strong><p>'+escapeHTML(item.details)+'</p></div>'+
-    '<span class="forecast-factor-badge">'+(item.used_in_estimate?'Model':'Context')+'</span></div>'
-  ).join('');
-  return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
-    '<div class="forecast-subtitle"><span class="forecast-session">'+tradingNote+'</span>'+
-    '<span>Last IBJA close: '+reference+' ('+escapeHTML(forecast.based_on_session||'PM')+')</span></div>'+
-    '<div class="forecast-model-status"><span class="forecast-model-status-mark" aria-hidden="true">●</span>'+
-      'Model based on '+sampleSize+' published dates · Not backtested or live trading data</div>'+
-    '<div class="forecast-market-layout">'+
-      '<div class="forecast-board"><div class="forecast-board-header"><strong>METAL WATCHLIST</strong>'+
-      '<small>Next-session estimates</small></div>'+
-      '<div class="forecast-grid" role="group" aria-label="Choose metal for chart">'+
-        forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
-        forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
-        forecastMetalCard('silver','Silver 999','1 kg','silver-bar.webp')+
-      '</div></div>'+
-      '<div class="forecast-chart-box">'+marketGraph()+'</div>'+
-    '</div>'+marketSnapshot()+
-    '<details class="forecast-details"><summary>Market analysis &amp; forecast limitations <span>⌄</span></summary>'+
-      '<div class="forecast-details-content"><div class="forecast-method">'+
-        '<div class="forecast-method-title"><strong>What influences this estimate?</strong>'+
-        '<span class="forecast-evidence">'+sampleSize+' IBJA dates</span></div>'+
-        '<div class="forecast-factors">'+notes+'</div></div>'+
-        '<div class="forecast-disclosure"><strong>Model notes</strong>'+
-        '<p>Derived from published IBJA rates on '+reference+
-        ' using a damped recent-price trend and heuristic volatility range. '+calendarNote+'</p>'+
-        '<p>The estimated range is <strong>not</strong> a validated confidence interval. Rates are India-wide bullion benchmarks, not city retail rates. GST, making charges and city premiums are excluded.</p>'+
-        '<p class="forecast-accuracy">'+escapeHTML(accuracyText)+'</p></div></div></details>'+
-    '</section>';
+  content+='<div class="nr-date">'+date+
+    (forecast.target_date===forecast.calendar_tomorrow?'':' · Next open day')+
+    '<span>IBJA · '+based+'</span></div>'+
+    '<div class="forecast-grid" role="group" aria-label="Choose gold or silver">'+
+    forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
+    forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
+    forecastMetalCard('silver','Silver','1 kg','silver-bar.webp')+'</div>'+
+    '<div class="nr-chart">'+marketGraph()+'</div>'+
+    '<details class="nr-small-details"><summary>How?</summary>'+
+    '<p>IBJA '+forecast.observations+' dates · Test model. Range is not a guarantee.</p>'+
+    '<p>LBMA, COMEX and MCX are not yet model inputs. Shop prices vary.</p></details></section>';
+  return content;
 }
 
-function home() {
-  return forecastPanel()+
-    '<section class="actual-rates-heading section"><div><h2>Latest Verified Gold & Silver Rates</h2>'+
-    '<p>India-wide IBJA benchmark · actual published prices</p></div>'+availabilityTag()+'</section>'+
+function verifiedNav(key){
+  const nav=funds?.funds?.[key];
+  if(!nav || typeof nav.nav_inr_per_unit!=='number' ||
+    !Number.isFinite(nav.nav_inr_per_unit) || nav.nav_inr_per_unit<=0 ||
+    !/^\d{4}-\d\d-\d\d$/.test(nav.nav_date||'') || daysOld(nav.nav_date)>10)return null;
+  return nav;
+}
+function buyingRow(name,place,amount,unit,note,href){
+  const link=href?'<a class="buy-link" target="_blank" rel="noopener noreferrer" href="'+href+
+    '" aria-label="More about '+escapeHTML(name)+'">↗</a>':'';
+  return '<div class="buy-row"><div class="buy-kind"><strong>'+escapeHTML(name)+
+    '</strong><span>'+escapeHTML(place)+'</span></div>'+
+    '<div class="buy-cost"><strong>'+amount+'</strong><small>'+escapeHTML(unit)+'</small></div>'+
+    '<div class="buy-note">'+escapeHTML(note)+'</div>'+link+'</div>';
+}
+function buyPanel(){
+  const gold=buyMetal==='gold';
+  const grams=buyGrams;
+  const gold24=benchmark('gold24').value;
+  const gold22=benchmark('gold22').value;
+  const silver=benchmark('silver').value;
+  const money=NextRateWeights.formatINR;
+  const metalPrice=(code,rate)=>{
+    if(typeof rate!=='number' || !Number.isFinite(rate)||rate<=0)return '—';
+    try{return '≈ '+money(NextRateBuying.metalAndGST(rate,code,grams).subtotal);}
+    catch{return '—';}
+  };
+  const fundLine=(name,key,place)=>{
+    const v=verifiedNav(key);
+    return buyingRow(name,place,v?money(v.nav_inr_per_unit):'—',
+      v?'NAV / unit':'NAV unavailable',
+      v?sourceDate(v.nav_date):'No current NAV',
+      'https://www.amfiindia.com/net-asset-value/nav-download');
+  };
+  let list='';
+  if(gold){
+    list+=buyingRow('Gold Bar','Bullion dealer',metalPrice('gold24',gold24),'24K · Metal + GST','Premium extra');
+    list+=buyingRow('Gold Coin','Jeweller / bank',metalPrice('gold24',gold24),'24K · Metal + GST','Minting extra');
+    list+=buyingRow('Jewellery','Jeweller',metalPrice('gold22',gold22),'22K · Metal + GST','Making extra');
+    list+=fundLine('Gold ETF','goldbees','Stock broker');
+    list+=fundLine('Gold Fund','goldfund','AMC / SIP');
+    list+=buyingRow('Gold Bond (SGB)','Stock broker','—','Market quote','Old bonds only',
+      'https://sovereigngoldbonds.rbi.org.in/');
+    list+=buyingRow('Digital Gold','Gold app','—','App quote','Not SEBI regulated',
+      'https://www.sebi.gov.in/media-and-notifications/press-releases/nov-2025/caution-to-public-regarding-dealing-in-digital-gold-_97676.html');
+  }else{
+    list+=buyingRow('Silver Bar','Bullion dealer',metalPrice('silver',silver),'999 · Metal + GST','Premium extra');
+    list+=buyingRow('Silver Coin','Jeweller',metalPrice('silver',silver),'999 · Metal + GST','Minting extra');
+    list+=fundLine('Silver ETF','silveretf','Stock broker');
+    list+=fundLine('Silver Fund','hdfcsilver','HDFC Silver ETF');
+  }
+  const weights=(gold?[1,5,8,10,20]:[10,100,500,1000]).map(n=>
+    '<button type="button" class="buy-weight'+(n===grams?' active':'')+
+    '" data-buy-grams="'+n+'" aria-pressed="'+(n===grams)+'">'+
+    (n===1000?'1 kg':n+' g'+(gold&&n===8?' · Pavan':''))+'</button>').join('');
+  return '<section class="buy-panel section" aria-labelledby="buy-title">'+
+    '<div class="buy-header"><div><span class="nr-kicker">SHOP & INVEST</span>'+
+    '<h2 id="buy-title">Buy Gold &amp; Silver</h2></div>'+
+    '<span class="buy-date">IBJA '+(india()?sourceDate(india().date):'—')+'</span></div>'+
+    '<div class="buy-controls"><div class="buy-metals" role="group" aria-label="Metal">'+
+    '<button type="button" data-buy-metal="gold" class="'+(gold?'active':'')+
+      '" aria-pressed="'+gold+'">Gold</button>'+
+    '<button type="button" data-buy-metal="silver" class="'+(!gold?'active':'')+
+      '" aria-pressed="'+(!gold)+'">Silver</button></div>'+
+    '<div class="buy-weights" role="group" aria-label="Weight">'+weights+'</div></div>'+
+    '<div class="buy-table"><div class="buy-table-labels"><span>Type / Where</span>'+
+    '<span>Price</span><span>Extra</span></div>'+list+'</div>'+
+    '<p class="buy-foot">Bars, coins & jewellery: <b>IBJA + 3% GST only</b>. Shop charges extra. '+
+    'ETF & funds: <b>AMFI NAV per unit</b>, not live buy price. Bonds: market quote.</p>'+
+    '</section>';
+}
+function wireBuyPanel(){
+  document.querySelectorAll('[data-buy-metal]').forEach(button=>
+    button.addEventListener('click',()=>{
+      buyMetal=button.dataset.buyMetal;
+      buyGrams=buyMetal==='gold'?8:100;
+      render();
+    })
+  );
+  document.querySelectorAll('[data-buy-grams]').forEach(button=>
+    button.addEventListener('click',()=>{
+      buyGrams=Number(button.dataset.buyGrams);
+      render();
+    })
+  );
+}
+function home(){
+  return forecastPanel()+buyPanel()+
+    '<section class="actual-rates-heading section"><div><h2>Today · IBJA</h2>'+
+    '<p>Actual Gold & Silver</p></div>'+availabilityTag()+'</section>'+
     '<section class="grid three">'+['gold24','gold22','silver'].map(benchmarkCard).join('')+'</section>'+
-    weightPriceSection()+
-    '<section class="grid two section"><article class="card"><div class="section-head"><h2>24K Gold · Recent Prices</h2><span class="pill">Actual IBJA dates</span></div>'+chart()+'</article>'+
-    '<article class="card"><h2>Key Market References</h2>'+spotRow('XAU','Gold spot · USD/oz')+spotRow('XAG','Silver spot · USD/oz')+
-    '<div class="driver"><span class="driver-label">'+icon('rupee')+'<strong>USD/INR · Daily FX</strong></span><span><b>'+(rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'Unavailable')+'</b><small class="subdate">'+(rates?.fx?sourceDate(rates.fx.date):'')+'</small></span></div>'+
-    '<p class="muted small-copy">Gold/silver spot quotes are indicative international prices, not LBMA auction benchmarks or COMEX settlements.'+(rates?.fx?.source_url?' Currency source: <a href="'+rates.fx.source_url+'" target="_blank" rel="noopener noreferrer">'+escapeHTML(rates.fx.source)+'</a>.':'')+'</p></article></section>'+
-    note();
+    weightPriceSection()+note();
 }
 function marketCard(label,value,unit,date,link) {
   return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
@@ -522,6 +570,7 @@ function render() {
     })
   );
   wireWeightCalculator();
+  wireBuyPanel();
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }
 async function getJSON(file) {
@@ -529,32 +578,20 @@ async function getJSON(file) {
   if(!res.ok)throw new Error('Market snapshot unavailable: '+res.status);
   return res.json();
 }
-async function loadData() {
-  const [marketResult, forecastResult]=await Promise.allSettled([
+async function loadData(){
+  const [market,model,nav]=await Promise.allSettled([
     Promise.all([getJSON('latest.json'),getJSON('history.json')]),
-    getJSON('forecast.json')
+    getJSON('forecast.json'),
+    getJSON('funds.json')
   ]);
-  if(marketResult.status==='fulfilled'){
-    const [snapshot, series]=marketResult.value;
-    if(snapshot.schema_version===1&&series.schema_version===1){
-      rates=snapshot;
-      history=series;
-      loadFailure=null;
-    } else {
-      loadFailure=new Error('Unsupported market data version');
-    }
-  }else{
-    loadFailure=marketResult.reason;
-    console.warn('NextRate market data unavailable',loadFailure);
-  }
-  if(forecastResult.status==='fulfilled'&&forecastResult.value.schema_version===1){
-    forecast=forecastResult.value;
-    forecastLoadFailure=false;
-  }else{
-    forecast=null;
-    forecastLoadFailure=true;
-    console.warn('NextRate forecast unavailable',forecastResult.reason);
-  }
+  if(market.status==='fulfilled' &&
+      market.value[0].schema_version===1 && market.value[1].schema_version===1){
+    rates=market.value[0];history=market.value[1];loadFailure=null;
+  }else{loadFailure=new Error('Market rates unavailable');}
+  forecast=model.status==='fulfilled' && model.value.schema_version===1?model.value:null;
+  forecastLoadFailure=!forecast;
+  funds=nav.status==='fulfilled' && nav.value.schema_version===1?nav.value:null;
+  navLoadFailure=!funds;
   render();
 }
 function setCityMenu(open, focusSelection=false){
