@@ -13,6 +13,8 @@ import json
 import math
 import statistics
 import sys
+
+from scripts.forecast_models import estimate as next_estimate, walk_forward
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -90,8 +92,12 @@ def prepare_history(latest: dict, history: dict, as_of: date):
             continue
         if day > as_of:
             continue
-        if all(isinstance(row.get(v[0]), (int, float)) and row[v[0]] > 0
-               for v in KEYS.values()):
+        # Individual historic feeds may not include every gold purity.
+        # Keep the published values for available metals; never guess 916.
+        if row.get("session") == "PM" and any(
+            isinstance(row.get(v[0]), (int,float)) and row[v[0]] > 0
+            for v in KEYS.values()
+        ):
             items[row["date"]] = row.copy()
     last = latest.get("india") or {}
     if "date" not in last:
@@ -112,43 +118,43 @@ def prepare_history(latest: dict, history: dict, as_of: date):
     return rows[-90:], last
 
 
+MODEL_VERSION = 2
+
+
 def metal_forecast(rows: list, anchor: dict, code: str):
-    key, label, unit, step, min_band, max_shift = KEYS[code]
-    series = [r[key] for r in rows]
-    returns = [(b - a) / a for a, b in zip(series, series[1:]) if a > 0]
-    window = returns[-min(7, len(returns)):]
-    if len(window) < 2:
+    key,label,unit,step,min_band,max_shift=KEYS[code]
+    usable=[r for r in rows if isinstance(r.get(key),(int,float)) and r[key]>0]
+    series=[r[key] for r in usable]
+    if len(series)<3 or key not in anchor:
         return None
-    median_move = statistics.median(window)
-    # Deliberately damp trend; with fewer than 10 samples use 20% of recent
-    # momentum rather than projecting the last full session's move.
-    damp = .20 if len(rows) < 10 else .30
-    shift = clip(median_move * damp, -max_shift, max_shift)
-    recent_dispersion = statistics.median(abs(x) for x in window)
-    # Heuristic scenario width. NOT a calibrated prediction interval.
-    band_pct = clip(max(min_band, recent_dispersion * 2), min_band, .12)
-    base = anchor[key]
-    point = nearest(base * (1 + shift), step)
-    low = floor_step(min(base, point) * (1 - band_pct), step)
-    high = ceil_step(max(base, point) * (1 + band_pct), step)
-    if high <= low:
-        high = low + 2 * step
-    expected_pct = round((point / base - 1) * 100, 2)
-    # Do not overstate minute directional changes.
-    direction = "Up" if expected_pct > .10 else "Down" if expected_pct < -.10 else "Mostly steady"
+    rets=[(b-a)/a for a,b in zip(series,series[1:]) if a>0]
+    window=rets[-min(7,len(rets)):]
+    if len(window)<2:
+        return None
+    test=walk_forward(series)
+    method=test["selected_model"]
+    # Keep exact rupee granularity; round(129733 to nearest 100) was
+    # previously adding avoidable error to any last-close estimate.
+    point=max(1,round(next_estimate(series,method)))
+    baseline=anchor[key]
+    dispersion=statistics.median(abs(v) for v in window)
+    band_pct=clip(max(min_band,dispersion*2),min_band,.12)
+    low=floor_step(min(baseline,point)*(1-band_pct),step)
+    high=ceil_step(max(baseline,point)*(1+band_pct),step)
+    if high<=low:high=low+2*step
+    pct=round((point/baseline-1)*100,2)
+    direction="Up" if pct>.10 else "Down" if pct<-.10 else "Mostly steady"
     return {
-        "label": label,
-        "unit": unit,
-        "baseline": base,
-        "estimate": point,
-        "low": low,
-        "high": high,
-        "expected_change_pct": expected_pct,
-        "direction": direction,
-        "scenario_width_pct": round(band_pct * 100, 2),
-        "history_returns_used": len(window),
-        "description": "Volatility-banded, damped median of recent published IBJA changes.",
-        "interval_calibrated": False,
+        "label":label,"unit":unit,"baseline":baseline,"estimate":point,
+        "low":low,"high":high,"expected_change_pct":pct,
+        "direction":direction,"scenario_width_pct":round(band_pct*100,2),
+        "history_returns_used":len(window),"history_rows_used":len(usable),
+        "model_name":method,"model_version":MODEL_VERSION,
+        "description":("Simple model chosen using past validation, then checked on a later held-out period."
+                       if test["status"]=="walk_forward"
+                       else "Short-history experimental trend without a reliable backtest."),
+        "backtest":test,
+        "interval_calibrated":False,
     }
 
 
@@ -157,6 +163,7 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
     target = next_ibja_publication_day(today)
     output = {
         "schema_version": 1,
+        "model_version": MODEL_VERSION,
         "generated_at": now.isoformat(timespec="seconds"),
         "today_ist": today.isoformat(),
         "calendar_tomorrow": (today + timedelta(days=1)).isoformat(),
@@ -189,10 +196,14 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
         return output
     output["status"] = "experimental"
     output["metals"] = metals
+    tested = [m for m in metals.values() if m["backtest"]["status"] == "walk_forward"]
     output["validation"] = {
-        "status": "not_backtested",
+        "status": ("walk_forward" if len(tested) == 3 else
+                   "partial_walk_forward" if tested else "not_backtested"),
         "observations": len(rows),
-        "description": "Live accuracy tracking begins with newly issued future forecasts; no historical success rate claimed."
+        "model_version": MODEL_VERSION,
+        "tested_metals": len(tested),
+        "description": "Time-ordered train, validation and untouched holdout per metal. Models may still lose to last-close.",
     }
     output["signal_summary"] = [
         {
@@ -269,12 +280,13 @@ def publish(now=None):
     fresh = generate(latest, history, now)
     if fresh["status"] == "experimental":
         # An immutable issuance is recorded for each new source session and target.
-        issuance_key = ":".join([fresh["target_date"], fresh["based_on_date"],
-                                 fresh["based_on_session"]])
+        issuance_key = ":".join([f"v{MODEL_VERSION}", fresh["target_date"],
+                                 fresh["based_on_date"], fresh["based_on_session"]])
         fresh["issuance_key"] = issuance_key
         if not any(v.get("issuance_key") == issuance_key for v in scored):
             scored.append({
                 "issuance_key": issuance_key,
+                "model_version": MODEL_VERSION,
                 "issued_at": now.isoformat(timespec="seconds"),
                 "target_date": fresh["target_date"],
                 "based_on_date": fresh["based_on_date"],
