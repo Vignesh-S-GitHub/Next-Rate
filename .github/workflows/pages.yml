@@ -29,7 +29,11 @@ jobs:
           node --check weights.js
           node --check buy-options.js
           node --check i18n.js
+          node --check tools-core.js
+          node --check tools-ui.js
           node --check app.js
+          node --test tests/tools-core.test.cjs
+          node --test tests/tools-ui.test.cjs
           node --test tests/i18n.test.cjs
           node --test tests/ui-cities.test.cjs
           node --test tests/weights.test.cjs
@@ -82,7 +86,7 @@ jobs:
       - name: Stage public assets
         run: |
           mkdir -p _site/assets _site/data
-          cp index.html app.js i18n.js weights.js buy-options.js styles.css _site/
+          cp index.html app.js i18n.js tools-core.js tools-ui.js weights.js buy-options.js styles.css _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           if test -s data/latest.json && test -s data/history.json; then
             python -m json.tool data/latest.json >/dev/null
