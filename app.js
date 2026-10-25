@@ -19,6 +19,7 @@ let customUnit = 'g';
 let rates = null;
 let history = null;
 let forecast = null;
+let issuedForecasts = null;
 let funds = null;
 let cityRates = null;
 let appLanguage=window.NextRateI18n?.saved()||'en';
@@ -600,8 +601,17 @@ function wireHomeCompact(){
   if(buy)buy.addEventListener('toggle',()=>{homeBuyExpanded=buy.open;});
 }
 function home(){
+  const items=[['alerts','Price Alerts'],['bill','Jewellery Bill'],['accuracy','Accuracy'],['portfolio','My Gold']];
+  const links='<section class="home-tool-links section" aria-label="NextRate tools">'+
+    items.map(([key,label])=>'<a href="#tools" data-open-tool="'+key+'">'+label+' ↗</a>').join('')+'</section>';
   return '<div class="home-dashboard">'+forecastPanel()+homeTodayPanel()+
-    homeWeightPanel()+homeBuyPanel()+'</div>';
+    homeWeightPanel()+homeBuyPanel()+links+'</div>';
+}
+function toolsPage(){
+  return window.NextRateModules?.render({
+    rates,history,forecast,forecastHistory:issuedForecasts,cityRates,funds,
+    city:currentCity,language:appLanguage
+  })||'<section class="card">Tools unavailable</section>';
 }
 function marketCard(label,value,unit,date,link) {
   return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
@@ -715,7 +725,7 @@ function errorScreen() {
 }
 function render() {
   let route=location.hash.slice(1);
-  if(!['home','markets','compare','insights'].includes(route))route='home';
+  if(!['home','markets','compare','insights','tools'].includes(route))route='home';
   document.querySelectorAll('[data-route]').forEach(a=>{
     const active=a.dataset.route===route;
     a.classList.toggle('active',active);
@@ -726,7 +736,7 @@ function render() {
   } else if (!rates) {
     app.innerHTML=errorScreen();
   } else {
-    app.innerHTML=({home,markets:marketsPage,compare,insights})[route]();
+    app.innerHTML=({home,markets:marketsPage,compare,insights,tools:toolsPage})[route]();
   }
   app.querySelectorAll('[data-metal]').forEach(b=>b.addEventListener('click',()=>{
     activeMetal=b.dataset.metal;
@@ -741,6 +751,12 @@ function render() {
   wireWeightCalculator();
   wireBuyPanel();
   wireHomeCompact();
+  if(route==='tools'&&window.NextRateModules){
+    window.NextRateModules.wire(app,{
+      rates,history,forecast,forecastHistory:issuedForecasts,cityRates,funds,
+      city:currentCity,language:appLanguage
+    },render);
+  }
   updateLanguageControl();
   if(window.NextRateI18n)window.NextRateI18n.apply(document.body,appLanguage);
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
@@ -751,11 +767,12 @@ async function getJSON(file) {
   return res.json();
 }
 async function loadData(){
-  const [market,model,nav,city]=await Promise.allSettled([
+  const [market,model,nav,city,issued]=await Promise.allSettled([
     Promise.all([getJSON('latest.json'),getJSON('history.json')]),
     getJSON('forecast.json'),
     getJSON('funds.json'),
-    getJSON('cities.json')
+    getJSON('cities.json'),
+    getJSON('forecast_history.json')
   ]);
   if(market.status==='fulfilled' &&
       market.value[0].schema_version===1 && market.value[1].schema_version===1){
@@ -765,6 +782,7 @@ async function loadData(){
   forecastLoadFailure=!forecast;
   funds=nav.status==='fulfilled' && nav.value.schema_version===1?nav.value:null;
   navLoadFailure=!funds;
+  issuedForecasts=issued.status==='fulfilled'&&issued.value.schema_version===1?issued.value:null;
   cityRates=city.status==='fulfilled'&&city.value.schema_version===1?city.value:null;
   render();
 }
@@ -838,6 +856,10 @@ document.querySelectorAll('[data-language]').forEach(button=>{
   button.addEventListener('click',()=>setLanguage(button.dataset.language));
 });
 setupCityMenu();
+document.addEventListener('click',event=>{
+  const link=event.target.closest('[data-open-tool]');
+  if(link)window.NextRateModules?.open(link.dataset.openTool);
+});
 window.addEventListener('hashchange',render);
 render();
 loadData();
