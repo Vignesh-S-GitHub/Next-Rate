@@ -38,7 +38,7 @@ test('Tamil control is accessible, theme-matched and renders across all routes',
  assert.match(html,/data-language="en"/);
  assert.match(html,/data-language="ta"/);
  assert.match(html,/>தமிழ்<\/button>/);
- assert.match(html,/i18n\.js\?v=20261025-visual-insights1/);
+ assert.match(html,/i18n\.js\?v=20261025-no-notifications1/);
  assert.match(app,/function setLanguage\(language\)/);
  assert.match(app,/NextRateI18n\.apply\(document\.body,appLanguage\)/);
  assert.match(css,/\.lang-button\.active/);
