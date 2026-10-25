@@ -381,5 +381,13 @@ def update_storage(data: Path = DATA, annual: Path | None = None):
 
 
 if __name__ == "__main__":
+    import sys
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    update_storage()
+    if sys.argv[1:] == ["--verify"]:
+        report = validate_manifest()
+        print("Verified annual archive:", report["totals"])
+    elif not sys.argv[1:]:
+        update_storage()
+    else:
+        print("Usage: python scripts/archive_data.py [--verify]", file=sys.stderr)
+        sys.exit(2)
