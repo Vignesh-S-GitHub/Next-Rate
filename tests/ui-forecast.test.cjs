@@ -74,3 +74,14 @@ test('Home shows compact watchlist, chart, referenced quotes and disclosed cavea
   assert.match(app,/Not yet model inputs/);
   assert.match(css,/\.forecast-market-layout/);
 });
+
+test('Trading-style market screen has clear model status and cache-busted mobile assets',()=>{
+  const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  assert.match(app,/forecast-model-status/);
+  assert.match(app,/Not backtested or live trading data/);
+  assert.match(app,/Last IBJA close:/);
+  assert.match(index,/styles\.css\?v=20261025-market3/);
+  assert.match(index,/app\.js\?v=20261025-market3/);
+  assert.match(index,/Experimental forecasts are not investment advice/);
+  assert.doesNotMatch(index,/Illustrative prices are not live quotations/);
+});

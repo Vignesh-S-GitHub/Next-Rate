@@ -93,3 +93,7 @@ City choice and gram/kilogram selection use NextRate-styled controls rather than
 ## Stock-market-style Home interface
 
 The Home outlook presents three selectable quote rows, recent IBJA closing-rate chart points, a separately dashed model estimate with a shaded heuristic range, and small attributed spot/FX reference quotes. On narrow phones the watchlist appears above the chart. Source facts, model-only signals, unvalidated uncertainty and accuracy status remain accessible inside an expandable methodology panel. International spot/FX reference values are explicitly not represented as inputs to the current IBJA-only baseline.
+
+## Stock-market dashboard UI
+
+The Home screen retains the NextRate white, gold and navy brand in a compact market-board layout: an interactive watchlist for 24K gold, 22K gold and silver, red/green expected movements, a dated historical IBJA line chart with a **dashed** next-session experimental outlook, and a mini reference strip of international spot and currency observations. They include source dates and are not presented as live futures, official LBMA/COMEX/MCX rates or inputs to the short-history forecast model. Analysis methodology and uncertainty notes are expandable. On mobile, the watchlist shows stacked rows followed by the responsive chart, and the actual rate/weight calculator remain below.

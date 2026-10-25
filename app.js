@@ -416,6 +416,8 @@ function forecastPanel(){
   return '<section class="forecast-shell" aria-labelledby="forecast-title">'+headingText+
     '<div class="forecast-subtitle"><span class="forecast-session">'+tradingNote+'</span>'+
     '<span>Last IBJA close: '+reference+' ('+escapeHTML(forecast.based_on_session||'PM')+')</span></div>'+
+    '<div class="forecast-model-status"><span class="forecast-model-status-mark" aria-hidden="true">●</span>'+
+      'Model based on '+sampleSize+' published dates · Not backtested or live trading data</div>'+
     '<div class="forecast-market-layout">'+
       '<div class="forecast-board"><div class="forecast-board-header"><strong>METAL WATCHLIST</strong>'+
       '<small>Next-session estimates</small></div>'+

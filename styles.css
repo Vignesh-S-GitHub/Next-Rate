@@ -315,3 +315,16 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 @media(prefers-reduced-motion:reduce){
  .forecast-metal,.forecast-details summary span{transition:none}
 }
+
+/* Trading-dashboard readability and transparent data-status indicator. */
+.forecast-model-status{display:flex;align-items:center;gap:7px;font-size:11px;line-height:1.4;color:#8a774b;margin:-5px 0 12px}
+.forecast-model-status-mark{font-size:8px;color:#c99a35}
+.forecast-metal-quote>strong,.forecast-shell .market-reference-item strong{font-variant-numeric:tabular-nums}
+@media(max-width:680px){
+ .forecast-model-status{font-size:10px;margin:-4px 0 11px}
+ .forecast-shell,.forecast-board,.forecast-chart-box{max-width:100%;min-width:0}
+ .forecast-range strong{white-space:normal}
+ .forecast-shell .market-chart-title{gap:5px}
+ .forecast-shell .market-chart-title strong{font-size:14px}
+ .forecast-shell .market-chart-title span{font-size:10px}
+}
