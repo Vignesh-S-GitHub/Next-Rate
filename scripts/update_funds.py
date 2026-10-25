@@ -32,6 +32,7 @@ SCHEMES={
     "goldfund": (120685,"ICICI Prudential Gold ETF FOF","Gold Fund"),
     "silveretf": (149758,"Nippon India Silver ETF","Silver ETF"),
     "hdfcsilver": (150556,"HDFC Silver ETF","Silver ETF"),
+    "silverfund": (152735,"SBI Silver ETF Fund of Fund","Silver Fund"),
 }
 
 def parse_nav_report(report: str, now: datetime) -> dict:
