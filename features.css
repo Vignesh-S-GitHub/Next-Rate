@@ -136,3 +136,31 @@
  .home-tools-actions a{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.tool-menu-item,.tool-primary,.home-tools-actions a{transition:none}}
+
+/* Theme-matched keyboard-accessible dropdowns, replacing native Android pickers. */
+.tool-picker{position:relative;min-width:0}
+.tool-picker-trigger{display:flex;justify-content:space-between;align-items:center;gap:9px;width:100%;min-height:47px;border:1px solid #dfe4eb;border-radius:10px;padding:10px 12px;background:#fff;color:#142c43;font:inherit;font-size:13px;font-weight:700;text-align:left;cursor:pointer}
+.tool-picker-trigger[aria-expanded="true"]{border-color:#d1a345;background:#fffbf1;box-shadow:0 0 0 2px #f8ebc9}
+.tool-picker-trigger>span:first-child{min-width:0;line-height:1.4}
+.tool-picker-arrow{flex:0 0 auto;color:#ad7c26;font-size:18px;line-height:1}
+.tool-picker-menu{position:absolute;z-index:25;left:0;right:0;top:calc(100% + 5px);display:flex;flex-direction:column;gap:3px;max-height:240px;overflow:auto;padding:5px;background:#fff;border:1px solid #e8dcc3;border-radius:11px;box-shadow:0 12px 26px rgba(23,38,59,.14)}
+.tool-picker-menu[hidden]{display:none!important}
+.tool-picker-option{width:100%;min-height:43px;display:flex;align-items:center;text-align:left;border:0;border-radius:8px;background:transparent;color:#4d5f74;font:inherit;font-size:13px;font-weight:600;padding:10px 12px;cursor:pointer}
+.tool-picker-option:hover,.tool-picker-option:focus-visible{background:#fff6df;color:#8d641c}
+.tool-picker-option[aria-selected="true"]{background:#fff7e5;color:#986814;font-weight:800}
+.tool-picker-option[aria-selected="true"]::after{content:"✓";margin-left:auto;padding-left:8px;color:#b98a2d}
+.tool-picker-trigger:focus-visible,.tool-picker-option:focus-visible{outline:2px solid #c99b39;outline-offset:2px}
+.tool-field input[type="date"]{accent-color:#c99122;color-scheme:light}
+/* Consistent 5-tab phone navigation: same size, theme, focus and active state. */
+@media(max-width:750px){
+ .mobile-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;padding:7px 5px max(9px,env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(24,38,56,.035)}
+ .mobile-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:54px;padding:6px 2px;border-radius:11px;color:#748398;font-size:10.5px;font-weight:650;line-height:1.1;text-align:center;transition:background .15s,color .15s}
+ .mobile-nav a .icon{width:22px;height:22px;flex-shrink:0}
+ .mobile-nav a.active,.mobile-nav a[aria-current="page"]{background:#fff4da;color:#946319;font-weight:800}
+ .mobile-nav a.active .icon{stroke-width:2.25}
+ .mobile-nav a:focus-visible{outline:2px solid #c9952c;outline-offset:-2px}
+ .tool-picker-trigger{min-height:45px}
+}
+@media(min-width:751px){
+ .desktop-nav a:focus-visible{outline:2px solid #d19d31;outline-offset:4px;border-radius:4px}
+}
