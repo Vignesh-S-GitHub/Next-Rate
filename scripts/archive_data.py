@@ -140,7 +140,9 @@ def resolve_duplicate(kind: str, older: dict, newer: dict):
                         LOG.warning("Retained prior %s %s (conflicting new quote)", older["date"], name)
                     else:
                         LOG.info("Upgraded %s %s with higher-quality source", older["date"], name)
-            if name not in combined and name in secondary:
+            # Never turn an AM-only gold value into an invented PM quote.
+            if (name not in combined and name in secondary
+                    and preferred.get("session") == secondary.get("session")):
                 combined[name] = secondary[name]
         # If same-quality snapshots disagree, retain the original immutable
         # closing value and record source differences in workflow logs.
@@ -330,6 +332,8 @@ def update_storage(data: Path = DATA, annual: Path | None = None):
     issued = get_json(forecast_path)
     if history.get("schema_version") != 1 or issued.get("schema_version") != 1:
         raise ValueError("Unsupported input snapshot schema")
+    if (annual / "manifest.json").exists():
+        validate_manifest(annual)
     existing = load_years(annual)
     # Read original snapshots, existing immutable years and latest observed
     # India row before changing even one compact public file.
