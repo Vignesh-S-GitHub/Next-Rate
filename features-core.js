@@ -95,17 +95,32 @@ function triggered(rule,ctx){
  const target=number(rule.target,0.01,1e9);
  return {current,hit:rule.op==='below'?current<=target:current>=target};
 }
-function historicalAccuracy(entries,metal) {
- const seen=new Set(),matches=[];
+function historicalAccuracy(entries,metal,modelVersion=null) {
+ // One realised closing price per target day is one independent outcome.
+ // Later revisions (especially the current model version) supersede older
+ // issuances for accuracy totals; the audit list still retains every issue.
+ const byDay=new Map();
+ const priority=e=>[
+   Number(e.model_version)||1,e.based_on_date||'',
+   e.based_on_session==='PM'?1:0,e.issued_at||''
+ ];
+ const newer=(a,b)=>{
+  const x=priority(a),y=priority(b);
+  for(let i=0;i<x.length;i++){
+   if(x[i]!==y[i])return x[i]>y[i];
+  }
+  return false;
+ };
  for(const e of Array.isArray(entries)?entries:[]){
-   if(!e||!e.evaluation||!e.evaluation.metals?.[metal])continue;
+   if(!e?.evaluation?.metals?.[metal]||!isoDay(e.target_date))continue;
+   if(modelVersion!==null && Number(e.model_version||1)!==Number(modelVersion))continue;
    const record=e.evaluation.metals[metal];
-   if(!Number.isFinite(record.absolute_error_pct))continue;
-   // Count one result per model version and target date.
-   const key=(e.model_version||1)+':'+e.target_date;
-   if(seen.has(key))continue;
-   seen.add(key);matches.push(record);
+   if(typeof record.absolute_error_pct!=='number'||
+      !Number.isFinite(record.absolute_error_pct)||record.absolute_error_pct<0)continue;
+   const older=byDay.get(e.target_date);
+   if(!older||newer(e,older))byDay.set(e.target_date,e);
  }
+ const matches=[...byDay.values()].map(e=>e.evaluation.metals[metal]);
  return {evaluated:matches.length,
    mape:matches.length?round(matches.reduce((n,v)=>n+v.absolute_error_pct,0)/matches.length):null,
    covered:matches.length?matches.filter(x=>x.range_covered).length:null,

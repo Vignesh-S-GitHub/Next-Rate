@@ -27,6 +27,26 @@ class ForecastTests(unittest.TestCase):
     def history(self):
         return {"india": copy.deepcopy(SAMPLE)}
 
+    def test_independent_accuracy_counts_unique_target_days_of_current_model(self):
+        def scored(version, target, session, error):
+            return {
+                "model_version": version, "target_date": target,
+                "based_on_date": "2026-10-23", "based_on_session": session,
+                "issued_at": "2026-10-23T13:00:00+00:00",
+                "evaluation": {"metals": {"gold24": {"absolute_error_pct": error}}},
+            }
+        issued = [
+            scored(1, "2026-10-26", "PM", 9),
+            scored(2, "2026-10-26", "AM", 4),
+            scored(2, "2026-10-26", "PM", 1),
+            scored(2, "2026-10-27", "PM", 2),
+        ]
+        selected = forecast.independent_evaluations(issued, forecast.MODEL_VERSION)
+        self.assertEqual(len(selected), 2)
+        self.assertEqual(selected[0]["evaluation"]["metals"]["gold24"]["absolute_error_pct"], 1)
+        self.assertEqual([item["target_date"] for item in selected],
+                         ["2026-10-26", "2026-10-27"])
+
     def test_calendar_weekends_do_not_invent_ibja_saturday_sunday(self):
         self.assertEqual(forecast.next_weekday(date(2026, 10, 23)), date(2026, 10, 26))
         self.assertEqual(forecast.next_weekday(date(2026, 10, 24)), date(2026, 10, 26))

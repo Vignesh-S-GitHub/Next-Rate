@@ -129,7 +129,7 @@ function accuracyPanel(){
  const contextObj=context(),records=contextObj.forecastHistory?.forecasts||[];
  const labels=[['gold24','24K Gold'],['gold22','22K Gold'],['silver','Silver']];
  const lines=labels.map(([key,label])=>{
-  const stats=C.historicalAccuracy(records,key);
+  const stats=C.historicalAccuracy(records,key,contextObj.forecast?.model_version||null);
   const back=contextObj.forecast?.metals?.[key]?.backtest;
   const backText=back?.status==='walk_forward'
     ? ('Holdout '+Number(back.holdout_mape_pct).toFixed(2)+'% · last-close '+Number(back.holdout_naive_mape_pct).toFixed(2)+'%')

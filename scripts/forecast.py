@@ -277,6 +277,30 @@ def score_archive(archive: list, history: dict, now: datetime):
     return archive
 
 
+def independent_evaluations(issued: list, model_version: int) -> list:
+    """Score one latest eligible issuance per target day and model version.
+
+    Two different predictions issued for the same future close are not two
+    independent realised outcomes, even if model versions/sessions differ.
+    """
+    chosen = {}
+    for item in issued:
+        if item.get("model_version", 1) != model_version or not item.get("evaluation"):
+            continue
+        day = item.get("target_date")
+        if not isinstance(day, str):
+            continue
+        previous = chosen.get(day)
+        priority = lambda row: (
+            row.get("based_on_date", ""),
+            1 if row.get("based_on_session") == "PM" else 0,
+            row.get("issued_at", ""),
+        )
+        if previous is None or priority(item) > priority(previous):
+            chosen[day] = item
+    return [chosen[d] for d in sorted(chosen)]
+
+
 def publish(now=None):
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
     latest = read_json(LATEST)
@@ -305,9 +329,11 @@ def publish(now=None):
                 "based_on_session": fresh["based_on_session"],
                 "metals": fresh["metals"],
             })
-        evaluated = [entry for entry in scored if entry.get("evaluation")]
+        evaluated = independent_evaluations(scored, MODEL_VERSION)
         fresh["accuracy_tracking"] = {
             "evaluated_issuances": len(evaluated),
+            "independent_target_dates": len(evaluated),
+            "model_version": MODEL_VERSION,
             "status": "collecting" if len(evaluated) < 10 else "available",
         }
         if len(evaluated) >= 10:

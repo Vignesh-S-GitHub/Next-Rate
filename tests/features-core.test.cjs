@@ -63,7 +63,7 @@ test('one-shot target alert uses exact weight and direction',()=>{
  result=C.triggered({metal:'gold22',grams:8,target:110000,op:'above'}, {rates});
  assert.equal(result.hit,false);
 });
-test('prospective errors only use evaluated issued forecasts; deduplicate same version',()=>{
+test('prospective errors are model-specific and count each target day only once',()=>{
  const row=(v,d,err,covered)=>({model_version:v,target_date:d,
    evaluation:{metals:{gold24:{absolute_error_pct:err,range_covered:covered,direction_correct:true}}}});
  const stats=C.historicalAccuracy([
@@ -73,9 +73,15 @@ test('prospective errors only use evaluated issued forecasts; deduplicate same v
   row(2,'2026-10-27',.5,true),
   {target_date:'2026-10-28',metals:{gold24:{estimate:1000}}}
  ],'gold24');
- assert.equal(stats.evaluated,3);
+ assert.equal(stats.evaluated,2);
  assert.equal(stats.mape,1);
- assert.equal(stats.covered,2);
+ assert.equal(stats.covered,1);
+ const current=C.historicalAccuracy([
+  row(2,'2026-10-26',1,true),row(3,'2026-10-26',1.5,false),
+  row(2,'2026-10-27',.5,true)],'gold24',2);
+ assert.equal(current.evaluated,2);
+ assert.equal(current.mape,.75);
+ assert.equal(current.covered,2);
 });
 test('Indian source-date freshness never uses browser locale parsing assumptions',()=>{
  const now=new Date('2026-10-25T06:00:00Z');
