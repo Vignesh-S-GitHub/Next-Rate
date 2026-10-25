@@ -76,7 +76,7 @@ test('Interactive SVG retains gold line, gradient, dashed estimate, chart and ra
  assert.match(html,/stroke-dasharray="6 5"/);
  assert.match(html,/class="chart-range-band"/);
  assert.match(html,/data-chart-point="7"/);
- assert.match(html,/data-chart-slider min="0" max="7"/);
+ assert.doesNotMatch(html,/data-chart-slider|Move slider/);
  assert.match(html,/data-chart-plot/);
  assert.match(html,/data-chart-tooltip role="status" aria-live="polite" aria-atomic="true" hidden/);
  assert.doesNotMatch(html,/chart-inspect-panel|data-chart-readout/);
@@ -123,9 +123,13 @@ test('Compact tooltip stays above SVG and inside narrow plot edges',()=>{
  assert.ok(left.left>=95);
  assert.ok(left.arrowX>=9);
 });
-test('One slider, no arrow buttons or long instruction panel',()=>{
+test('Chart has no slider but retains tap hit areas and forecast distinction',()=>{
  const html=UI.render({...ctx0,history:sampleHistory()});
- assert.equal((html.match(/data-chart-slider/g)||[]).length,1);
- assert.doesNotMatch(html,/chart-usage-tip|data-chart-step|chart-inspect-panel|Slide below/);
- assert.match(html,/Move slider/);
+ assert.doesNotMatch(html,/data-chart-slider|Move slider|data-chart-step|chart-inspect-panel/);
+ assert.match(html,/data-chart-point="0"/);
+ assert.match(html,/data-chart-point="7"/);
+ assert.match(html,/chart-point-tooltip/);
+ assert.match(html,/viewBox="0 0 640 290"/);
+ assert.match(html,/stroke-dasharray="6 5"/);
+ assert.match(html,/Estimate only · Not guaranteed/);
 });

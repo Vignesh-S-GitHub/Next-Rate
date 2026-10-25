@@ -94,12 +94,13 @@ test('Actual dates and forecast range are independently inspectable on mobile',(
  assert.match(app,/class="forecast-prediction-label">Estimate/);
  assert.match(app,/Same as last close/);
  assert.match(chart,/data-chart-point/);
- assert.match(chart,/data-chart-slider/);
+ assert.doesNotMatch(chart,/data-chart-slider/);
  assert.match(chart,/chart-point-tooltip/);
  assert.doesNotMatch(chart,/chart-inspect-panel/);
  assert.match(chart,/ArrowLeft/);
+ assert.match(chart,/currentIndex/);
  assert.match(chart,/role="status"/);
- assert.match(chart,/Move slider/);
+ assert.doesNotMatch(chart,/Move slider/);
  assert.doesNotMatch(chart,/data-chart-step|chart-usage-tip/);
  assert.match(model,/function observations\(/);
  assert.match(model,/function indexAtX\(/);
