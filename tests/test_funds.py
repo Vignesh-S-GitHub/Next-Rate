@@ -11,6 +11,7 @@ Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;
 120685;INF109K01U92;-;ICICI Prudential Gold ETF FOF;Direct Plan;Growth;44.7772;23-Oct-2026
 149758;INF204KC1402;-;Nippon India Silver ETF;Direct Plan;;184.3876;23-Oct-2026
 150556;INF179KC1DI2;-;HDFC Silver ETF;;Growth Option;184.3954;23-Oct-2026
+152735;INF200KB1233;-;SBI Silver ETF Fund of Fund;Direct Plan;Growth;20.4946;23-Oct-2026
 """
 class AMFITests(unittest.TestCase):
     def test_real_report_layout_and_scheme_codes(self):
