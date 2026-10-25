@@ -74,7 +74,7 @@ The workflow executes:
 2. Unit tests in `tests/test_update_rates.py`.
 3. Source freshness, currency and purity consistency validation.
 4. Produce `data/forecast.json`, archive immutable issuances in `data/forecast_history.json`, and evaluate completed forecasts against the target-day IBJA PM close.
-5. Commit verified observations and archived forecasts to GitHub (up to 180 source dates and 300 forecast issuances).
+5. Commit verified observations and immutable issued forecasts to permanent annual archives on GitHub; serve recent compact browser caches (120 dated rates and 90 issued forecasts).
 6. Direct GitHub Pages deployment of the updated site in the **same workflow**. GitHub does not trigger `push` workflows from a commit made with `GITHUB_TOKEN`; direct deployment avoids that limitation.
 
 The regular Pages workflow `.github/workflows/pages.yml` continues to publish ordinary source-code changes.
@@ -86,7 +86,7 @@ The regular Pages workflow `.github/workflows/pages.yml` continues to publish or
 - **Predictions:** 24K gold and 22K gold in rupees per 10 g, Silver 999 in rupees per kg, plus simple conversions to 1 g and 8 g (gold) or 1 g and 100 g (silver).
 - **Model:** Damped median of the last 2–7 published IBJA price changes, with a deliberately broad heuristic range based on recent price variation and sensible minimum widths. Does not infer fake LBMA, COMEX or MCX futures prices.
 - **Time horizon:** If tomorrow is an ordinary weekday, it predicts that expected publication date. If tomorrow is Saturday or Sunday, it transparently shows the next expected weekday instead of inventing a non-trading-day IBJA rate. The **official 2026 IBJA commodity-exchange holiday list** is considered; dates for 2027 onward must be verified and loaded when published. Some festival dates can change. See [IBJA 2026 holiday list](https://www.ibjarates.com/pdf/List-of-Holidays/List-of-Holidays-2026.pdf).
-- **Accuracy:** Not statistically validated with the available short history; no made-up confidence probability or success percentage is displayed. Issued predictions are archived immutably in `data/forecast_history.json`, and measured against the **next target-date IBJA PM closing rate** once published. Error summaries require at least 10 evaluated forecasts.
+- **Accuracy:** 98 reconstructed dated IBJA closing observations support a historical walk-forward test, but do not establish that predictions beat the previous-close baseline. The 25-sample holdout errors at 25 October 2026 were approximately 0.63% (gold) and 1.48% (silver). Issued forecasts remain archived immutably and can be graded only against the matching future IBJA PM close. Published forward error summaries require at least 10 independently evaluated target dates for the active model.
 - **Important:** An estimated range is not a guaranteed or calibrated confidence interval. This is a national benchmark outlook, not a city-specific retail jeweller quote. GST, making charges, local premiums and taxes are excluded.
 - **Model sources:** IBJA history only at present. International XAU/XAG spot and USD/INR are shown separately as market references, not covertly included as forecasting signals. Official LBMA, COMEX and MCX feeds are not yet connected.
 
@@ -121,7 +121,7 @@ Rates are not necessarily updated on Saturdays, Sundays or Indian government hol
 
 ## Limitations and forecasting
 
-**An experimental tomorrow/next-publication-day forecast is now active.** Its current four-day source history is too short to establish dependable predictive accuracy. The model deliberately publishes a heuristic planning range, not statistically calibrated confidence limits. More reliable predictions require longer unbiased historical data, time-aligned international and FX inputs, out-of-sample validation and independently verified city-level prices.
+**An experimental next-publication-day forecast is active.** The source history now includes 98 dated closing observations (as of 25 October 2026), with a separate 25-observation holdout per metal. Those past errors are not proof of future accuracy or an advantage over last-close. The model publishes a heuristic planning range, not statistically calibrated confidence limits. More reliable predictions would require longer unbiased historical data, time-aligned international/FX inputs and prospective validation.
 
 **LBMA auction prices, COMEX futures and MCX futures are not yet connected**, because free international spot data cannot be presented as official exchange/futures values. The Markets screen links to those venues without suggesting they are collected.
 
