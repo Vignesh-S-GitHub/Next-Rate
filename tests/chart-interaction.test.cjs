@@ -79,7 +79,7 @@ test('Interactive SVG retains gold line, gradient, dashed estimate, chart and ra
  assert.match(html,/data-chart-slider min="0" max="7"/);
  assert.match(html,/data-chart-readout role="status"/);
  assert.match(html,/ACTUAL · 2026-10-23/);
- assert.match(html,/141,630/);
+ assert.match(html,/1,41,630/);
  assert.match(html,/aria-label="Next date"/);
  assert.match(html,/role="group"/);
 });

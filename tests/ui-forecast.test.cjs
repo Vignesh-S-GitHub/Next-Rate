@@ -87,7 +87,7 @@ test('Markets distinguish provider fetch times from market trade times, especial
 });
 
 test('Actual dates and forecast range are independently inspectable on mobile',()=>{
- assert.match(app,/NextRateChartUI\.render/);
+ assert.match(app,/ui\.render\(\{/);
  assert.match(app,/wireChartInspection\(\)/);
  assert.match(app,/chartSelectedDate=null/);
  assert.match(app,/Possible range · not guaranteed/);
