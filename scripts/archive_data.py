@@ -45,7 +45,14 @@ def as_date(value):
 def row_identity(kind: str, row: dict) -> str:
     if not isinstance(row, dict):
         raise ValueError(f"{kind} row is not an object")
-    if kind in ("ibja", "fx"):
+    if kind == "ibja":
+        day = row.get("date")
+        as_date(day)
+        session = row.get("session")
+        if session not in ("AM", "PM"):
+            raise ValueError("IBJA observation needs a published AM or PM session")
+        key = day + ":" + session
+    elif kind == "fx":
         key = row.get("date")
         as_date(key)
     elif kind.startswith("spot-"):
@@ -357,9 +364,15 @@ def update_storage(data: Path = DATA, annual: Path | None = None):
     if verified != manifest:
         raise ValueError("Annual archive validation failed before compaction")
     # The public files are *caches*, not canonical storage.
+    # The permanent archive keeps both AM and PM. The browser only needs
+    # one rate per date (PM if published, otherwise AM).
+    by_date = {}
+    for row in full["india"]:
+        by_date[row["date"]] = row
+    recent_days = [by_date[day] for day in sorted(by_date)][-RECENT_IBJA:]
     recent = {
         **history, "schema_version": 1,
-        "india": full["india"][-RECENT_IBJA:],
+        "india": recent_days,
         "spot": {sym: full["spot"][sym][-RECENT_SPOT:] for sym in ("XAU","XAG")},
         "fx": full["fx"][-RECENT_FX:],
         "storage": {
