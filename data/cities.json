@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "published_snapshot",
+  "checked_at": "2026-10-25T07:30:00+00:00",
+  "as_of": "2026-10-25",
+  "dates": {
+    "gold": "2026-10-25",
+    "silver": "2026-10-25"
+  },
+  "source": "Goodreturns indicative city rate tables",
+  "source_urls": {
+    "gold": "https://www.goodreturns.in/gold-rates/",
+    "silver": "https://www.goodreturns.in/silver-rates/"
+  },
+  "basis": "Publisher's indicative city rates. Excludes GST, making charges and seller premiums; not a jeweller checkout quote.",
+  "cities": {
+    "Chennai": {
+      "gold24_inr_g": 14258,
+      "gold22_inr_g": 13070,
+      "silver999_inr_kg": 220000
+    },
+    "Mumbai": {
+      "gold24_inr_g": 14258,
+      "gold22_inr_g": 13070,
+      "silver999_inr_kg": 220000
+    },
+    "Delhi": {
+      "gold24_inr_g": 14273,
+      "gold22_inr_g": 13085,
+      "silver999_inr_kg": 220000
+    },
+    "Bengaluru": {
+      "gold24_inr_g": 14258,
+      "gold22_inr_g": 13070,
+      "silver999_inr_kg": 220000
+    },
+    "Hyderabad": {
+      "gold24_inr_g": 14258,
+      "gold22_inr_g": 13070,
+      "silver999_inr_kg": 220000
+    }
+  }
+}
