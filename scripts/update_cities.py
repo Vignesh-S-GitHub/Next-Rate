@@ -122,8 +122,9 @@ def update(now: datetime | None=None):
         try:
             day,values=extract_city_values(download(url).decode("utf-8",errors="replace"),
                                           metal,today)
-            if old_date and day.isoformat()<old_date:
-                raise ValueError(f"Source date {day} older than stored {old_date}")
+            previous_metal_day=stored.get("dates",{}).get(metal,old_date)
+            if previous_metal_day and day.isoformat()<previous_metal_day:
+                raise ValueError(f"{metal} source date {day} older than stored {previous_metal_day}")
             data[metal]=values
             days[metal]=day.isoformat()
         except (ValueError,OSError,RuntimeError) as exc:
