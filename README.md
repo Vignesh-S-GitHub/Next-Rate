@@ -1,3 +1,7 @@
+## Production verification and daily data reliability
+
+Production checks now validate all published IBJA, historical, city, AMFI NAV and forecast records before an automated data commit, validate staged assets, and smoke-test 17 files from the live GitHub Pages URL after deployment. Forecast accuracy counts one independent target date per model version; older sessions do not impersonate new IBJA prices. **Existing features only.** See [production checks, failure scenarios and incident runbook](docs/PRODUCTION_CHECKS.md).
+
 ## Interactive forecast chart and clear prediction labelling
 
 Home retains NextRate’s **existing gold line chart** (solid actual IBJA closing prices, gradient, dotted next-session estimate, gold scenario band). Tap any date on the SVG line or use the **Explore dates** slider to view the exact published day and amount. 7D/30D/90D selection works with touch, tap, keyboard arrows and accessible previous/next controls. A permanently visible detail panel explicitly says either **ACTUAL** (with dated IBJA rate) or **PREDICTION** (unconfirmed estimated value and non-guaranteed scenario range). Charts are backed by the original dated history, never extrapolated actuals. The projection has its own separate selected point.
