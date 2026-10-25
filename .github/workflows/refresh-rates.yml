@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "scripts/backfill_rates.py"
+      - "scripts/archive_data.py"
+      - "tests/test_archive_data.py"
       - "scripts/forecast_models.py"
       - "tests/test_backfill_rates.py"
       - "tests/test_forecast_models.py"
@@ -48,15 +50,28 @@ jobs:
       - name: Refresh AMFI fund NAVs
         run: python scripts/update_funds.py
 
+      - name: Verify existing lifetime archives
+        run: |
+          if test -s data/archive/manifest.json; then
+            python scripts/archive_data.py --verify
+          fi
+
       - name: Produce and archive next-session outlook
         run: python scripts/forecast.py
+
+      - name: Archive every observation and compact the website cache
+        run: |
+          python scripts/archive_data.py
+          python scripts/archive_data.py --verify
 
       - name: Commit changed daily observations
         run: |
           set -eu
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json
+          # Archive files are canonical; history.json and forecast_history.json
+          # are only recent browser caches. Never delete annual shards.
+          git add data/archive data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json
           if ! git diff --cached --quiet; then
             git commit -m "data: refresh actual rates and forecast [skip ci]"
             # A source-code update may land while this scheduled job is
@@ -96,6 +111,7 @@ jobs:
           test -s data/funds.json
           test -s data/forecast.json
           test -s data/forecast_history.json
+          test -s data/archive/manifest.json
           test -s assets/nextrate-icon.png
           test -s assets/gold-bar.webp
           test -s assets/silver-bar.webp
