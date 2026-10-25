@@ -1,0 +1,52 @@
+{
+  "policy": "permanent annual retention; never prune archive records automatically",
+  "recent_forecasts": 90,
+  "recent_fx": 120,
+  "recent_india": 120,
+  "recent_spot": 120,
+  "schema_version": 1,
+  "series": [
+    {
+      "file": "ibja/2026.json",
+      "first": "2026-06-04",
+      "last": "2026-10-23",
+      "records": 98,
+      "sha256": "5cd2630c9a4f4af30ceee26adb4b852e034cc6c3b19e39495d9412d258ec856e"
+    },
+    {
+      "file": "fx/2026.json",
+      "first": "2026-10-23",
+      "last": "2026-10-25",
+      "records": 2,
+      "sha256": "c4b482fc2a2f33866f309a5f0de98d4859c0c5fdaafeb1f3095ef92f031533e9"
+    },
+    {
+      "file": "spot-xau/2026.json",
+      "first": "2026-10-24T18:21:53+00:00",
+      "last": "2026-10-25T07:23:38+00:00",
+      "records": 3,
+      "sha256": "14aa534128ffeb3df44a128746c4d66a74b9303dacc3f45182d05b84bfba35db"
+    },
+    {
+      "file": "spot-xag/2026.json",
+      "first": "2026-10-24T18:21:52+00:00",
+      "last": "2026-10-25T07:23:37+00:00",
+      "records": 3,
+      "sha256": "297031b3f678df698c6f2bab46b47f9b1d5950b30554bbcb16467c24bfed1ad4"
+    },
+    {
+      "file": "forecasts/2026.json",
+      "first": "2026-10-26",
+      "last": "2026-10-26",
+      "records": 2,
+      "sha256": "0b84b21cce310ba3a992000fcdc302a4c83b0ae8194e1d70ab27eae6a37aadd0"
+    }
+  ],
+  "totals": {
+    "forecasts": 2,
+    "fx": 2,
+    "ibja": 98,
+    "spot-xag": 3,
+    "spot-xau": 3
+  }
+}
