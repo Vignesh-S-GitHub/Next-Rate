@@ -3,6 +3,8 @@ const assert=require('node:assert/strict'),test=require('node:test');
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
+const chart=fs.readFileSync(path.join(root,'chart-ui.js'),'utf8');
+const model=fs.readFileSync(path.join(root,'chart-interaction.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
 const daily=fs.readFileSync(path.join(root,'.github/workflows/refresh-rates.yml'),'utf8');
@@ -33,10 +35,10 @@ test('Trend chart separates actual IBJA from dashed estimate',()=>{
  assert.match(app,/function marketGraph\(\)/);
  assert.match(app,/data-forecast-metal/);
  assert.match(app,/activeForecastMetal=button\.dataset\.forecastMetal/);
- assert.match(app,/r\.date<=forecast\.based_on_date/);
- assert.match(app,/stroke-dasharray/);
- assert.match(app,/>Actual<\/span>/);
- assert.match(app,/>Estimate<\/span>/);
+ assert.match(model,/r\.date>forecast\.based_on_date/);
+ assert.match(chart,/stroke-dasharray/);
+ assert.match(chart,/>Actual<\/span>/);
+ assert.match(chart,/>Estimate<\/span>/);
 });
 test('Mobile chart and price rows remain responsive',()=>{
  assert.match(css,/\.forecast-grid/);
@@ -71,7 +73,7 @@ test('Today and next-open-day forecasts cannot be mislabelled Tomorrow',()=>{
  assert.match(app,/forecast\.target_date===indiaTodayISO\(\)/);
  assert.match(app,/Today outlook/);
  assert.match(app,/Next open day/);
- assert.match(app,/markerStep/);
+ assert.match(chart,/markerStep/);
 });
 
 test('Markets distinguish provider fetch times from market trade times, especially Sundays',()=>{
@@ -82,4 +84,22 @@ test('Markets distinguish provider fetch times from market trade times, especial
   assert.match(app,/Fetched /);
   assert.match(app,/Reference /);
   assert.match(app,/Actual result: pending until/);
+});
+
+test('Actual dates and forecast range are independently inspectable on mobile',()=>{
+ assert.match(app,/NextRateChartUI\.render/);
+ assert.match(app,/wireChartInspection\(\)/);
+ assert.match(app,/chartSelectedDate=null/);
+ assert.match(app,/Possible range · not guaranteed/);
+ assert.match(app,/Prediction · not actual/);
+ assert.match(app,/Same as last close/);
+ assert.match(chart,/data-chart-point/);
+ assert.match(chart,/data-chart-slider/);
+ assert.match(chart,/chart-inspect-panel/);
+ assert.match(chart,/ArrowLeft/);
+ assert.match(chart,/role="status"/);
+ assert.match(chart,/Tap any point/);
+ assert.match(model,/function observations\(/);
+ assert.match(model,/function indexAtX\(/);
+ assert.match(model,/date<=forecast\.based_on_date|r\.date>forecast\.based_on_date/);
 });

@@ -28,6 +28,7 @@ let buyGrams = 8;
 let homeBuyExpanded = false;
 let homeWeightExpanded = false;
 let chartDays = 7;
+let chartSelectedDate = null;
 let activeForecastMetal = 'gold24';
 let loadFailure = null;
 let forecastLoadFailure = false;
@@ -304,86 +305,28 @@ function forecastMetalCard(key, title, unit, iconFile){
     ' expected '+price(data.estimate)+', '+direction+' '+percent+', tap to view trend">'+
     '<span class="forecast-metal-head"><img class="forecast-metal-img'+(iconFile==='gold-bar.webp'?' bullion-gold':'')+'" src="./assets/silver-bar.webp?v=20261025-doublebars" width="38" height="38" alt="" loading="eager">'+
     '<span class="forecast-metal-name"><strong>'+title+'</strong><small>'+unit+'</small></span></span>'+
-    '<span class="forecast-metal-quote"><strong>'+price(data.estimate)+'</strong>'+
-    '<span class="forecast-direction '+dirClass+'">'+(change>0?'▲ ':change<0?'▼ ':'● ')+
-    percent+' <small>'+delta+'</small></span></span>'+
-    '<span class="forecast-range"><span>Range</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
+    '<span class="forecast-metal-quote"><small class="forecast-prediction-label">Prediction · not actual</small><strong>'+price(data.estimate)+'</strong>'+
+    '<span class="forecast-direction '+dirClass+'">'+(diff===0?'● Same as last close':
+      (change>0?'▲ ':change<0?'▼ ':'● ')+percent+' '+delta)+'</span></span>'+
+    '<span class="forecast-range"><span>Possible range · not guaranteed</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
     '<span class="forecast-quick-weights">'+quickWeights+'</span></button>';
 }
 function marketGraph(){
-  const data=forecast?.metals?.[activeForecastMetal];
-  const field={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'}[activeForecastMetal];
-  const title={gold24:'24K Gold',gold22:'22K Gold',silver:'Silver 999'}[activeForecastMetal];
-  if(!data||!field)return '<div class="empty-chart">Select a metal to view its trend.</div>';
-  const observed=series().filter(r=>
-    r.date<=forecast.based_on_date &&
-    typeof r[field]==='number' && Number.isFinite(r[field]) && r[field]>0
-  ).slice(-chartDays);
-  if(observed.length<2)return '<div class="empty-chart">The historical chart will appear after two published IBJA observations.</div>';
-  const low=Math.min(...observed.map(r=>r[field]),data.low,data.estimate);
-  const high=Math.max(...observed.map(r=>r[field]),data.high,data.estimate);
-  const margin=Math.max((high-low)*.12,high*.003);
-  const floor=low-margin,ceil=high+margin;
-  const y=value=>205-((value-floor)/(ceil-floor))*158;
-  const x0=55,xEnd=480,xPred=590;
-  const pts=observed.map((r,i)=>({x:x0+(xEnd-x0)*i/(observed.length-1),y:y(r[field]),date:r.date,value:r[field]}));
-  const last=pts[pts.length-1];
-  const currentLabel=sourceDate(observed[observed.length-1].date);
-  const startLabel=sourceDate(observed[0].date);
-  const shortDate=iso=>{
-    const d=new Date(iso+'T12:00:00+05:30');
-    return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',timeZone:'Asia/Kolkata'});
-  };
-  const numLabel=value=>{
-    if(value>=100000)return '₹'+(value/100000).toFixed(2)+'L';
-    if(value>=1000)return '₹'+(value/1000).toFixed(1)+'K';
-    return price(value);
-  };
-  const color=activeForecastMetal==='silver'?'#7d8d9f':'#c49430';
-  const moveClass=data.estimate>=last.value?'#12846b':'#cf5252';
-  const line=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' ');
-  const fill=line+' L'+last.x+' 214 L'+x0+' 214 Z';
-  const ticks=[0,.25,.5,.75,1].map(f=>{
-    const value=floor+(ceil-floor)*f;
-    const yy=y(value);
-    return '<line x1="55" y1="'+yy.toFixed(1)+'" x2="617" y2="'+yy.toFixed(1)+'" stroke="#ebedf2" stroke-width="1"/>'+
-       '<text x="47" y="'+(yy+5).toFixed(1)+'" text-anchor="end" font-size="12" fill="#8a96a6">'+numLabel(value)+'</text>';
-  }).join('');
-  const markerStep=Math.max(1,Math.ceil(pts.length/12));
-  const candles=pts.filter((p,i)=>i%markerStep===0||i===pts.length-1)
-    .map(p=>'<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="4" fill="#fff" stroke="'+color+'" stroke-width="2.5"/>').join('');
-  const rangeTop=y(data.high),rangeBottom=y(data.low);
-  const rectY=Math.min(rangeTop,rangeBottom),rectH=Math.abs(rangeBottom-rangeTop);
-  const projectedY=y(data.estimate);
-  const areaColor=activeForecastMetal==='silver'?'#c7d0d9':'#efcf80';
-  return '<div class="market-chart-title"><div><strong>'+title+' Price Trend</strong>'+
-    '<span>Actual → '+shortDate(forecast.target_date)+' estimate</span></div>'+
-    '<span class="market-chart-metadata">₹ / '+(activeForecastMetal==='silver'?'kg':'10 g')+'</span></div>'+
-    '<svg class="market-trend-svg" viewBox="0 0 640 257" role="img" aria-label="'+title+
-    ' actual dated IBJA close from '+startLabel+' to '+currentLabel+
-    '. Dashed section indicates estimated '+forecastDate(forecast.target_date)+
-    ' price '+price(data.estimate)+', scenario range '+price(data.low)+' to '+price(data.high)+'">'+
-    '<defs><linearGradient id="market-actual-fill" x1="0" y1="0" x2="0" y2="1">'+
-    '<stop offset="0" stop-color="'+areaColor+'" stop-opacity=".30"/>'+
-    '<stop offset="1" stop-color="'+areaColor+'" stop-opacity="0"/></linearGradient></defs>'+
-    ticks+
-    '<path d="'+fill+'" fill="url(#market-actual-fill)" />'+
-    '<path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>'+
-    candles+
-    '<line x1="533" y1="40" x2="533" y2="218" stroke="#bbc3cf" stroke-width="1" stroke-dasharray="3 5"/>'+
-    '<rect x="'+(xPred-16)+'" y="'+rectY.toFixed(1)+'" width="32" height="'+Math.max(rectH,2).toFixed(1)+
-       '" rx="5" fill="'+areaColor+'" fill-opacity=".45" stroke="#c7ac70" stroke-width="1"/>'+
-    '<path d="M'+last.x.toFixed(1)+' '+last.y.toFixed(1)+' L'+xPred+' '+projectedY.toFixed(1)+
-    '" fill="none" stroke="'+moveClass+'" stroke-width="3" stroke-dasharray="6 5" stroke-linecap="round"/>'+
-    '<circle cx="'+xPred+'" cy="'+projectedY.toFixed(1)+'" r="6" fill="'+moveClass+'" stroke="white" stroke-width="2"/>'+
-    '<text x="'+x0+'" y="242" font-size="13" fill="#8492a3">'+shortDate(observed[0].date)+'</text>'+
-    '<text x="'+xEnd+'" y="242" text-anchor="middle" font-size="13" fill="#8492a3">'+shortDate(observed.at(-1).date)+'</text>'+
-    '<text x="'+xPred+'" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#aa7416">'+shortDate(forecast.target_date)+'</text>'+
-    '</svg>'+
-    '<div class="market-legend"><span><i class="market-legend-line"></i>Actual</span>'+
-    '<span><i class="market-legend-dash"></i>Estimate</span>'+
-    '<span><i class="market-legend-band"></i>Range</span></div>';
+  const ui=window.NextRateChartUI;
+  return ui?ui.render({
+    forecast,history,metal:activeForecastMetal,days:chartDays,
+    selectedDate:chartSelectedDate,language:appLanguage,
+    price,sourceDate,forecastDate
+  }):'<div class="empty-chart">Chart temporarily unavailable.</div>';
 }
+function wireChartInspection(){
+  window.NextRateChartUI?.wire(app.querySelector('.nr-chart'),{
+    forecast,history,metal:activeForecastMetal,days:chartDays,
+    selectedDate:chartSelectedDate,language:appLanguage,
+    price,sourceDate,forecastDate
+  },date=>{chartSelectedDate=date;});
+}
+
 function marketSnapshot(){
   const xau=rates?.spot?.XAU;
   const xag=rates?.spot?.XAG;
@@ -409,11 +352,11 @@ function forecastProof(){
     const error=Number(evidence.holdout_mape_pct).toFixed(2);
     const naive=Number(evidence.holdout_naive_mape_pct).toFixed(2);
     const better=evidence.holdout_beats_naive;
-    return '<span>'+count+' past rates</span>'+
-      '<span>Test error '+error+'% · Last-close '+naive+'%</span>'+
-      '<span>'+(better?'Lower error on test':'No tested improvement')+'</span>';
+    return '<span>'+count+' historical closes</span>'+
+      '<span>Past simulation error '+error+'% · Last-close '+naive+'%</span>'+
+      '<span>'+(better?'Lower error in past test':'No proven improvement over last close')+'</span>';
   }
-  return '<span>'+count+' past rates · Accuracy being tested</span>';
+  return '<span>'+count+' past rates · Prediction accuracy not established</span>';
 }
 
 function forecastPanel(){
@@ -443,6 +386,8 @@ function forecastPanel(){
        [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
        '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
       '</div>'+marketGraph()+'</div>'+
+    '<div class="nr-prediction-explainer"><strong>How to read this prediction</strong>'+
+      '<span>The large number is a forecast, not a confirmed future price. The range is only a possible scenario, not guaranteed limits.</span></div>'+
     '<div class="nr-prediction-proof">'+forecastProof()+
       '<span>Actual result: pending until '+date+' IBJA closing rate</span></div>'+
     '<details class="nr-small-details"><summary>About this estimate</summary>'+
@@ -595,8 +540,9 @@ function wireHomeCompact(){
     button.addEventListener('click',()=>{weightMetal=button.dataset.homeWeightMetal;render();})
   );
   document.querySelectorAll('[data-chart-days]').forEach(button=>
-    button.addEventListener('click',()=>{chartDays=Number(button.dataset.chartDays);render();})
+    button.addEventListener('click',()=>{chartDays=Number(button.dataset.chartDays);chartSelectedDate=null;render();})
   );
+  wireChartInspection();
   const weight=document.querySelector('#home-weight-expand');
   if(weight)weight.addEventListener('toggle',()=>{homeWeightExpanded=weight.open;});
   const buy=document.querySelector('#home-buy-expand');
@@ -754,6 +700,7 @@ function render() {
   app.querySelectorAll('[data-forecast-metal]').forEach(button=>
     button.addEventListener('click',()=>{
       activeForecastMetal=button.dataset.forecastMetal;
+      chartSelectedDate=null;
       render();
     })
   );

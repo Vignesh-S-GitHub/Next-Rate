@@ -1,3 +1,11 @@
+## Interactive forecast chart and clear prediction labelling
+
+Home retains NextRate’s **existing gold line chart** (solid actual IBJA closing prices, gradient, dotted next-session estimate, gold scenario band). Tap any date on the SVG line or use the **Explore dates** slider to view the exact published day and amount. 7D/30D/90D selection works with touch, tap, keyboard arrows and accessible previous/next controls. A permanently visible detail panel explicitly says either **ACTUAL** (with dated IBJA rate) or **PREDICTION** (unconfirmed estimated value and non-guaranteed scenario range). Charts are backed by the original dated history, never extrapolated actuals. The projection has its own separate selected point.
+
+Forecast cards distinguish *predicted value* from the *possible non-calibrated range*. A 0% same-last-close strategy says **Same as last close**, not a confidence signal or “correct” prediction. Holdout simulation error is identified as past simulation, not verified future accuracy; actual results remain pending until the target-day closing IBJA quote exists. No changes to the prediction model or market data were made for this chart UX update.
+
+Files: `chart-interaction.js` (pure verified date/price selection), `chart-ui.js` (SVG and controls), `tests/chart-interaction.test.cjs`. Both Pages and scheduled Actions validate and ship the chart scripts.
+
 
 ## Official app and data-source identity links
 
