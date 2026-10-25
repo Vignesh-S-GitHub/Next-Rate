@@ -4,7 +4,18 @@ on:
   push:
     branches: [main]
     paths:
+      # Changes to any live collector, forecaster or integrity gate must
+      # exercise the complete daily pipeline immediately.
+      - "scripts/update_rates.py"
       - "scripts/update_cities.py"
+      - "scripts/update_funds.py"
+      - "scripts/forecast.py"
+      - "scripts/validate_publication.py"
+      - "scripts/smoke_site.py"
+      - "tests/test_update_rates.py"
+      - "tests/test_forecast.py"
+      - "tests/test_validate_publication.py"
+      - "tests/test_funds.py"
       - "tests/test_city_rates.py"
       - "i18n.js"
       - "tests/i18n.test.cjs"
