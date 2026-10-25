@@ -20,6 +20,8 @@ let rates = null;
 let history = null;
 let forecast = null;
 let funds = null;
+let cityRates = null;
+let appLanguage=window.NextRateI18n?.saved()||'en';
 let buyMetal = 'gold';
 let buyGrams = 8;
 let homeBuyExpanded = false;
@@ -544,7 +546,7 @@ function homeTodayPanel(){
   }).join('');
   return '<section class="home-brief section"><header><h2>Today · IBJA</h2>'+
     '<span>'+(india()?sourceDate(india().date):'No quote')+'</span></header>'+
-    '<div class="home-today-grid">'+cells+'</div>'+
+    '<div class="home-today-grid">'+cells+'</div>'+homeCityPrice()+
     '<p class="home-brief-note">Actual national rate · <a target="_blank" rel="noopener noreferrer" href="https://www.ibjarates.com/">Source ↗</a></p></section>';
 }
 function homeWeightPanel(){
@@ -617,17 +619,83 @@ function marketsPage() {
     '<section class="card section"><h2>What affects tomorrow?</h2>'+
     [['International metal quotes','Global spot prices reflect precious-metal demand and market expectations.'],['Currency movement','The USD/INR rate changes the rupee value of globally priced metals.'],['Domestic physical-market demand','Local premiums, import policies, taxes and jewellery demand affect final retail prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</section>'+note();
 }
+
+function cityQuote(city,metal){
+  const entry=cityRates?.cities?.[city];
+  const name=metal==='gold24'?'gold24_inr_g':metal==='gold22'?'gold22_inr_g':'silver999_inr_kg';
+  const day=(cityRates?.dates||{})[metal==='silver'?'silver':'gold'];
+  const numeric=entry?.[name];
+  // City rates are retailer-reported *indicative* observations. Do not
+  // substitute national IBJA or FX calculations when a city is missing.
+  const valid=Number.isFinite(numeric) && numeric>0 && /^\d{4}-\d\d-\d\d$/.test(day||'');
+  const age=valid?daysOld(day):Infinity;
+  return {
+    value:valid&&age<=7?numeric:null,
+    date:day||null,age,unit:metal==='silver'?'₹ / 1kg':'₹ / 1g',
+    key:name,stale:age>2,available:valid&&age<=7
+  };
+}
+function citySourceLink(metal){
+  const group=metal==='silver'?'silver':'gold';
+  const url=group==='silver'?'https://www.goodreturns.in/silver-rates/':
+    'https://www.goodreturns.in/gold-rates/';
+  return '<a class="city-source" target="_blank" rel="noopener noreferrer" href="'+url+'">Goodreturns ↗</a>';
+}
+function homeCityPrice(){
+  const c=currentCity;
+  const quote=cityQuote(c,'gold22');
+  if(!quote.available){
+    return '<div class="home-city-price"><span>'+escapeHTML(c)+' · 22K</span>'+
+      '<strong>—</strong><small>No published city rate</small></div>';
+  }
+  return '<div class="home-city-price"><span>'+escapeHTML(c)+' · 22K / 1g</span>'+
+    '<strong>'+price(quote.value)+'</strong>'+
+    '<small>8g '+price(quote.value*8)+' · '+sourceDate(quote.date)+
+    (quote.stale?' · Last available':'')+'</small></div>';
+}
+function cityComparison(){
+  const key=activeMetal;
+  const unit=key==='silver'?'1 kg':'1 g';
+  const rows=cities.map(c=>{
+    const quote=cityQuote(c,key);
+    const available=quote.available;
+    const note=available ? sourceDate(quote.date)+(quote.stale?' · Last available':''):
+      'No published city rate';
+    const extra=available && key!=='silver'
+      ? '<span class="city-eight">8g '+price(quote.value*8)+'</span>':'';
+    return '<div class="city-rate-item'+(c===currentCity?' selected':'')+'">'+
+      '<span class="city-name">'+escapeHTML(c)+'</span>'+
+      '<span class="city-price-main"><strong>'+
+      (available?price(quote.value):'—')+'</strong>'+extra+'</span>'+
+      '<span class="city-published">'+note+'</span></div>';
+  }).join('');
+  return '<section class="card section city-rates-panel" aria-labelledby="city-rates-title">'+
+    '<div class="city-rates-head"><div><h2 id="city-rates-title">City indicative prices</h2>'+
+    '<p class="muted">Major city prices · '+unit+'</p></div>'+
+    citySourceLink(key)+'</div>'+
+    '<div class="city-rate-list" role="list">'+rows+'</div>'+
+    '<p class="city-disclaimer">Published city estimates, not individual jeweller quotations. '+
+    'GST, making charges and shop premiums extra.</p>'+
+    '<p class="city-disclaimer muted">The IBJA national rate is different from city indicative rates.</p>'+
+    '</section>';
+}
+
 function compare() {
   const labels={gold24:'24K Gold',gold22:'22K Gold',silver:'Silver 999'};
   const selected=benchmark(activeMetal);
-  return heading('Compare Cities','Check national reference rates. Local shop quotations have not been connected.')+
-    '<div class="tabs" role="group" aria-label="Choose metal">'+Object.entries(labels).map(([key,label])=>'<button type="button" data-metal="'+key+'" class="'+(activeMetal===key?'active':'')+'" aria-pressed="'+(activeMetal===key)+'">'+label+'</button>').join('')+'</div>'+
-    '<article class="card"><div class="section-head"><h2>India benchmark: '+selected.label+'</h2><span class="muted">'+selected.unit+'</span></div>'+
-    '<div class="reference-value">'+(Number.isFinite(selected.value)?price(selected.value):'Unavailable')+'</div>'+
-    '<p class="muted">IBJA '+(india()?sourceDate(india().date):'rates unavailable')+'. This is one India-wide reference rate, not a verified rate for any individual city.</p></article>'+
-    '<article class="card section"><h2>City retail rates</h2>'+
-    cities.map(c=>'<div class="city-row '+(c===currentCity?'selected':'')+'"><strong>'+c+'</strong><span class="muted">Shop quote not connected</span><span class="muted">—</span></div>').join('')+'</article>'+
-    weightPriceSection()+note();
+  const national=Number.isFinite(selected.value)?price(selected.value):'—';
+  return heading('Compare Cities','City rates · published references')+
+    '<div class="tabs" role="group" aria-label="Choose metal">'+
+    Object.entries(labels).map(([key,label])=>'<button type="button" data-metal="'+key+
+    '" class="'+(activeMetal===key?'active':'')+
+    '" aria-pressed="'+(activeMetal===key)+'">'+label+'</button>').join('')+'</div>'+
+    cityComparison()+
+    '<article class="card section national-benchmark"><div class="section-head">'+
+    '<h2>India benchmark: '+selected.label+'</h2><span class="muted">'+selected.unit+'</span></div>'+
+    '<div class="reference-value">'+national+'</div>'+
+    '<p class="muted">IBJA '+(india()?sourceDate(india().date):'rates unavailable')+
+    ' · One India-wide reference. City indicative quotes differ.</p></article>'+
+    weightPriceSection();
 }
 function insights() {
   return heading('Insights','How global and Indian markets influence gold and silver prices.')+
@@ -673,6 +741,8 @@ function render() {
   wireWeightCalculator();
   wireBuyPanel();
   wireHomeCompact();
+  updateLanguageControl();
+  if(window.NextRateI18n)window.NextRateI18n.apply(document.body,appLanguage);
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }
 async function getJSON(file) {
@@ -681,10 +751,11 @@ async function getJSON(file) {
   return res.json();
 }
 async function loadData(){
-  const [market,model,nav]=await Promise.allSettled([
+  const [market,model,nav,city]=await Promise.allSettled([
     Promise.all([getJSON('latest.json'),getJSON('history.json')]),
     getJSON('forecast.json'),
-    getJSON('funds.json')
+    getJSON('funds.json'),
+    getJSON('cities.json')
   ]);
   if(market.status==='fulfilled' &&
       market.value[0].schema_version===1 && market.value[1].schema_version===1){
@@ -694,6 +765,7 @@ async function loadData(){
   forecastLoadFailure=!forecast;
   funds=nav.status==='fulfilled' && nav.value.schema_version===1?nav.value:null;
   navLoadFailure=!funds;
+  cityRates=city.status==='fulfilled'&&city.value.schema_version===1?city.value:null;
   render();
 }
 function setCityMenu(open, focusSelection=false){
@@ -749,6 +821,22 @@ function setupCityMenu(){
     }
   });
 }
+function updateLanguageControl(){
+  document.querySelectorAll('[data-language]').forEach(button=>{
+    const active=button.dataset.language===appLanguage;
+    button.classList.toggle('active',active);
+    button.setAttribute('aria-pressed',String(active));
+  });
+}
+function setLanguage(language){
+  if(language!=='ta' && language!=='en')return;
+  appLanguage=language;
+  window.NextRateI18n?.persist(language);
+  render();
+}
+document.querySelectorAll('[data-language]').forEach(button=>{
+  button.addEventListener('click',()=>setLanguage(button.dataset.language));
+});
 setupCityMenu();
 window.addEventListener('hashchange',render);
 render();
