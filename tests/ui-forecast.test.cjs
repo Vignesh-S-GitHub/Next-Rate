@@ -99,7 +99,8 @@ test('Actual dates and forecast range are independently inspectable on mobile',(
  assert.doesNotMatch(chart,/chart-inspect-panel/);
  assert.match(chart,/ArrowLeft/);
  assert.match(chart,/role="status"/);
- assert.match(chart,/Tap any point/);
+ assert.match(chart,/Move slider/);
+ assert.doesNotMatch(chart,/data-chart-step|chart-usage-tip/);
  assert.match(model,/function observations\(/);
  assert.match(model,/function indexAtX\(/);
  assert.match(model,/date<=forecast\.based_on_date|r\.date>forecast\.based_on_date/);

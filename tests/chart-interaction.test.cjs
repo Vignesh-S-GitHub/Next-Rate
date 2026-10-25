@@ -81,20 +81,19 @@ test('Interactive SVG retains gold line, gradient, dashed estimate, chart and ra
  assert.match(html,/data-chart-tooltip role="status" aria-live="polite" aria-atomic="true" hidden/);
  assert.doesNotMatch(html,/chart-inspect-panel|data-chart-readout/);
  const actual=Model.displayPoint(Model.observations(sampleHistory(),ctx0.forecast,'gold24',7),ctx0.forecast,'gold24',6);
- assert.match(UI.insightHtml(actual,ctx0),/ACTUAL · 2026-10-23/);
+ assert.match(UI.insightHtml(actual,ctx0),/Actual · 23 Oct 2026/);
  assert.match(UI.insightHtml(actual,ctx0),/1,41,630/);
- assert.match(html,/aria-label="Next date"/);
+ assert.doesNotMatch(html,/data-chart-step|aria-label="Next date"|aria-label="Previous date"/);
  assert.match(html,/role="group"/);
 });
 test('Selection of forecast never labels estimated rate as actual or claims guaranteed band',()=>{
  const html=UI.render({...ctx0,history:sampleHistory(),selectedDate:'2026-10-26'});
  const forecastPoint=Model.displayPoint(Model.observations(sampleHistory(),ctx0.forecast,'gold24',7),ctx0.forecast,'gold24',7);
  const tooltip=UI.insightHtml(forecastPoint,ctx0);
- assert.match(tooltip,/PREDICTION · 2026-10-26/);
- assert.match(tooltip,/Same as last close/);
- assert.match(tooltip,/Range ₹1,39,500 – ₹1,43,800/);
- assert.match(tooltip,/Not a guarantee/);
- assert.match(html,/experimental prediction/);
+ assert.match(tooltip,/Estimate · 26 Oct 2026/);
+ assert.match(tooltip,/₹1,41,630/);
+ assert.doesNotMatch(tooltip,/Range|Not a guarantee/);
+ assert.match(html,/Estimate only · Not guaranteed/);
  assert.match(html,/value="7"/);
 });
 test('Silver uses silver unit and gray theme, and fails safely on missing actual history',()=>{
@@ -108,20 +107,25 @@ test('Silver uses silver unit and gray theme, and fails safely on missing actual
 });
 test('Chart inspector is safe for missing data and identifies exact past or future status',()=>{
  const pts=Model.observations(sampleHistory(),ctx0.forecast,'gold22',7);
- assert.match(UI.insightHtml(Model.displayPoint(pts,ctx0.forecast,'gold22',0),ctx0),/ACTUAL/);
- assert.match(UI.insightHtml(Model.displayPoint(pts,ctx0.forecast,'gold22',7),ctx0),/PREDICTION/);
+ assert.match(UI.insightHtml(Model.displayPoint(pts,ctx0.forecast,'gold22',0),ctx0),/Actual/);
+ assert.match(UI.insightHtml(Model.displayPoint(pts,ctx0.forecast,'gold22',7),ctx0),/Estimate/);
  assert.match(UI.insightHtml(null,ctx0),/Published rate unavailable/);
 });
 
-test('Floating tooltip clamps to chart edges and flips below high points',()=>{
- const center=UI.tooltipPosition(150,160,320,200,160,60);
- assert.deepEqual(center,{left:150,top:88,placement:'above',arrowX:80});
- const edge=UI.tooltipPosition(310,20,320,200,160,60);
- assert.equal(edge.placement,'below');
- assert.ok(edge.left<=234 && edge.left>=86);
- assert.ok(edge.top>=6);
- assert.ok(edge.arrowX<=150);
- const left=UI.tooltipPosition(3,130,320,200,160,60);
- assert.ok(left.left>=86);
- assert.ok(left.arrowX>=10);
+test('Compact tooltip stays above SVG and inside narrow plot edges',()=>{
+ const center=UI.tooltipPosition(150,160,320,240,180,26);
+ assert.equal(center.top,4);
+ assert.equal(center.left,150);
+ const edge=UI.tooltipPosition(310,20,320,240,180,26);
+ assert.equal(edge.top,4);
+ assert.ok(edge.left<=225);
+ const left=UI.tooltipPosition(3,130,320,240,180,26);
+ assert.ok(left.left>=95);
+ assert.ok(left.arrowX>=9);
+});
+test('One slider, no arrow buttons or long instruction panel',()=>{
+ const html=UI.render({...ctx0,history:sampleHistory()});
+ assert.equal((html.match(/data-chart-slider/g)||[]).length,1);
+ assert.doesNotMatch(html,/chart-usage-tip|data-chart-step|chart-inspect-panel|Slide below/);
+ assert.match(html,/Move slider/);
 });

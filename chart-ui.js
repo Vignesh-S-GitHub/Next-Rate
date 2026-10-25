@@ -12,31 +12,17 @@ function isoLabel(iso){
   day:'numeric',month:'short',timeZone:'Asia/Kolkata'});
 }
 function insightHtml(point,ctx){
- if(!point)return '<span class="chart-inspect-note">Published rate unavailable.</span>';
- const date=ctx.sourceDate(point.date);
- const predicted=point.kind==='prediction';
- const base=ctx.forecast?.metals?.[ctx.metal]?.baseline;
- return '<div class="chart-inspect-main"><span class="chart-inspect-kind'+
-  (predicted?' is-prediction':'')+'">'+(predicted?'PREDICTION':'ACTUAL')+' · '+
-  date+'</span><strong>'+fmt(ctx,point.value)+' <small>/ '+point.unit+'</small></strong></div>'+
-  (predicted?'<span class="chart-inspect-note">'+
-    (base===point.value?'Same as last close':'experimental prediction')+'</span>'+
-    '<span class="chart-inspect-note">Range '+fmt(ctx,point.low)+' – '+fmt(ctx,point.high)+
-    ' · Not a guarantee.</span>':
-    '<span class="chart-inspect-note">Recorded IBJA '+(point.session==='AM'?'AM':'PM')+
-    ' reference price.</span>');
+ if(!point)return '<span>Published rate unavailable.</span>';
+ const status=point.kind==='prediction'?'Estimate':'Actual';
+ const date=isoLabel(point.date)+' '+point.date.slice(0,4);
+ return '<span class="chart-inspect-kind'+(point.kind==='prediction'?' is-prediction':'')+'">'+status+' · '+date+'</span>'+
+  '<strong class="chart-tooltip-price">'+fmt(ctx,point.value)+' <small>/ '+point.unit+'</small></strong>';
 }
-// Keep the tooltip inside the plot. Favor above the selected point and flip
-// below only when it would otherwise be cut off at the top edge.
+// Keep selection in a slim strip above the SVG, avoiding the data line entirely.
 function tooltipPosition(pointX,pointY,plotWidth,plotHeight,tipWidth,tipHeight){
- const padding=6,width=Math.min(tipWidth,Math.max(0,plotWidth-padding*2));
- const half=width/2;
- const left=Math.max(half+padding,Math.min(plotWidth-half-padding,pointX));
- let top=pointY-tipHeight-12,placement='above';
- if(top<padding){top=pointY+12;placement='below';}
- if(top+tipHeight>plotHeight-padding)top=Math.max(padding,plotHeight-tipHeight-padding);
- const arrowX=Math.max(10,Math.min(width-10,pointX-left+half));
- return {left,top,placement,arrowX};
+ const pad=5,w=Math.min(tipWidth,Math.max(0,plotWidth-pad*2)),half=w/2;
+ const left=Math.max(half+pad,Math.min(plotWidth-half-pad,pointX));
+ return {left,top:4,placement:'above',arrowX:Math.max(9,Math.min(w-9,pointX-left+half))};
 }
 function prepare(ctx){
  const d=ctx.forecast?.metals?.[ctx.metal], rows=Model?.observations(ctx.history,ctx.forecast,ctx.metal,ctx.days)||[];
@@ -80,9 +66,8 @@ function render(ctx){
  const selY=selected===n?predictedY:pts[selected].y;
  const forecastText=ctx.sourceDate(ctx.forecast.target_date);
  return '<div class="market-chart-title"><div><strong>'+name+' Price Trend</strong>'+
-  '<span>Actual prices → '+isoLabel(ctx.forecast.target_date)+' estimate</span></div>'+
+  '<span>Actual → '+isoLabel(ctx.forecast.target_date)+' estimate</span></div>'+
   '<span class="market-chart-metadata">₹ / '+(ctx.metal==='silver'?'kg':'10 g')+'</span></div>'+
-  '<p class="chart-usage-tip">Tap any point to see its date and price. Slide below to explore more dates.</p>'+
   '<div class="chart-plot" data-chart-plot><svg class="market-trend-svg chart-interactive" data-chart-svg viewBox="0 0 640 257" tabindex="0" role="group"'+
   ' aria-label="'+name+' actual dated IBJA close. Arrow keys explore dates; the dashed line is an unconfirmed estimate for '+
   forecastText+'.">'+
@@ -115,14 +100,11 @@ function render(ctx){
    '<span><i class="market-legend-dash"></i>Estimate</span>'+
    '<span><i class="market-legend-band"></i>Range</span></div>'+
 
-  '<div class="chart-date-controls"><button type="button" data-chart-step="-1" aria-label="Previous date"'+
-   (selected===0?' disabled':'')+'>‹</button>'+
-   '<label class="chart-date-label"><span>Explore dates</span>'+
-   '<input type="range" data-chart-slider min="0" max="'+n+'" step="1" value="'+selected+
-   '" aria-label="Choose an actual date or forecast" aria-valuetext="'+(point.kind==='prediction'?'Prediction ':'Actual ')+ctx.sourceDate(point.date)+' '+fmt(ctx,point.value)+'"></label>'+
-   '<button type="button" data-chart-step="1" aria-label="Next date"'+
-    (selected===n?' disabled':'')+'>›</button></div>'+
-   '<p class="chart-key">Solid gold line = recorded prices. Dashed line and shaded area = <b>experimental prediction</b>, not a confirmed rate.</p>';
+  '<div class="chart-date-controls"><label class="chart-date-label"><span>Move slider</span>'+
+  '<input type="range" data-chart-slider min="0" max="'+n+'" step="1" value="'+selected+
+  '" aria-label="Choose an actual date or forecast" aria-valuetext="'+
+  (point.kind==='prediction'?'Estimate ':'Actual ')+ctx.sourceDate(point.date)+' '+fmt(ctx,point.value)+'"></label></div>'+
+  '<p class="chart-key">Estimate only · Not guaranteed</p>';
 }
 function wire(container,ctx,onSelectedDate){
  if(!container)return;
@@ -156,14 +138,11 @@ function wire(container,ctx,onSelectedDate){
   tooltip.style.setProperty('--chart-arrow-x',pos.arrowX.toFixed(1)+'px');
   tooltip.dataset.placement=pos.placement;
   slider.value=i;
-  slider.setAttribute('aria-valuetext',(point.kind==='prediction'?'Prediction ':'Actual ')+ctx.sourceDate(point.date)+' '+fmt(ctx,point.value));
+  slider.setAttribute('aria-valuetext',(point.kind==='prediction'?'Estimate ':'Actual ')+ctx.sourceDate(point.date)+' '+fmt(ctx,point.value));
   const x=Model.xForIndex(i,n);
   hair.setAttribute('x1',x.toFixed(1));hair.setAttribute('x2',x.toFixed(1));
   ring.setAttribute('cx',x.toFixed(1));ring.setAttribute('cy',y(point.value).toFixed(1));
   ring.setAttribute('stroke',point.kind==='prediction'?'#b67c22':color);
-  container.querySelectorAll('[data-chart-step]').forEach(button=>{
-    button.disabled=i===(Number(button.dataset.chartStep)<0?0:n);
-  });
  }
  svg.addEventListener('click',ev=>{
   const circle=ev.target.closest?.('[data-chart-point]');
@@ -178,9 +157,6 @@ function wire(container,ctx,onSelectedDate){
   choose(ev.key==='Home'?0:ev.key==='End'?n:Number(slider.value)+(ev.key==='ArrowRight'?1:-1));
  });
  slider.addEventListener('input',()=>choose(Number(slider.value)));
- container.querySelectorAll('[data-chart-step]').forEach(button=>
-   button.addEventListener('click',()=>choose(Number(slider.value)+Number(button.dataset.chartStep)))
- );
 }
 const api=Object.freeze({render,wire,insightHtml,tooltipPosition});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
