@@ -102,7 +102,8 @@ test('Silver uses silver unit and gray theme, and fails safely on missing actual
  assert.match(html,/Silver 999 Price Trend/);
  assert.match(html,/₹ \/ kg/);
  assert.match(html,/#7d8d9f/);
- assert.match(html,/1 kg/);
+ const rows=Model.observations(sampleHistory(),ctx0.forecast,'silver',7);
+ assert.match(UI.insightHtml(Model.displayPoint(rows,ctx0.forecast,'silver',6),{...ctx0,metal:'silver'}),/1 kg/);
  assert.match(UI.render({...ctx0,history:{india:[]}}),/At least two dated IBJA observations/);
 });
 test('Chart inspector is safe for missing data and identifies exact past or future status',()=>{
