@@ -39,7 +39,7 @@ test('manual jeweller quote is calculated as entered, not falsely verified',()=>
  const quote=C.manualShopBill({ratePerGram:13070,grams:8,
  makingPct:10,makingFlat:0,wastagePct:0});
  assert.equal(quote.metal,104560);
- assert.equal(quote.total,118303.28);
+ assert.equal(quote.total,118466.48);
 });
 test('portfolio values include dated reference with explicit type',()=>{
  const a=C.holdingValuation({kind:'gold22',qty:8,paid:110000}, {rates,funds});
