@@ -17,7 +17,7 @@ test('Publisher logo URLs come from original official websites, never stock or A
  assert.match(p.goodreturns.image,/^https:\/\/images\.goodreturns\.in\//);
  assert.match(p.nse.image,/^https:\/\/nsearchives\.nseindia\.com\//);
  assert.match(sources.badge('ibja',{compact:true}),/<img/);
- assert.match(sources.badge('nse'),/NSE ETF/);
+ assert.match(sources.badge('nse'),/Open official NSE source/);
  assert.match(sources.badge('goodreturns'),/Goodreturns/);
 });
 test('Brand-restricted BIS/AMFI appear as official links, not unapproved logo images',()=>{
