@@ -835,5 +835,14 @@ window.addEventListener('focus',()=>{
   if(rates&&window.NextRateFeatures?.checkAlerts(featuresContext())&&location.hash==='#tools')render();
 });
 window.addEventListener('hashchange',render);
+// Unregister the retired notification-only worker installed by older releases.
+if(navigator.serviceWorker?.getRegistrations){
+ const oldWorker=new URL('./notification-sw.js',document.baseURI).href;
+ void navigator.serviceWorker.getRegistrations().then(registrations=>
+  Promise.allSettled(registrations.filter(reg=>
+   [reg.active,reg.waiting,reg.installing].some(worker=>
+    worker?.scriptURL===oldWorker)).map(reg=>reg.unregister()))
+ ).catch(()=>{});
+}
 render();
 loadData();

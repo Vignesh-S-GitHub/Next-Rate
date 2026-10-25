@@ -29,23 +29,13 @@ test('Nine features are implemented as working panels with meaningful form handl
  assert.match(feature,/data-delete-kind/);
  assert.match(feature,/onSubmit/);
 });
-test('Android alerts use service worker, explicit consent and test delivery',()=>{
- assert.match(feature,/GitHub Pages cannot send guaranteed background push alerts/);
- assert.match(feature,/Notifications[.]enable/);
- assert.match(feature,/Notifications[.]show/);
- assert.match(feature,/Send test notification/);
- assert.doesNotMatch(feature,/new root[.]Notification/);
+test('On-site target checker does not ask for browser notifications',()=>{
+ assert.match(feature,/This tool does not send browser or phone notifications/);
  assert.match(feature,/checkAlerts/);
  assert.match(feature,/C[.]ageDays/);
- assert.match(feature,/a[.]triggeredAt/);
- assert.match(feature,/inFlightNotifications/);
- assert.match(feature,/a[.]notifiedAt/);
- assert.match(feature,/if\(demo[.]ok\)checkAlerts\(context\(\)\)/);
- assert.match(index,/browser-notifications[.]js/);
- assert.match(feature,/data-notification-status/);
- assert.match(feature,/notificationRequestPending/);
- assert.match(feature,/watchPermission/);
- assert.match(feature,/Request sent/);
+ assert.doesNotMatch(feature,/NextRateNotifications|requestPermission|showNotification|data-feature-action="notify"/);
+ assert.doesNotMatch(index,/browser-notifications[.]js/);
+ assert.match(app,/getRegistrations/);
 });
 test('BIS verification is official external handoff rather than fake verification',()=>{
  assert.match(require('../source-logos.js').badge('biscare'),/www\.bis\.gov\.in\/bis-apps/);
@@ -69,12 +59,14 @@ test('Market signals never fabricate COMEX LBMA or MCX and ETFs never fake LTP',
 });
 test('Both deployments stage tool scripts, stylesheet and run tests',()=>{
  for(const workflow of [pages,daily]){
-   for(const script of ['features.js','features-core.js','features.css','browser-notifications.js','notification-sw.js']){
+   for(const script of ['features.js','features-core.js','features.css']){
     assert.ok(workflow.includes(script),script+' staged');
    }
    assert.match(workflow,/tests\/features-core\.test\.cjs/);
    assert.match(workflow,/tests\/ui-features\.test\.cjs/);
-   assert.ok(workflow.includes('tests/browser-notifications.test.cjs'));
+   assert.ok(!workflow.includes('tests/browser-notifications.test.cjs'));
+   assert.ok(!workflow.includes('browser-notifications.js'));
+   assert.ok(!workflow.includes('notification-sw.js'));
  }
 });
 
@@ -101,7 +93,7 @@ test('Every tool panel renders using a dated India market snapshot',()=>{
    assert.ok(markup.length>950,id);
  }
  module.select('alerts');
- assert.match(module.page(context),/GitHub Pages cannot send guaranteed background push alerts/);
+ assert.match(module.page(context),/This tool does not send browser or phone notifications/);
  module.select('hallmark');
  assert.match(module.page(context),/official BIS Care/);
  module.select('signals');
@@ -133,35 +125,22 @@ test('Official source identities appear in the relevant tools without pretending
  assert.match(feature.page(coreContext),/images\.goodreturns\.in/);
 });
 
-test('Reached before permission: a recently triggered target notifies once after enabling',async()=>{
- const vm=require('node:vm');
- const core=require('../features-core.js');
+test('A saved target is checked once during a visit, without push',()=>{
+ const vm=require('node:vm'),core=require('../features-core.js');
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',
   year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
- const part=name=>parts.find(x=>x.type===name).value;
- const day=part('year')+'-'+part('month')+'-'+part('day');
- const record={version:1,notifications:true,preferred:'alerts',
-  alerts:[{id:'a-previously-hit',metal:'gold24',grams:10,op:'above',
-   target:140000,triggeredAt:day,triggerPrice:141630}],
-  shops:[],holdings:[],etfQuotes:{}};
- let storage=JSON.stringify(record),sent=[];
- const win={
-  NextRateCore:core,
-  NextRateSources:{badge:()=>''},
-  NextRateNotifications:{
-   permitted:()=>true,
-   show:async(title,body,tag)=>{sent.push({title,body,tag});return {ok:true};}
-  },
-  localStorage:{getItem:()=>storage,setItem:(_,value)=>{storage=value;}},
- };
+ const part=n=>parts.find(x=>x.type===n).value;
+ const today=part('year')+'-'+part('month')+'-'+part('day');
+ let storage=JSON.stringify({version:1,notifications:true,preferred:'alerts',
+  alerts:[{id:'target',metal:'gold24',grams:10,op:'above',target:140000,triggeredAt:null}],
+  shops:[],holdings:[],etfQuotes:{}});
+ const win={NextRateCore:core,NextRateSources:{badge:()=>''},
+  localStorage:{getItem:()=>storage,setItem:(_,text)=>{storage=text;}}};
  vm.runInNewContext(feature,{window:win});
- const ctx={rates:{india:{date:day,gold24_inr_10g:141630}},refresh:()=>{}};
- assert.equal(win.NextRateFeatures.checkAlerts(ctx),0);
- await new Promise(resolve=>setImmediate(resolve));
- assert.equal(sent.length,1);
- assert.match(sent[0].body,/reached/);
- assert.equal(JSON.parse(storage).alerts[0].notifiedAt,day);
- assert.equal(win.NextRateFeatures.checkAlerts(ctx),0);
- await new Promise(resolve=>setImmediate(resolve));
- assert.equal(sent.length,1,'no duplicate notice');
+ const context={rates:{india:{date:today,gold24_inr_10g:141630}},refresh:()=>{}};
+ assert.equal(win.NextRateFeatures.checkAlerts(context),1);
+ assert.equal(win.NextRateFeatures.checkAlerts(context),0);
+ assert.equal(JSON.parse(storage).alerts[0].triggeredAt,today);
+ assert.ok(!Object.hasOwn(JSON.parse(storage),'notifications'));
+ assert.doesNotMatch(win.NextRateFeatures.page(context),/data-feature-action="notify"/);
 });
