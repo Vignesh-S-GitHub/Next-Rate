@@ -52,10 +52,23 @@ jobs:
           python scripts/backfill_rates.py
           python -m json.tool data/history.json >/dev/null
 
+      - name: Verify existing lifetime archives
+        run: |
+          if test -s data/archive/manifest.json; then
+            python scripts/archive_data.py --verify
+          fi
+
       - name: Build experimental outlook from published rates
         run: |
           python scripts/forecast.py
           python -m json.tool data/forecast.json >/dev/null
+          python -m json.tool data/forecast_history.json >/dev/null
+
+      - name: Archive all verified observations and compact public data
+        run: |
+          python scripts/archive_data.py
+          python scripts/archive_data.py --verify
+          python -m json.tool data/history.json >/dev/null
           python -m json.tool data/forecast_history.json >/dev/null
 
       - name: Stage public assets
