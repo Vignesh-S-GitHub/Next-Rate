@@ -15,8 +15,8 @@ INDIA = {"date": "2026-10-23", "session": "PM",
 
 def fixture():
     return {
-        "latest.json": {"schema_version": 1, "india": INDIA, "spot": {}, "fx": None},
-        "history.json": {"schema_version": 1, "india": [INDIA]},
+        "latest.json": {"schema_version": 1, "india": dict(INDIA), "spot": {}, "fx": None},
+        "history.json": {"schema_version": 1, "india": [dict(INDIA)]},
         "forecast.json": {"schema_version": 1, "status": "experimental",
                           "based_on_date": INDIA["date"], "based_on_session": "PM",
                           "target_date": "2026-10-26", "metals": {
