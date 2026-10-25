@@ -87,7 +87,7 @@
      const pred=issuance?.metals?.[metal];
      if(!ev||!pred||!Number.isFinite(ev.actual)||ev.actual<=0||
         !Number.isFinite(pred.estimate)||pred.estimate<=0)continue;
-     if(!issuance.target_date||ev.actual_date!==issuance.target_date)continue;
+     if(!issuance.target_date||issuance.evaluation.actual_date!==issuance.target_date)continue;
      graded.push({date:issuance.target_date,actual:ev.actual,prediction:pred.estimate,
        baseline:pred.baseline,
        errorPct:100*Math.abs(pred.estimate-ev.actual)/ev.actual,
