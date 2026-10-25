@@ -14,7 +14,10 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from scripts.update_rates import download, validate_rates
+try:
+    from scripts.update_rates import download, validate_rates
+except ModuleNotFoundError:
+    from update_rates import download, validate_rates
 
 ROOT = Path(__file__).resolve().parents[1]
 HISTORY = ROOT / "data" / "history.json"
