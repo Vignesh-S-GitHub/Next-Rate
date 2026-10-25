@@ -1,3 +1,9 @@
+## Nine mobile tools added
+
+NextRate now has a **Tools** screen (English / தமிழ்) with **Price Alerts**, **Jewellery Bill**, **Accuracy**, **Compare Shops**, **My Gold**, **Sell / Exchange**, **Hallmark**, **Gold & Silver ETF**, and **World Markets**. Home has compact shortcuts; existing prices, graphics and daily refresh are unchanged.
+
+Only dated, sourced price inputs are used. Shop price comparisons and portfolios use local user entries. Alerts are evaluated in-app when open, not through a background push service; HUID verification opens BIS Care; official LBMA/COMEX/MCX price integrations are not claimed. See [all tools and limitations](docs/NINE_TOOLS.md).
+
 ## City gold/silver prices and Tamil language
 
 The **Compare** screen now shows published *indicative* gold/silver rates for Chennai, Mumbai, Delhi, Bengaluru and Hyderabad. The five-city table comes from [Goodreturns Gold](https://www.goodreturns.in/gold-rates/) and [Goodreturns Silver](https://www.goodreturns.in/silver-rates/); each metal retains its original publication date. Unlike the [IBJA national benchmark](https://www.ibjarates.com/), city references are informational and are **not authenticated individual jeweller checkout prices**. GST, jewellery making charges, seller premiums and levies are additional. City gold is displayed per 1 gram and 8 gram (pavan); city silver per 1 kilogram. The Home screen shows the currently selected city's 22K reference beside national prices.
