@@ -27,8 +27,11 @@ jobs:
         run: |
           set -eu
           node --check weights.js
+          node --check buy-options.js
           node --check app.js
           node --test tests/weights.test.cjs
+          node --test tests/buy-options.test.cjs
+          node --test tests/ui-buy.test.cjs
           node --test tests/ui-controls.test.cjs
           test -s index.html
           test -s styles.css
@@ -39,6 +42,11 @@ jobs:
           python -m unittest discover -s tests -v
           node --test tests/ui-forecast.test.cjs
 
+      - name: Refresh AMFI fund NAVs
+        run: |
+          python scripts/update_funds.py
+          python -m json.tool data/funds.json >/dev/null
+
       - name: Build experimental outlook from published rates
         run: |
           python scripts/forecast.py
@@ -48,12 +56,12 @@ jobs:
       - name: Stage public assets
         run: |
           mkdir -p _site/assets _site/data
-          cp index.html app.js weights.js styles.css _site/
+          cp index.html app.js weights.js buy-options.js styles.css _site/
           cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           if test -s data/latest.json && test -s data/history.json; then
             python -m json.tool data/latest.json >/dev/null
             python -m json.tool data/history.json >/dev/null
-            cp data/latest.json data/history.json data/forecast.json data/forecast_history.json _site/data/
+            cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json _site/data/
           else
             echo "No data snapshot committed yet: frontend will display unavailable message"
           fi
