@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),m=require('../tools-core.js');
-const rates={gold24_inr_10g:141630,gold22_inr_10g:129733,silver999_inr_kg:194415};
+const rates={date:new Date().toISOString().slice(0,10),gold24_inr_10g:141630,gold22_inr_10g:129733,silver999_inr_kg:194415};
 test('jewellery GST is 3 percent on entire price including making and wastage',()=>{
  const q=m.jewelleryBill({ratePerGram:12973.3,grams:8,making:5000,wastagePct:2});
  assert.equal(q.metal,103786.4);
@@ -37,12 +37,20 @@ test('alerts require valid direction, threshold, current available quote',()=>{
  assert.throws(()=>m.alertKey('fake',8,'Chennai'),RangeError);
 });
 test('portfolio uses dated IBJA per-gram value, and ETFs only as NAV not trade',()=>{
- const q=m.buildQuotes({india:rates,funds:{funds:{goldbees:{nav_inr_per_unit:115}}}});
+ const q=m.buildQuotes({india:rates,funds:{funds:{goldbees:{nav_inr_per_unit:115,nav_date:rates.date}}}});
  assert.equal(q.gold22,12973.3);assert.equal(q.silver,194.415);
  const p=m.holdingValue({quantity:8,paid:90000,type:'gold22'},q);
  assert.equal(p.value,103786.4);assert.equal(p.pnl,13786.4);
  assert.match(m.holdingValue({quantity:10,paid:1000,type:'etf',scheme:'goldbees'},q).note,/NAV/);
  assert.equal(m.holdingValue({quantity:1,paid:1,type:'etf',scheme:'missing'},q).value,null);
+});
+test('stale market data cannot be treated as a current portfolio valuation',()=>{
+ const past='2024-01-01';
+ const q=m.buildQuotes({india:{...rates,date:past},funds:{funds:{goldbees:{nav_inr_per_unit:115,nav_date:past}}}});
+ assert.equal(q.gold22,null);
+ assert.equal(q.fundNav.goldbees,undefined);
+ assert.equal(m.holdingValue({type:'gold22',quantity:8,paid:100000},q).value,null);
+ assert.ok(!m.freshDate(past,7));
 });
 test('reject untrusted numeric input and unreasonable quantities',()=>{
  for(const v of ['',null,undefined,'x',-1,Infinity]) assert.throws(()=>m.jewelleryBill({ratePerGram:v,grams:1}),RangeError);
