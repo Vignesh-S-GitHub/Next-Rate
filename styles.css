@@ -558,3 +558,66 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .market-status-note{padding:11px 14px;border:1px solid #ece2c9;background:#fffaf0;border-radius:12px;color:#806329;font-size:12px;line-height:1.65;margin:0 0 14px}
 .market-status-note strong{font-weight:800;color:#76551a}
 @media(max-width:680px){.market-status-note{font-size:11px;padding:10px 12px;line-height:1.55}}
+
+
+/* City reference rates and bilingual language toggle — NextRate minimal theme */
+.lang-switch{display:flex;align-items:center;gap:2px;padding:3px;border:1px solid #ece9e0;background:#f7f8f9;border-radius:11px;flex-shrink:0}
+.lang-button{font:inherit;font-size:12px;min-height:37px;min-width:37px;padding:7px 10px;background:transparent;color:#657186;border:0;border-radius:8px;font-weight:750;cursor:pointer}
+.lang-button.active{background:#d59b25;color:#fff;box-shadow:0 1px 4px rgba(121,84,16,.15)}
+.lang-button:focus-visible{outline:2px solid #a77a20;outline-offset:3px}
+.city-rates-panel{padding:20px}
+.city-rates-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.city-rates-head h2{margin:0 0 3px;font-size:20px}
+.city-rates-head p{margin:0;font-size:12px}
+.city-source{font-size:12px;color:#a0782a;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;padding:3px 0}
+.city-rate-list{border:1px solid #edf0f3;border-radius:12px;overflow:hidden}
+.city-rate-item{display:grid;grid-template-columns:minmax(92px,1fr) minmax(95px,1.2fr) minmax(105px,1.1fr);gap:14px;align-items:center;border-bottom:1px solid #eef0f3;padding:13px 16px;min-height:70px}
+.city-rate-item:last-child{border-bottom:0}
+.city-rate-item.selected{background:#fffaf0;border-left:3px solid #d6a12e;padding-left:13px}
+.city-name{font-size:14px;font-weight:700;color:#26354b}
+.city-price-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.city-price-main strong{font-size:19px;color:#122641;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.4px}
+.city-eight{font-size:11px;color:#7e8897}
+.city-published{font-size:12px;color:#8390a0;line-height:1.55}
+.city-disclaimer{font-size:11px;color:#7b8797;line-height:1.55;margin:11px 1px 0}
+.national-benchmark{background:#fafbfc}
+.national-benchmark .reference-value{font-size:26px}
+.home-city-price{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fffcf5;border:1px solid #f1e8d6;border-radius:10px;padding:10px 12px;margin-top:9px}
+.home-city-price>span{color:#8b6327;font-size:12px;font-weight:700}
+.home-city-price>strong{margin-left:auto;color:#132940;font-variant-numeric:tabular-nums;font-size:17px}
+.home-city-price small{font-size:11px;color:#9c8a6b}
+@media(max-width:850px){
+ .header-inner{gap:9px}
+ .desktop-nav{gap:20px}
+ .lang-button{font-size:11px}
+}
+@media(max-width:750px){
+ .site-header .header-inner{gap:8px}
+ .lang-switch{padding:2px;gap:0}
+ .lang-button{min-height:37px;padding:7px 8px;min-width:31px;font-size:11px}
+ .site-header .city-trigger{min-height:41px;padding:8px}
+ .city-rate-item{grid-template-columns:minmax(70px,1fr) minmax(110px,1.05fr);gap:6px 12px;padding:12px}
+ .city-rate-item.selected{padding-left:9px}
+ .city-name{font-size:13px;grid-column:1;grid-row:1}
+ .city-price-main{grid-column:2;grid-row:1/3;align-items:flex-end}
+ .city-price-main strong{font-size:17px}
+ .city-published{grid-column:1;grid-row:2;font-size:10px}
+ .city-eight{font-size:10px}
+ .city-rates-panel{padding:15px 12px}
+ .city-rates-head h2{font-size:18px}
+ .home-city-price{padding:9px 10px;gap:5px}
+ .home-city-price strong{font-size:15px}
+}
+@media(max-width:520px){
+ .site-header .brand-text{display:none}
+ .site-header .brand{flex-shrink:0}
+ .site-header .header-inner{justify-content:space-between;gap:5px}
+ .site-header .city-trigger #selected-city{max-width:80px;overflow:hidden;text-overflow:ellipsis}
+ .site-header .lang-button{padding:7px 6px}
+ .site-header .location-control{flex-shrink:1;min-width:0}
+}
+@media(max-width:360px){
+ .site-header .lang-button{font-size:10px;min-width:27px}
+ .site-header .city-trigger{font-size:11px;gap:4px;padding:7px 5px}
+ .site-header .city-trigger #selected-city{max-width:65px}
+}
