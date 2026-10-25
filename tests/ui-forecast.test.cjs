@@ -20,7 +20,8 @@ test('Home shows tomorrow, today, weights and buy together',()=>{
 });
 test('Predictions are dated model files, not live official exchange quotes',()=>{
  assert.match(app,/getJSON\('forecast\.json'\)/);
- assert.match(app,/forecast\.target_date >= indiaTodayISO\(\)/);
+ assert.match(app,/forecastIsConsistent/);
+ assert.match(app,/indiaTodayISO\(\)/);
  assert.match(app,/forecast\.based_on_date/);
  assert.match(app,/forecastMetalCard\('gold24'/);
  assert.match(app,/forecastMetalCard\('gold22'/);
