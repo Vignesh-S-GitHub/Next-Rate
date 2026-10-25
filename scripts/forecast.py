@@ -14,7 +14,10 @@ import math
 import statistics
 import sys
 
-from scripts.forecast_models import estimate as next_estimate, walk_forward
+try:
+    from scripts.forecast_models import estimate as next_estimate, walk_forward
+except ModuleNotFoundError:
+    from forecast_models import estimate as next_estimate, walk_forward
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
