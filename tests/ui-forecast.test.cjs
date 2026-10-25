@@ -65,3 +65,11 @@ test('Chart periods and measured model error stay visible and compact',()=>{
  assert.match(css,/\.home-weight-cell/);
  assert.match(css,/\.home-buy-cell/);
 });
+
+test('Today and next-open-day forecasts cannot be mislabelled Tomorrow',()=>{
+ assert.match(app,/const panelTitle=valid/);
+ assert.match(app,/forecast\.target_date===indiaTodayISO\(\)/);
+ assert.match(app,/Today outlook/);
+ assert.match(app,/Next open day/);
+ assert.match(app,/markerStep/);
+});
