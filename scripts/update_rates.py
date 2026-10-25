@@ -328,6 +328,7 @@ def refresh(now=None):
         "sources_checked": {},
     }
     records = {
+        **history,
         "schema_version": 1,
         "india": history.get("india", []),
         "spot": history.get("spot", {}),
