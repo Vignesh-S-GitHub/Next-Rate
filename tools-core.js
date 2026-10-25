@@ -123,15 +123,24 @@
    const value=round(quote*units);
    return {invested,quantity:units,value,pnl:round(value-invested),note};
  }
+ function freshDate(iso,maxDays,now=Date.now()){
+   if(typeof iso!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(iso))return false;
+   const stamp=Date.parse(iso+'T00:00:00Z');
+   const age=(now-stamp)/86400000;
+   return Number.isFinite(age)&&age>=-.99&&age<=maxDays+.99;
+ }
  function buildQuotes({india,funds,cityRates,city}){
+   // Suppress stale valuations rather than showing old NAVs as current worth.
+   const base=freshDate(india?.date,7)?india:null;
    const values={
-     gold24:metalRate(india,'gold24'),
-     gold22:metalRate(india,'gold22'),
-     silver:metalRate(india,'silver'),
+     gold24:metalRate(base,'gold24'),
+     gold22:metalRate(base,'gold22'),
+     silver:metalRate(base,'silver'),
      fundNav:{}
    };
    for(const [id,f] of Object.entries(funds?.funds||{})){
-     if(Number.isFinite(f.nav_inr_per_unit)&&f.nav_inr_per_unit>0)values.fundNav[id]=f.nav_inr_per_unit;
+     if(Number.isFinite(f.nav_inr_per_unit)&&f.nav_inr_per_unit>0&&freshDate(f.nav_date,10))
+       values.fundNav[id]=f.nav_inr_per_unit;
    }
    if(city && cityRates?.cities?.[city]){
      const c=cityRates.cities[city];
@@ -154,7 +163,7 @@
  }
  const api=Object.freeze({money,valid,round,metalRate,jewelleryBill,buyback,
    exchangeBill,impliedSpotInr,percentDiff,statusMatch,alertKey,accuracy,
-   holdingValue,buildQuotes,localRead,localWrite,GST,GRAM_OZ});
+   holdingValue,buildQuotes,freshDate,localRead,localWrite,GST,GRAM_OZ});
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
  root.NextRateTools=api;
 })(typeof window==='undefined'?globalThis:window);
