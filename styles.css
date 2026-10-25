@@ -693,7 +693,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
 
 /* Interactive chart: original gold line, gradient and forecast band preserved.
-   Selection has a readable detail card, precise mobile slider and keyboard access. */
+   Selection shows a compact overlay within the plot, not a card below it. */
 .chart-usage-tip{font-size:11px;color:#7e8d9e;line-height:1.45;margin:8px 4px 3px}
 .market-trend-svg.chart-interactive{cursor:crosshair;touch-action:pan-y;outline:none}
 .market-trend-svg.chart-interactive:focus-visible{outline:2px solid #be8d27;outline-offset:3px;border-radius:5px}
@@ -701,14 +701,18 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .chart-hit:hover{stroke:#c99e3b;stroke-width:2.5;fill:rgba(211,157,43,.10)}
 .chart-inspect-ring{filter:drop-shadow(0 0 2px rgba(75,84,96,.18))}
 .chart-inspect-hairline{opacity:.55}
-.chart-inspect-panel{display:flex;flex-direction:column;gap:4px;background:#fffcf6;border:1px solid #efe5d0;border-radius:10px;padding:10px 12px;margin:10px 2px 4px;min-height:78px}
-.chart-inspect-main{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.chart-inspect-kind{font-size:11px;font-weight:800;color:#7b8898;letter-spacing:.35px}
+.chart-plot{position:relative;min-width:0}
+.chart-point-tooltip{position:absolute;z-index:2;display:flex;flex-direction:column;gap:3px;pointer-events:none;transform:translateX(-50%);width:max-content;max-width:calc(100% - 12px);padding:8px 10px;background:#fffcf6;border:1px solid #dbcaa7;border-radius:9px;box-shadow:0 5px 17px rgba(32,45,65,.16);line-height:1.3}
+.chart-point-tooltip[hidden]{display:none}
+.chart-point-tooltip::after{content:"";position:absolute;width:9px;height:9px;left:var(--chart-arrow-x,50%);background:#fffcf6;transform:translateX(-50%) rotate(45deg)}
+.chart-point-tooltip[data-placement="above"]::after{bottom:-6px;border-bottom:1px solid #dbcaa7;border-right:1px solid #dbcaa7}
+.chart-point-tooltip[data-placement="below"]::after{top:-6px;border-top:1px solid #dbcaa7;border-left:1px solid #dbcaa7}
+.chart-inspect-main{display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+.chart-inspect-kind{font-size:10px;font-weight:800;color:#7b8898;letter-spacing:.25px}
 .chart-inspect-kind.is-prediction{color:#a17220}
-.chart-inspect-main>strong{font-size:clamp(17px,2.5vw,23px);font-weight:800;color:#1a2e48;letter-spacing:-.45px;font-variant-numeric:tabular-nums}
-.chart-inspect-main strong small{font-size:11px;font-weight:500;color:#8b98a8;letter-spacing:0}
-.chart-inspect-note{font-size:11px;color:#78879a;line-height:1.55;margin:0}
-.chart-inspect-note b{font-weight:800;color:#a27524}
+.chart-inspect-main>strong{font-size:16px;font-weight:800;color:#1a2e48;letter-spacing:-.35px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.chart-inspect-main strong small{font-size:10px;font-weight:500;color:#8b98a8;letter-spacing:0}
+.chart-inspect-note{display:block;font-size:10px;color:#78879a;line-height:1.35}
 .chart-date-controls{display:flex;align-items:center;gap:9px;margin:7px 2px 4px}
 .chart-date-controls>button{flex:0 0 37px;width:37px;height:36px;border-radius:9px;border:1px solid #e6dfce;background:#fff9eb;color:#946e26;font-size:24px;cursor:pointer;display:grid;place-items:center}
 .chart-date-controls>button:disabled{opacity:.37;cursor:default;background:#f7f8fa;color:#87929e}
@@ -729,9 +733,7 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .nr-prediction-explainer span{flex:1 1 190px}
 @media(max-width:680px){
  .chart-usage-tip{font-size:10.5px;margin:7px 5px 2px}
- .chart-inspect-panel{padding:9px 10px;margin:7px 3px 2px}
- .chart-inspect-main>strong{font-size:18px}
- .chart-inspect-kind,.chart-inspect-note{font-size:10.5px}
+ .chart-point-tooltip{padding:7px 9px;gap:2px}
  .chart-date-controls{gap:7px}
  .chart-date-controls>button{width:37px;flex-basis:37px;min-height:37px}
  .nr-prediction-explainer{padding:8px 10px;font-size:10.5px}

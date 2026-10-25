@@ -12,21 +12,31 @@ function isoLabel(iso){
   day:'numeric',month:'short',timeZone:'Asia/Kolkata'});
 }
 function insightHtml(point,ctx){
- if(!point)return '<p>Published rate unavailable.</p>';
+ if(!point)return '<span class="chart-inspect-note">Published rate unavailable.</span>';
  const date=ctx.sourceDate(point.date);
- if(point.kind==='prediction'){
-  const base=ctx.forecast?.metals?.[ctx.metal]?.baseline;
-  return '<div class="chart-inspect-main"><span class="chart-inspect-kind is-prediction">PREDICTION · '+
-   date+'</span><strong>'+fmt(ctx,point.value)+' <small>/ '+point.unit+'</small></strong></div>'+
-   '<p class="chart-inspect-note">'+(base===point.value?'Same as the last published rate. ':
-      'Experimental price estimate, not a known future price. ')+
-   'Possible range '+fmt(ctx,point.low)+' – '+fmt(ctx,point.high)+
-   '. <b>Not a guarantee.</b></p>';
- }
- return '<div class="chart-inspect-main"><span class="chart-inspect-kind">ACTUAL · '+
+ const predicted=point.kind==='prediction';
+ const base=ctx.forecast?.metals?.[ctx.metal]?.baseline;
+ return '<div class="chart-inspect-main"><span class="chart-inspect-kind'+
+  (predicted?' is-prediction':'')+'">'+(predicted?'PREDICTION':'ACTUAL')+' · '+
   date+'</span><strong>'+fmt(ctx,point.value)+' <small>/ '+point.unit+'</small></strong></div>'+
-  '<p class="chart-inspect-note">Recorded IBJA '+(point.session==='AM'?'AM':'PM')+
-  ' reference price. A past actual observation, not a prediction.</p>';
+  (predicted?'<span class="chart-inspect-note">'+
+    (base===point.value?'Same as last close':'experimental prediction')+'</span>'+
+    '<span class="chart-inspect-note">Range '+fmt(ctx,point.low)+' – '+fmt(ctx,point.high)+
+    ' · Not a guarantee.</span>':
+    '<span class="chart-inspect-note">Recorded IBJA '+(point.session==='AM'?'AM':'PM')+
+    ' reference price.</span>');
+}
+// Keep the tooltip inside the plot. Favor above the selected point and flip
+// below only when it would otherwise be cut off at the top edge.
+function tooltipPosition(pointX,pointY,plotWidth,plotHeight,tipWidth,tipHeight){
+ const padding=6,width=Math.min(tipWidth,Math.max(0,plotWidth-padding*2));
+ const half=width/2;
+ const left=Math.max(half+padding,Math.min(plotWidth-half-padding,pointX));
+ let top=pointY-tipHeight-12,placement='above';
+ if(top<padding){top=pointY+12;placement='below';}
+ if(top+tipHeight>plotHeight-padding)top=Math.max(padding,plotHeight-tipHeight-padding);
+ const arrowX=Math.max(10,Math.min(width-10,pointX-left+half));
+ return {left,top,placement,arrowX};
 }
 function prepare(ctx){
  const d=ctx.forecast?.metals?.[ctx.metal], rows=Model?.observations(ctx.history,ctx.forecast,ctx.metal,ctx.days)||[];
@@ -73,7 +83,7 @@ function render(ctx){
   '<span>Actual prices → '+isoLabel(ctx.forecast.target_date)+' estimate</span></div>'+
   '<span class="market-chart-metadata">₹ / '+(ctx.metal==='silver'?'kg':'10 g')+'</span></div>'+
   '<p class="chart-usage-tip">Tap any point to see its date and price. Slide below to explore more dates.</p>'+
-  '<svg class="market-trend-svg chart-interactive" data-chart-svg viewBox="0 0 640 257" tabindex="0" role="group"'+
+  '<div class="chart-plot" data-chart-plot><svg class="market-trend-svg chart-interactive" data-chart-svg viewBox="0 0 640 257" tabindex="0" role="group"'+
   ' aria-label="'+name+' actual dated IBJA close. Arrow keys explore dates; the dashed line is an unconfirmed estimate for '+
   forecastText+'.">'+
   '<defs><linearGradient id="market-actual-fill" x1="0" y1="0" x2="0" y2="1">'+
@@ -100,11 +110,11 @@ function render(ctx){
     '" r="9" fill="none" stroke="'+(selected===n?'#b67c22':color)+'" stroke-width="2.5" pointer-events="none"/>'+
   '<text x="'+x0+'" y="242" font-size="13" fill="#8492a3">'+isoLabel(rows[0].date)+'</text>'+
   '<text x="'+xEnd+'" y="242" text-anchor="middle" font-size="13" fill="#8492a3">'+isoLabel(last.date)+'</text>'+
-  '<text x="'+xPred+'" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#aa7416">'+isoLabel(ctx.forecast.target_date)+'</text></svg>'+
+  '<text x="'+xPred+'" y="242" text-anchor="middle" font-size="13" font-weight="700" fill="#aa7416">'+isoLabel(ctx.forecast.target_date)+'</text></svg><div class="chart-point-tooltip" data-chart-tooltip role="status" aria-live="polite" aria-atomic="true" hidden></div></div>'+
   '<div class="market-legend"><span><i class="market-legend-line"></i>Actual</span>'+
    '<span><i class="market-legend-dash"></i>Estimate</span>'+
    '<span><i class="market-legend-band"></i>Range</span></div>'+
-  '<div class="chart-inspect-panel" data-chart-readout role="status" aria-live="polite">'+insightHtml(point,ctx)+'</div>'+
+
   '<div class="chart-date-controls"><button type="button" data-chart-step="-1" aria-label="Previous date"'+
    (selected===0?' disabled':'')+'>‹</button>'+
    '<label class="chart-date-label"><span>Explore dates</span>'+
@@ -118,8 +128,9 @@ function wire(container,ctx,onSelectedDate){
  if(!container)return;
  const svg=container.querySelector('[data-chart-svg]');
  const slider=container.querySelector('[data-chart-slider]');
- const readout=container.querySelector('[data-chart-readout]');
- if(!svg||!slider||!readout)return;
+ const tooltip=container.querySelector('[data-chart-tooltip]');
+ const plot=container.querySelector('[data-chart-plot]');
+ if(!svg||!slider||!tooltip||!plot)return;
  const {d,rows}=prepare(ctx),n=rows.length;
  if(!d||n<2)return;
  const hair=svg.querySelector('[data-chart-hairline]'),ring=svg.querySelector('[data-chart-ring]');
@@ -132,8 +143,18 @@ function wire(container,ctx,onSelectedDate){
   const i=Model.clampIndex(index,n),point=Model.displayPoint(rows,ctx.forecast,ctx.metal,i);
   if(!point)return;
   onSelectedDate(point.date);
-  readout.innerHTML=insightHtml(point,ctx);
-  if(root.NextRateI18n)root.NextRateI18n.apply(readout,ctx.language);
+  tooltip.innerHTML=insightHtml(point,ctx);
+  if(root.NextRateI18n)root.NextRateI18n.apply(tooltip,ctx.language);
+  tooltip.hidden=false;
+  const chartRect=svg.getBoundingClientRect(),plotRect=plot.getBoundingClientRect();
+  const pointX=chartRect.left-plotRect.left+Model.xForIndex(i,n)*chartRect.width/640;
+  const pointY=chartRect.top-plotRect.top+y(point.value)*chartRect.height/257;
+  const pos=tooltipPosition(pointX,pointY,plotRect.width,plotRect.height,
+    tooltip.offsetWidth,tooltip.offsetHeight);
+  tooltip.style.left=pos.left.toFixed(1)+'px';
+  tooltip.style.top=pos.top.toFixed(1)+'px';
+  tooltip.style.setProperty('--chart-arrow-x',pos.arrowX.toFixed(1)+'px');
+  tooltip.dataset.placement=pos.placement;
   slider.value=i;
   slider.setAttribute('aria-valuetext',(point.kind==='prediction'?'Prediction ':'Actual ')+ctx.sourceDate(point.date)+' '+fmt(ctx,point.value));
   const x=Model.xForIndex(i,n);
@@ -161,7 +182,7 @@ function wire(container,ctx,onSelectedDate){
    button.addEventListener('click',()=>choose(Number(slider.value)+Number(button.dataset.chartStep)))
  );
 }
-const api=Object.freeze({render,wire,insightHtml});
+const api=Object.freeze({render,wire,insightHtml,tooltipPosition});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.NextRateChartUI=api;
 })(typeof window==='undefined'?globalThis:window);

@@ -95,7 +95,8 @@ test('Actual dates and forecast range are independently inspectable on mobile',(
  assert.match(app,/Same as last close/);
  assert.match(chart,/data-chart-point/);
  assert.match(chart,/data-chart-slider/);
- assert.match(chart,/chart-inspect-panel/);
+ assert.match(chart,/chart-point-tooltip/);
+ assert.doesNotMatch(chart,/chart-inspect-panel/);
  assert.match(chart,/ArrowLeft/);
  assert.match(chart,/role="status"/);
  assert.match(chart,/Tap any point/);

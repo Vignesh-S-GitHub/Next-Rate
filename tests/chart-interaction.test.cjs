@@ -77,18 +77,23 @@ test('Interactive SVG retains gold line, gradient, dashed estimate, chart and ra
  assert.match(html,/class="chart-range-band"/);
  assert.match(html,/data-chart-point="7"/);
  assert.match(html,/data-chart-slider min="0" max="7"/);
- assert.match(html,/data-chart-readout role="status"/);
- assert.match(html,/ACTUAL · 2026-10-23/);
- assert.match(html,/1,41,630/);
+ assert.match(html,/data-chart-plot/);
+ assert.match(html,/data-chart-tooltip role="status" aria-live="polite" aria-atomic="true" hidden/);
+ assert.doesNotMatch(html,/chart-inspect-panel|data-chart-readout/);
+ const actual=Model.displayPoint(Model.observations(sampleHistory(),ctx0.forecast,'gold24',7),ctx0.forecast,'gold24',6);
+ assert.match(UI.insightHtml(actual,ctx0),/ACTUAL · 2026-10-23/);
+ assert.match(UI.insightHtml(actual,ctx0),/1,41,630/);
  assert.match(html,/aria-label="Next date"/);
  assert.match(html,/role="group"/);
 });
 test('Selection of forecast never labels estimated rate as actual or claims guaranteed band',()=>{
  const html=UI.render({...ctx0,history:sampleHistory(),selectedDate:'2026-10-26'});
- assert.match(html,/PREDICTION · 2026-10-26/);
- assert.match(html,/Same as the last published rate/);
- assert.match(html,/Possible range ₹1,39,500 – ₹1,43,800/);
- assert.match(html,/Not a guarantee/);
+ const forecastPoint=Model.displayPoint(Model.observations(sampleHistory(),ctx0.forecast,'gold24',7),ctx0.forecast,'gold24',7);
+ const tooltip=UI.insightHtml(forecastPoint,ctx0);
+ assert.match(tooltip,/PREDICTION · 2026-10-26/);
+ assert.match(tooltip,/Same as last close/);
+ assert.match(tooltip,/Range ₹1,39,500 – ₹1,43,800/);
+ assert.match(tooltip,/Not a guarantee/);
  assert.match(html,/experimental prediction/);
  assert.match(html,/value="7"/);
 });
@@ -105,4 +110,17 @@ test('Chart inspector is safe for missing data and identifies exact past or futu
  assert.match(UI.insightHtml(Model.displayPoint(pts,ctx0.forecast,'gold22',0),ctx0),/ACTUAL/);
  assert.match(UI.insightHtml(Model.displayPoint(pts,ctx0.forecast,'gold22',7),ctx0),/PREDICTION/);
  assert.match(UI.insightHtml(null,ctx0),/Published rate unavailable/);
+});
+
+test('Floating tooltip clamps to chart edges and flips below high points',()=>{
+ const center=UI.tooltipPosition(150,160,320,200,160,60);
+ assert.deepEqual(center,{left:150,top:88,placement:'above',arrowX:80});
+ const edge=UI.tooltipPosition(310,20,320,200,160,60);
+ assert.equal(edge.placement,'below');
+ assert.ok(edge.left<=234 && edge.left>=86);
+ assert.ok(edge.top>=6);
+ assert.ok(edge.arrowX<=150);
+ const left=UI.tooltipPosition(3,130,320,200,160,60);
+ assert.ok(left.left>=86);
+ assert.ok(left.arrowX>=10);
 });
