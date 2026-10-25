@@ -105,7 +105,9 @@ function historicalAccuracy(entries,metal) {
 function isoDay(value) {return typeof value==='string'&&/^\d{4}-\d\d-\d\d$/.test(value)?value:'';}
 function ageDays(iso,now=new Date()){
  if(!isoDay(iso))return Infinity;
- const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
+ const part=name=>parts.find(v=>v.type===name)?.value;
+ const today=part('year')+'-'+part('month')+'-'+part('day');
  const t=Date.parse(today+'T00:00:00Z'),d=Date.parse(iso+'T00:00:00Z');
  return Number.isFinite(t)&&Number.isFinite(d)?Math.floor((t-d)/86400000):Infinity;
 }
