@@ -341,22 +341,37 @@ function page(ctx){
      (panels[memory.preferred]||alertPanel)()+'</section></div></div>';
 }
 function refresh(){if(ctxCache?.refresh)ctxCache.refresh();}
-function notifyUser(text,alertId){
- if(!memory.notifications||!Notifications?.permitted())return;
- // Android Chrome requires serviceWorkerRegistration.showNotification.
- void Notifications.show('NextRate price alert',text,'nextrate-target-'+alertId);
+const inFlightNotifications=new Set();
+function notifyUser(text,alert){
+ if(!memory.notifications||!Notifications?.permitted()||alert.notifiedAt||
+    inFlightNotifications.has(alert.id))return;
+ inFlightNotifications.add(alert.id);
+ // Only mark delivered when Chrome accepts the notification request.
+ void Notifications.show('NextRate price alert',text,'nextrate-target-'+alert.id)
+  .then(result=>{
+   if(result?.ok){alert.notifiedAt=alert.triggeredAt;save();}
+  }).catch(()=>{}).finally(()=>inFlightNotifications.delete(alert.id));
 }
 function checkAlerts(ctx){
  ctxCache=ctx||ctxCache;
  if(!ctx?.rates?.india?.date||C.ageDays(ctx.rates.india.date)>7||C.ageDays(ctx.rates.india.date)<0)return 0;
  let found=0;
  for(const a of memory.alerts){
-  if(a.triggeredAt)continue; // one-shot target; user may add a new alert
+  if(a.triggeredAt){
+   // Older versions marked reached targets before permission was enabled.
+   // Allow one late notice for a recent target that was never notified.
+   const age=C.ageDays(a.triggeredAt);
+   if(!a.notifiedAt&&age>=0&&age<=7){
+    notifyUser(a.metal+' '+a.grams+'g reached '+m(a.triggerPrice)+
+      ' ('+a.triggeredAt+')',a);
+   }
+   continue;
+  }
   try{
    const outcome=C.triggered(a,ctx);
    if(outcome?.hit){
     a.triggeredAt=ctx.rates.india.date; a.triggerPrice=outcome.current;found++;
-    notifyUser(a.metal+' '+a.grams+'g reached '+m(outcome.current)+' ('+a.triggeredAt+')',a.id);
+    notifyUser(a.metal+' '+a.grams+'g reached '+m(outcome.current)+' ('+a.triggeredAt+')',a);
    }
   }catch{}
  }
@@ -565,6 +580,7 @@ function onClick(event){
    memory.notifications=true;save();
    const demo=await Notifications.show('NextRate notifications ready',
      'Test notice. Price alerts are checked when NextRate opens or resumes.');
+   if(demo.ok)checkAlerts(context());
    updateStatus(demo.ok?
      'Test notification sent. Price alerts appear when a saved target is reached while NextRate checks rates.':
      'Permission allowed, but the test could not display. Check Android Settings → Apps → Chrome → Notifications.');

@@ -38,6 +38,9 @@ test('Android alerts use service worker, explicit consent and test delivery',()=
  assert.match(feature,/checkAlerts/);
  assert.match(feature,/C[.]ageDays/);
  assert.match(feature,/a[.]triggeredAt/);
+ assert.match(feature,/inFlightNotifications/);
+ assert.match(feature,/a[.]notifiedAt/);
+ assert.match(feature,/if\(demo[.]ok\)checkAlerts\(context\(\)\)/);
  assert.match(index,/browser-notifications[.]js/);
 });
 test('BIS verification is official external handoff rather than fake verification',()=>{
@@ -124,4 +127,37 @@ test('Official source identities appear in the relevant tools without pretending
  assert.doesNotMatch(provider.badge('amfi'),/<img/);
  feature.select('shops');
  assert.match(feature.page(coreContext),/images\.goodreturns\.in/);
+});
+
+test('Reached before permission: a recently triggered target notifies once after enabling',async()=>{
+ const vm=require('node:vm');
+ const core=require('../features-core.js');
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',
+  year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ const part=name=>parts.find(x=>x.type===name).value;
+ const day=part('year')+'-'+part('month')+'-'+part('day');
+ const record={version:1,notifications:true,preferred:'alerts',
+  alerts:[{id:'a-previously-hit',metal:'gold24',grams:10,op:'above',
+   target:140000,triggeredAt:day,triggerPrice:141630}],
+  shops:[],holdings:[],etfQuotes:{}};
+ let storage=JSON.stringify(record),sent=[];
+ const win={
+  NextRateCore:core,
+  NextRateSources:{badge:()=>''},
+  NextRateNotifications:{
+   permitted:()=>true,
+   show:async(title,body,tag)=>{sent.push({title,body,tag});return {ok:true};}
+  },
+  localStorage:{getItem:()=>storage,setItem:(_,value)=>{storage=value;}},
+ };
+ vm.runInNewContext(feature,{window:win});
+ const ctx={rates:{india:{date:day,gold24_inr_10g:141630}},refresh:()=>{}};
+ assert.equal(win.NextRateFeatures.checkAlerts(ctx),0);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(sent.length,1);
+ assert.match(sent[0].body,/reached/);
+ assert.equal(JSON.parse(storage).alerts[0].notifiedAt,day);
+ assert.equal(win.NextRateFeatures.checkAlerts(ctx),0);
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(sent.length,1,'no duplicate notice');
 });
