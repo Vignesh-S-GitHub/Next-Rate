@@ -23,16 +23,16 @@
     {
       "file": "spot-xau/2026.json",
       "first": "2026-10-24T18:21:53+00:00",
-      "last": "2026-10-25T09:00:41+00:00",
-      "records": 10,
-      "sha256": "5ff883dec2538250c12801b52c4468fa4a7655834ef1a1caaa68678461359e69"
+      "last": "2026-10-25T12:33:09+00:00",
+      "records": 11,
+      "sha256": "24cfb82daea1a7cb095afb6ca23f72a4dd4516b030a76d3660fdc9001adf51af"
     },
     {
       "file": "spot-xag/2026.json",
       "first": "2026-10-24T18:21:52+00:00",
-      "last": "2026-10-25T09:00:39+00:00",
-      "records": 10,
-      "sha256": "2c2b38f8008679139100f67c0e02d02610932ea33b220a20511a75eacccb9044"
+      "last": "2026-10-25T12:33:08+00:00",
+      "records": 11,
+      "sha256": "32c3ee16583fb532316e0cc1dc44095327808953bfe42462d220a45a07ffdde1"
     },
     {
       "file": "forecasts/2026.json",
@@ -46,7 +46,7 @@
     "forecasts": 2,
     "fx": 2,
     "ibja": 98,
-    "spot-xag": 10,
-    "spot-xau": 10
+    "spot-xag": 11,
+    "spot-xau": 11
   }
 }
