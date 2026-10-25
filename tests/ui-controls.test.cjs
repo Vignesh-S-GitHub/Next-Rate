@@ -32,8 +32,8 @@ test('Site keeps both live calculations and transparent bullion icons',()=>{
   assert.match(css,/\.bullion-gold\s*\{/);
   assert.match(app,/src="\.\/assets\/silver-bar\.webp\?v=20261025-doublebars"/);
   assert.match(app,/getJSON\('latest\.json'\)/);
-  assert.match(html,/styles\.css\?v=20261025-tools1/);
-  assert.match(html,/app\.js\?v=20261025-tools1/);
+  assert.match(html,/styles\.css\?v=20261025-tools2/);
+  assert.match(html,/app\.js\?v=20261025-tools2/);
 });
 test('Menu supports close on Escape and tap outside',()=>{
   assert.match(app,/event\.key==='Escape'/);
