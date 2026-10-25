@@ -174,3 +174,6 @@ jobs:
       - name: Deploy GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
+
+      - name: Verify live site after deployment
+        run: python scripts/smoke_site.py --url "https://vignesh-s-github.github.io/Next-Rate/"
