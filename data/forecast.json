@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "model_version": 2,
-  "generated_at": "2026-10-26T12:10:54+00:00",
+  "model_version": 3,
+  "generated_at": "2026-10-26T12:30:39+00:00",
   "today_ist": "2026-10-26",
   "calendar_tomorrow": "2026-10-27",
   "target_date": "2026-10-27",
@@ -11,24 +11,25 @@
   "market_closed_tomorrow": false,
   "status": "experimental",
   "scope": "India national IBJA benchmark estimate; not city retail or jewellery pricing",
-  "method": "Conservative, experimental momentum baseline with heuristic volatility range.",
-  "validity": "Not a proven statistical confidence interval. Predictions may be wrong.",
+  "method": "Chronological model selection with a typical historical-error band and a separate wider volatility scenario.",
+  "validity": "Typical range targets 50% of earlier historical errors, not a guaranteed future probability. Predictions may be wrong.",
   "source_url": "https://www.ibjarates.com/",
   "metals": {
     "gold24": {
       "label": "24K gold",
       "unit": "10 g",
-      "baseline": 141290,
-      "estimate": 141290,
-      "low": 139100,
-      "high": 143500,
+      "baseline": 141710,
+      "estimate": 141710,
+      "low": 140700,
+      "high": 142700,
       "expected_change_pct": 0.0,
       "direction": "Mostly steady",
       "scenario_width_pct": 1.5,
       "history_returns_used": 7,
       "history_rows_used": 99,
+      "history_close_rows_used": 99,
       "model_name": "last_close",
-      "model_version": 2,
+      "model_version": 3,
       "description": "Simple model chosen using past validation, then checked on a later held-out period.",
       "backtest": {
         "status": "walk_forward",
@@ -38,27 +39,43 @@
         "validation_mape_pct": 0.841,
         "validation_naive_mape_pct": 0.841,
         "holdout_samples": 25,
-        "holdout_mape_pct": 0.625,
-        "holdout_naive_mape_pct": 0.625,
+        "holdout_mape_pct": 0.618,
+        "holdout_naive_mape_pct": 0.618,
         "holdout_beats_naive": false,
         "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
       },
-      "interval_calibrated": false
+      "interval_calibrated": false,
+      "range_label": "Typical range",
+      "range_profile": {
+        "target_historical_coverage_pct": 50,
+        "half_width": 0.006818570732798905,
+        "calibration_samples": 59,
+        "holdout_samples": 25,
+        "holdout_covered": 14,
+        "holdout_coverage_pct": 56.0,
+        "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."
+      },
+      "wider_range": {
+        "low": 139500,
+        "high": 143900,
+        "method": "Heuristic volatility scenario, not a guaranteed interval."
+      }
     },
     "gold22": {
       "label": "22K gold",
       "unit": "10 g",
-      "baseline": 129422,
-      "estimate": 129422,
-      "low": 127400,
-      "high": 131400,
+      "baseline": 129806,
+      "estimate": 129806,
+      "low": 128900,
+      "high": 130700,
       "expected_change_pct": 0.0,
       "direction": "Mostly steady",
       "scenario_width_pct": 1.5,
       "history_returns_used": 7,
       "history_rows_used": 99,
+      "history_close_rows_used": 99,
       "model_name": "last_close",
-      "model_version": 2,
+      "model_version": 3,
       "description": "Simple model chosen using past validation, then checked on a later held-out period.",
       "backtest": {
         "status": "walk_forward",
@@ -68,27 +85,43 @@
         "validation_mape_pct": 0.841,
         "validation_naive_mape_pct": 0.841,
         "holdout_samples": 25,
-        "holdout_mape_pct": 0.625,
-        "holdout_naive_mape_pct": 0.625,
+        "holdout_mape_pct": 0.618,
+        "holdout_naive_mape_pct": 0.618,
         "holdout_beats_naive": false,
         "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
       },
-      "interval_calibrated": false
+      "interval_calibrated": false,
+      "range_label": "Typical range",
+      "range_profile": {
+        "target_historical_coverage_pct": 50,
+        "half_width": 0.006818753368061792,
+        "calibration_samples": 59,
+        "holdout_samples": 25,
+        "holdout_covered": 14,
+        "holdout_coverage_pct": 56.0,
+        "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."
+      },
+      "wider_range": {
+        "low": 127800,
+        "high": 131800,
+        "method": "Heuristic volatility scenario, not a guaranteed interval."
+      }
     },
     "silver": {
       "label": "Silver 999",
       "unit": "1 kg",
-      "baseline": 195050,
-      "estimate": 195050,
-      "low": 189500,
-      "high": 201000,
+      "baseline": 194479,
+      "estimate": 194479,
+      "low": 192000,
+      "high": 197000,
       "expected_change_pct": 0.0,
       "direction": "Mostly steady",
       "scenario_width_pct": 2.8,
       "history_returns_used": 7,
       "history_rows_used": 99,
+      "history_close_rows_used": 99,
       "model_name": "last_close",
-      "model_version": 2,
+      "model_version": 3,
       "description": "Simple model chosen using past validation, then checked on a later held-out period.",
       "backtest": {
         "status": "walk_forward",
@@ -98,12 +131,27 @@
         "validation_mape_pct": 1.303,
         "validation_naive_mape_pct": 1.303,
         "holdout_samples": 25,
-        "holdout_mape_pct": 1.46,
-        "holdout_naive_mape_pct": 1.46,
+        "holdout_mape_pct": 1.448,
+        "holdout_naive_mape_pct": 1.448,
         "holdout_beats_naive": false,
         "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
       },
-      "interval_calibrated": false
+      "interval_calibrated": false,
+      "range_label": "Typical range",
+      "range_profile": {
+        "target_historical_coverage_pct": 50,
+        "half_width": 0.010524528942454592,
+        "calibration_samples": 59,
+        "holdout_samples": 25,
+        "holdout_covered": 13,
+        "holdout_coverage_pct": 52.0,
+        "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."
+      },
+      "wider_range": {
+        "low": 189000,
+        "high": 200000,
+        "method": "Heuristic volatility scenario, not a guaranteed interval."
+      }
     }
   },
   "signal_summary": [
@@ -114,7 +162,7 @@
     },
     {
       "name": "Uncertainty range",
-      "details": "Uses historical absolute price movements with minimum widths of 1.5% for gold and 2.8% for silver. Heuristic, not calibrated.",
+      "details": "Typical range uses the median earlier one-step forecast error, checked on later historical closes. The wider heuristic scenario is retained separately. Neither guarantees a future price.",
       "used_in_estimate": true
     },
     {
@@ -129,20 +177,20 @@
     }
   ],
   "based_on_date": "2026-10-26",
-  "based_on_session": "AM",
+  "based_on_session": "PM",
   "observations": 99,
   "validation": {
     "status": "walk_forward",
     "observations": 99,
-    "model_version": 2,
+    "model_version": 3,
     "tested_metals": 3,
     "description": "Time-ordered train, validation and untouched holdout per metal. Models may still lose to last-close."
   },
-  "issuance_key": "v2:2026-10-27:2026-10-26:AM",
+  "issuance_key": "v3:2026-10-27:2026-10-26:PM",
   "accuracy_tracking": {
     "evaluated_issuances": 0,
     "independent_target_dates": 0,
-    "model_version": 2,
+    "model_version": 3,
     "status": "collecting"
   }
 }

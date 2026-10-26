@@ -3,6 +3,30 @@
     {
       "based_on_date": "2026-10-23",
       "based_on_session": "PM",
+      "evaluation": {
+        "actual_date": "2026-10-26",
+        "evaluated_at": "2026-10-26T12:30:39+00:00",
+        "metals": {
+          "gold22": {
+            "absolute_error_pct": 0.236,
+            "actual": 129806,
+            "direction_correct": false,
+            "range_covered": true
+          },
+          "gold24": {
+            "absolute_error_pct": 0.219,
+            "actual": 141710,
+            "direction_correct": false,
+            "range_covered": true
+          },
+          "silver": {
+            "absolute_error_pct": 0.503,
+            "actual": 194479,
+            "direction_correct": false,
+            "range_covered": true
+          }
+        }
+      },
       "issuance_key": "2026-10-26:2026-10-23:PM",
       "issued_at": "2026-10-24T19:09:24+00:00",
       "metals": {
@@ -54,6 +78,30 @@
     {
       "based_on_date": "2026-10-23",
       "based_on_session": "PM",
+      "evaluation": {
+        "actual_date": "2026-10-26",
+        "evaluated_at": "2026-10-26T12:30:39+00:00",
+        "metals": {
+          "gold22": {
+            "absolute_error_pct": 0.056,
+            "actual": 129806,
+            "direction_correct": null,
+            "range_covered": true
+          },
+          "gold24": {
+            "absolute_error_pct": 0.056,
+            "actual": 141710,
+            "direction_correct": null,
+            "range_covered": true
+          },
+          "silver": {
+            "absolute_error_pct": 0.033,
+            "actual": 194479,
+            "direction_correct": null,
+            "range_covered": true
+          }
+        }
+      },
       "issuance_key": "v2:2026-10-26:2026-10-23:PM",
       "issued_at": "2026-10-25T06:54:57+00:00",
       "metals": {
@@ -249,6 +297,154 @@
         }
       },
       "model_version": 2,
+      "target_date": "2026-10-27"
+    },
+    {
+      "based_on_date": "2026-10-26",
+      "based_on_session": "PM",
+      "issuance_key": "v3:2026-10-27:2026-10-26:PM",
+      "issued_at": "2026-10-26T12:30:39+00:00",
+      "metals": {
+        "gold22": {
+          "backtest": {
+            "holdout_beats_naive": false,
+            "holdout_mape_pct": 0.618,
+            "holdout_naive_mape_pct": 0.618,
+            "holdout_samples": 25,
+            "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better.",
+            "selected_model": "last_close",
+            "source_observations": 99,
+            "status": "walk_forward",
+            "validation_mape_pct": 0.841,
+            "validation_naive_mape_pct": 0.841,
+            "validation_samples": 59
+          },
+          "baseline": 129806,
+          "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+          "direction": "Mostly steady",
+          "estimate": 129806,
+          "expected_change_pct": 0.0,
+          "high": 130700,
+          "history_close_rows_used": 99,
+          "history_returns_used": 7,
+          "history_rows_used": 99,
+          "interval_calibrated": false,
+          "label": "22K gold",
+          "low": 128900,
+          "model_name": "last_close",
+          "model_version": 3,
+          "range_label": "Typical range",
+          "range_profile": {
+            "calibration_samples": 59,
+            "half_width": 0.006818753368061792,
+            "holdout_coverage_pct": 56.0,
+            "holdout_covered": 14,
+            "holdout_samples": 25,
+            "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes.",
+            "target_historical_coverage_pct": 50
+          },
+          "scenario_width_pct": 1.5,
+          "unit": "10 g",
+          "wider_range": {
+            "high": 131800,
+            "low": 127800,
+            "method": "Heuristic volatility scenario, not a guaranteed interval."
+          }
+        },
+        "gold24": {
+          "backtest": {
+            "holdout_beats_naive": false,
+            "holdout_mape_pct": 0.618,
+            "holdout_naive_mape_pct": 0.618,
+            "holdout_samples": 25,
+            "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better.",
+            "selected_model": "last_close",
+            "source_observations": 99,
+            "status": "walk_forward",
+            "validation_mape_pct": 0.841,
+            "validation_naive_mape_pct": 0.841,
+            "validation_samples": 59
+          },
+          "baseline": 141710,
+          "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+          "direction": "Mostly steady",
+          "estimate": 141710,
+          "expected_change_pct": 0.0,
+          "high": 142700,
+          "history_close_rows_used": 99,
+          "history_returns_used": 7,
+          "history_rows_used": 99,
+          "interval_calibrated": false,
+          "label": "24K gold",
+          "low": 140700,
+          "model_name": "last_close",
+          "model_version": 3,
+          "range_label": "Typical range",
+          "range_profile": {
+            "calibration_samples": 59,
+            "half_width": 0.006818570732798905,
+            "holdout_coverage_pct": 56.0,
+            "holdout_covered": 14,
+            "holdout_samples": 25,
+            "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes.",
+            "target_historical_coverage_pct": 50
+          },
+          "scenario_width_pct": 1.5,
+          "unit": "10 g",
+          "wider_range": {
+            "high": 143900,
+            "low": 139500,
+            "method": "Heuristic volatility scenario, not a guaranteed interval."
+          }
+        },
+        "silver": {
+          "backtest": {
+            "holdout_beats_naive": false,
+            "holdout_mape_pct": 1.448,
+            "holdout_naive_mape_pct": 1.448,
+            "holdout_samples": 25,
+            "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better.",
+            "selected_model": "last_close",
+            "source_observations": 99,
+            "status": "walk_forward",
+            "validation_mape_pct": 1.303,
+            "validation_naive_mape_pct": 1.303,
+            "validation_samples": 59
+          },
+          "baseline": 194479,
+          "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+          "direction": "Mostly steady",
+          "estimate": 194479,
+          "expected_change_pct": 0.0,
+          "high": 197000,
+          "history_close_rows_used": 99,
+          "history_returns_used": 7,
+          "history_rows_used": 99,
+          "interval_calibrated": false,
+          "label": "Silver 999",
+          "low": 192000,
+          "model_name": "last_close",
+          "model_version": 3,
+          "range_label": "Typical range",
+          "range_profile": {
+            "calibration_samples": 59,
+            "half_width": 0.010524528942454592,
+            "holdout_coverage_pct": 52.0,
+            "holdout_covered": 13,
+            "holdout_samples": 25,
+            "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes.",
+            "target_historical_coverage_pct": 50
+          },
+          "scenario_width_pct": 2.8,
+          "unit": "1 kg",
+          "wider_range": {
+            "high": 200000,
+            "low": 189000,
+            "method": "Heuristic volatility scenario, not a guaranteed interval."
+          }
+        }
+      },
+      "model_version": 3,
       "target_date": "2026-10-27"
     }
   ],
