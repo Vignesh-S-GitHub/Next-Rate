@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "status": "ok",
-  "checked_at": "2026-10-25T17:13:05+00:00",
-  "as_of": "2026-10-25",
+  "checked_at": "2026-10-26T12:10:48+00:00",
+  "as_of": "2026-10-26",
   "dates": {
-    "gold": "2026-10-25",
-    "silver": "2026-10-25"
+    "gold": "2026-10-26",
+    "silver": "2026-10-26"
   },
   "source": "Goodreturns indicative city rate tables",
   "source_urls": {
@@ -15,28 +15,28 @@
   "basis": "Publisher's indicative city rates. Excludes GST, making charges and seller premiums; not a jeweller checkout quote.",
   "cities": {
     "Chennai": {
-      "gold24_inr_g": 14258,
-      "gold22_inr_g": 13070,
-      "silver999_inr_kg": 220000
-    },
-    "Mumbai": {
-      "gold24_inr_g": 14258,
-      "gold22_inr_g": 13070,
-      "silver999_inr_kg": 220000
-    },
-    "Delhi": {
-      "gold24_inr_g": 14273,
+      "gold24_inr_g": 14275,
       "gold22_inr_g": 13085,
       "silver999_inr_kg": 220000
     },
+    "Mumbai": {
+      "gold24_inr_g": 14275,
+      "gold22_inr_g": 13085,
+      "silver999_inr_kg": 220000
+    },
+    "Delhi": {
+      "gold24_inr_g": 14290,
+      "gold22_inr_g": 13100,
+      "silver999_inr_kg": 220000
+    },
     "Bengaluru": {
-      "gold24_inr_g": 14258,
-      "gold22_inr_g": 13070,
+      "gold24_inr_g": 14275,
+      "gold22_inr_g": 13085,
       "silver999_inr_kg": 220000
     },
     "Hyderabad": {
-      "gold24_inr_g": 14258,
-      "gold22_inr_g": 13070,
+      "gold24_inr_g": 14275,
+      "gold22_inr_g": 13085,
       "silver999_inr_kg": 220000
     }
   }
