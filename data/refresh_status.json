@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "sessions": {
+    "2026-10-26:PM": {
+      "target_date": "2026-10-26",
+      "session": "PM",
+      "trigger": "push",
+      "run_id": "40349765480",
+      "completed_at": "2026-10-26T15:30:39+00:00",
+      "published": true,
+      "quote_date": "2026-10-26",
+      "quote_session": "PM",
+      "market_closed": false
+    }
+  }
+}
