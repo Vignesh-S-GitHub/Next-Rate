@@ -13,14 +13,12 @@ NextRate is a static, bilingual Indian gold/silver dashboard on GitHub Pages. Ex
 
 ## Exactly two production workflows
 
-**[Refresh market rates](.github/workflows/refresh-rates.yml)** owns the `schedule` cron and optional manual `workflow_dispatch`. It verifies AM/PM session freshness, fetches source prices, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Completed scheduled sessions skip repeat fetches.
+**[Refresh market rates](.github/workflows/refresh-rates.yml)** owns the `schedule` cron and optional manual `workflow_dispatch`. It verifies AM/PM session freshness, fetches source prices, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Each scheduled event starts the complete collector/deployment job directly, following the successful October 25 structure.
 
 | India time (IST) | Purpose |
 | --- | --- |
-| 13:21 and 19:21 | Primary checks after expected IBJA AM and PM publications |
-| 13:53 and 19:53 | Source delay recovery |
-| 14:41 / 15:23 and 20:41 / 21:23 | Later recovery |
-| 16:07 and 22:07 | Final daily recovery |
+| 13:15 | AM collection (after the collector’s 13:00 source acceptance gate) |
+| 19:15 | PM collection |
 
 GitHub Actions cron is **best-effort**, evaluated in UTC on the default branch; GitHub can delay or drop a run. A successful push or manual collection does **not** prove scheduling. Timer acceptance requires a real `event=schedule` workflow run and `trigger=schedule` entry in `data/refresh_status.json`.
 

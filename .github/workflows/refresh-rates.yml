@@ -1,14 +1,18 @@
 name: Refresh market rates and publish NextRate
 
 on:
-  # Primary checks after expected IBJA AM/PM publication, with late retries.
-  # GitHub schedule is best effort: a cron slot may start late or be dropped.
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - "tests/**"
+      - "i18n.js"
+      - ".github/workflows/refresh-rates.yml"
   schedule:
-    - cron: "10 17 26 10 *"     # One-date sample: 26 Oct 2026, 22:40 IST
-    - cron: "51 7,13 * * *"      # 13:21 / 19:21 IST
-    - cron: "23 8,14 * * *"      # 13:53 / 19:53 IST
-    - cron: "11,53 9,15 * * *"   # 14:41,15:23 / 20:41,21:23 IST
-    - cron: "37 10,16 * * *"     # 16:07 / 22:07 IST
+    # Direct daily jobs as in the successful October 25 workflow.
+    # AM moved past the collector's 13:00 IST source acceptance gate.
+    - cron: "45 7 * * *"        # 13:15 IST
+    - cron: "45 13 * * *"       # 19:15 IST
   workflow_dispatch:
 
 permissions:
@@ -23,44 +27,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-    outputs:
-      refresh: ${{ steps.session.outputs.refresh }}
-      session: ${{ steps.session.outputs.session }}
-      date: ${{ steps.session.outputs.date }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-          persist-credentials: false
-      - name: Determine whether the scheduled source session is missing
-        id: session
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ github.event.schedule }}" = "10 17 26 10 *" ]; then
-            # Force the sample pipeline once; cron has no year field.
-            if [ "$(TZ=Asia/Kolkata date +%F)" = "2026-10-26" ]; then
-              echo "refresh=true" >> "$GITHUB_OUTPUT"
-              echo "session=PM" >> "$GITHUB_OUTPUT"
-              echo "date=2026-10-26" >> "$GITHUB_OUTPUT"
-            else
-              echo "refresh=false" >> "$GITHUB_OUTPUT"
-            fi
-          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            python scripts/schedule_refresh.py --requested
-          else
-            python scripts/schedule_refresh.py
-          fi
-
   update-and-deploy:
-    needs: prepare
-    if: needs.prepare.outputs.refresh == 'true'
     env:
-      NEXT_RATE_REQUESTED_SESSION: ${{ github.event_name == 'schedule' && needs.prepare.outputs.session || '' }}
-      NEXT_RATE_REQUESTED_DATE: ${{ github.event_name == 'schedule' && needs.prepare.outputs.date || '' }}
+      NEXT_RATE_REQUESTED_SESSION: ${{ github.event_name == 'schedule' && (github.event.schedule == '45 7 * * *' && 'AM' || 'PM') || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     environment:
