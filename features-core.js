@@ -128,6 +128,51 @@ function historicalAccuracy(entries,metal,modelVersion=null) {
    directionCorrect:matches.filter(x=>x.direction_correct===true).length};
 }
 function isoDay(value) {return typeof value==='string'&&/^\d{4}-\d\d-\d\d$/.test(value)?value:'';}
+function publishedChange(snapshot,history,metal){
+ const field={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'}[metal];
+ const current=snapshot?.india,value=current?.[field];
+ if(!field||!isoDay(current?.date)||!Number.isFinite(value)||value<=0)return null;
+ const prior=(Array.isArray(history?.india)?history.india:[])
+  .filter(r=>isoDay(r?.date)&&r.date<current.date&&Number.isFinite(r[field])&&r[field]>0)
+  .sort((a,b)=>a.date.localeCompare(b.date)||(a.session==='PM'?1:0)-(b.session==='PM'?1:0)).at(-1);
+ if(!prior)return null;
+ const amount=value-prior[field];
+ return {amount,percent:amount/prior[field]*100,previous:prior[field],
+  previousDate:prior.date,previousSession:prior.session,
+  direction:amount>0?'up':amount<0?'down':'steady'};
+}
+function forecastCheck(entries,snapshot,today){
+ // Pick the latest forecast actually issued BEFORE its target day. Never grade
+ // a regenerated/hindsight forecast against a price already known at issuance.
+ if(!isoDay(today))return null;
+ const eligible=(Array.isArray(entries)?entries:[]).filter(e=>{
+  if(!isoDay(e?.target_date)||e.target_date>today||!isoDay(e.based_on_date)||e.based_on_date>=e.target_date)return false;
+  const issued=Date.parse(e.issued_at),cutoff=Date.parse(e.target_date+'T00:00:00+05:30');
+  return Number.isFinite(issued)&&issued<cutoff;
+ }).sort((a,b)=>b.target_date.localeCompare(a.target_date)||
+  Date.parse(b.issued_at)-Date.parse(a.issued_at));
+ const entry=eligible[0];
+ if(!entry)return null;
+ const quote=snapshot?.india;
+ const matching=quote?.date===entry.target_date;
+ const scored=entry.evaluation?.actual_date===entry.target_date?entry.evaluation.metals:null;
+ const final=!!scored||(matching&&quote.session==='PM');
+ const provisional=!final&&matching&&quote.session==='AM';
+ const metals={};
+ for(const [name,field] of Object.entries({gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'})){
+  const p=entry.metals?.[name];
+  if(!p||![p.estimate,p.baseline,p.low,p.high].every(v=>Number.isFinite(v)&&v>0)||p.low>p.estimate||p.high<p.estimate)continue;
+  const value=scored?.[name]?.actual??(matching?quote[field]:null);
+  const actual=Number.isFinite(value)&&value>0?value:null;
+  const error=actual===null?null:Math.abs(p.estimate-actual);
+  metals[name]={estimate:p.estimate,actual,low:p.low,high:p.high,
+   errorAmount:error,errorPct:actual===null?null:error/actual*100,
+   rangeCovered:actual===null?null:actual>=p.low&&actual<=p.high,
+   directionCorrect:actual===null||p.estimate===p.baseline?null:
+    Math.sign(p.estimate-p.baseline)===Math.sign(actual-p.baseline)};
+ }
+ return {targetDate:entry.target_date,status:final?'final':provisional?'provisional':'pending',metals};
+}
 function ageDays(iso,now=new Date()){
  if(!isoDay(iso))return Infinity;
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now);
@@ -138,7 +183,7 @@ function ageDays(iso,now=new Date()){
 }
 const api=Object.freeze({money,esc,number,round,publishedRate,bullionValue,
  jewelleryBill,resaleQuote,manualShopBill,holdingValuation,premium,
- alertValue,alertObservationDate,triggered,historicalAccuracy,ageDays});
+ alertValue,alertObservationDate,triggered,historicalAccuracy,publishedChange,forecastCheck,ageDays});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.NextRateCore=api;
 })(typeof window==='undefined'?globalThis:window);

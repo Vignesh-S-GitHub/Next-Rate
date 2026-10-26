@@ -36,10 +36,10 @@ class ForecastTests(unittest.TestCase):
                 "evaluation": {"metals": {"gold24": {"absolute_error_pct": error}}},
             }
         issued = [
-            scored(1, "2026-10-26", "PM", 9),
-            scored(2, "2026-10-26", "AM", 4),
-            scored(2, "2026-10-26", "PM", 1),
-            scored(2, "2026-10-27", "PM", 2),
+            scored(forecast.MODEL_VERSION-1, "2026-10-26", "PM", 9),
+            scored(forecast.MODEL_VERSION, "2026-10-26", "AM", 4),
+            scored(forecast.MODEL_VERSION, "2026-10-26", "PM", 1),
+            scored(forecast.MODEL_VERSION, "2026-10-27", "PM", 2),
         ]
         selected = forecast.independent_evaluations(issued, forecast.MODEL_VERSION)
         self.assertEqual(len(selected), 2)

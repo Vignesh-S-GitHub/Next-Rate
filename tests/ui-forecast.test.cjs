@@ -11,8 +11,9 @@ const daily=fs.readFileSync(path.join(root,'.github/workflows/refresh-rates.yml'
 
 test('Home shows tomorrow, today, weights and buy together',()=>{
  const s=app.slice(app.indexOf('function home(){'),app.indexOf('function marketCard(',app.indexOf('function home(){')));
- assert.ok(s.includes('forecastPanel()+homeTodayPanel()'));
- assert.ok(s.indexOf('forecastPanel()')<s.indexOf('homeTodayPanel()'));
+ assert.ok(s.includes('homeTodayPanel()+forecastPanel()+homeForecastResultPanel()'));
+ assert.ok(s.indexOf('homeTodayPanel()')<s.indexOf('forecastPanel()'));
+ assert.ok(s.indexOf('homeForecastResultPanel()')>s.indexOf('forecastPanel()'));
  assert.ok(s.indexOf('homeTodayPanel()')<s.indexOf('homeWeightPanel()'));
  assert.ok(s.indexOf('homeWeightPanel()')<s.indexOf('homeBuyPanel()'));
  assert.match(app,/home-weight-expand/);
@@ -91,7 +92,7 @@ test('Actual dates and forecast range are independently inspectable on mobile',(
  assert.match(app,/ui\.render\(\{/);
  assert.match(app,/wireChartInspection\(\)/);
  assert.match(app,/chartSelectedDate=null/);
- assert.match(app,/<span class="forecast-range"><span>Range<\/span>/);
+ assert.match(app,/Typical range · 50%/);
  assert.match(app,/class="forecast-prediction-label">Estimate/);
  assert.match(app,/Same as last close/);
  assert.match(chart,/data-chart-point/);
@@ -125,4 +126,21 @@ test('Forecast details no longer occupy Home until expanded',()=>{
  const section=app.slice(app.indexOf('function forecastPanel()'),app.indexOf('function verifiedNav('));
  assert.doesNotMatch(section,/nr-prediction-explainer/);
  assert.ok(section.indexOf('nr-small-details')<section.indexOf('nr-prediction-proof'));
+});
+
+test('Home displays rupee/percent movement and keeps provisional forecast checks ungraded',()=>{
+ const vm=require('node:vm');
+ const core=require('../features-core.js');
+ const snapshot={india:{date:'2026-10-26',session:'AM',gold24_inr_10g:141290,gold22_inr_10g:129422,silver999_inr_kg:195050}};
+ const ctx={window:{NextRateCore:core},rates:snapshot,
+  history:{india:[{date:'2026-10-23',session:'PM',gold24_inr_10g:141630,gold22_inr_10g:129733,silver999_inr_kg:194415}]},
+  benchmark:key=>({value:core.publishedRate(snapshot,key)}),sourceDate:x=>x,
+  india:()=>snapshot.india,indiaTodayISO:()=>'2026-10-26',escapeHTML:x=>String(x),
+  homeCityPrice:()=>'',sourceBadge:()=>'',price:n=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n),
+  issuedForecasts:{forecasts:[{target_date:'2026-10-26',based_on_date:'2026-10-23',issued_at:'2026-10-25T10:00:00Z',
+    metals:{gold24:{estimate:141630,baseline:141630,low:140000,high:143000}}}]}};
+ vm.createContext(ctx);vm.runInContext(app.slice(app.indexOf('function homeTodayPanel(){'),app.indexOf('function homeWeightPanel(){')),ctx);
+ const today=ctx.homeTodayPanel();assert.match(today,/▼ Down ₹340 · 0.24%/);assert.match(today,/▲ Up ₹635 · 0.33%/);assert.match(today,/vs 2026-10-23 PM/);
+ const am=ctx.homeForecastResultPanel();assert.match(am,/AM comparison only/);assert.match(am,/Awaiting PM close/);assert.doesNotMatch(am,/Within forecast range|result-hit|Direction matched/);
+ snapshot.india.session='PM';const pm=ctx.homeForecastResultPanel();assert.match(pm,/Final · Compared/);assert.match(pm,/Within forecast range/);assert.match(pm,/Error ₹340 · 0.24%/);
 });

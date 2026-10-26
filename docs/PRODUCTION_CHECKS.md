@@ -57,3 +57,10 @@ Look at the failing step in [GitHub Actions](https://github.com/Vignesh-S-GitHub
 ## Verification scope
 
 The automated smoke validates HTTP availability and internal data integrity of the deployed frontend; it does not emulate an actual Android touchscreen, guarantee upstream providers will remain available tomorrow, grant browser permissions, or prove that speculative forecasts will beat a simple baseline. End-user device testing and continuing monitoring of failed Actions runs remain operational responsibilities.
+
+### Home comparisons and forecast range (26 October 2026)
+
+- Latest actual movement uses the previous available published date (not the previous calendar day) and retains AM/PM labels.
+- Model v3 changes interval presentation, not the point-model selection policy. Earlier median absolute relative forecast errors set the typical 50% historical band; the subsequent holdout only reports realised coverage. AM observations do not become validation closes.
+- The wider heuristic scenario remains available in About this estimate. Neither range is a guaranteed future probability; a tighter interval alone is not higher accuracy.
+- Forecast check requires an issuance before the target day, preserves the issued estimate, and marks matching AM prices provisional. PM results show error, range coverage and direction separately. Earlier model versions remain in the audit archive.

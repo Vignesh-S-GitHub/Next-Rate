@@ -15,10 +15,10 @@ import statistics
 import sys
 
 try:
-    from scripts.forecast_models import estimate as next_estimate, walk_forward
+    from scripts.forecast_models import estimate as next_estimate, walk_forward, typical_range, typical_bounds
     from scripts.archive_data import complete_history, complete_forecasts
 except ModuleNotFoundError:
-    from forecast_models import estimate as next_estimate, walk_forward
+    from forecast_models import estimate as next_estimate, walk_forward, typical_range, typical_bounds
     from archive_data import complete_history, complete_forecasts
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -125,7 +125,7 @@ def prepare_history(latest: dict, history: dict, as_of: date):
     return rows[-365:], last
 
 
-MODEL_VERSION = 2
+MODEL_VERSION = 3
 
 
 def metal_forecast(rows: list, anchor: dict, code: str):
@@ -138,7 +138,9 @@ def metal_forecast(rows: list, anchor: dict, code: str):
     window=rets[-min(7,len(rets)):]
     if len(window)<2:
         return None
-    test=walk_forward(series)
+    # Never count an AM preview as a realised closing-price validation target.
+    closes=[r[key] for r in usable if r.get("session")=="PM"]
+    test=walk_forward(closes)
     method=test["selected_model"]
     # Keep exact rupee granularity; round(129733 to nearest 100) was
     # previously adding avoidable error to any last-close estimate.
@@ -149,6 +151,12 @@ def metal_forecast(rows: list, anchor: dict, code: str):
     low=floor_step(min(baseline,point)*(1-band_pct),step)
     high=ceil_step(max(baseline,point)*(1+band_pct),step)
     if high<=low:high=low+2*step
+    wider={"low":low,"high":high,"method":"Heuristic volatility scenario, not a guaranteed interval."}
+    profile=typical_range(closes,method,step) if test["status"]=="walk_forward" else None
+    if profile:
+        low,high=typical_bounds(point,profile["half_width"],step)
+        wider["low"]=min(wider["low"],low)
+        wider["high"]=max(wider["high"],high)
     pct=round((point/baseline-1)*100,2)
     direction="Up" if pct>.10 else "Down" if pct<-.10 else "Mostly steady"
     return {
@@ -156,12 +164,16 @@ def metal_forecast(rows: list, anchor: dict, code: str):
         "low":low,"high":high,"expected_change_pct":pct,
         "direction":direction,"scenario_width_pct":round(band_pct*100,2),
         "history_returns_used":len(window),"history_rows_used":len(usable),
+        "history_close_rows_used":len(closes),
         "model_name":method,"model_version":MODEL_VERSION,
         "description":("Simple model chosen using past validation, then checked on a later held-out period."
                        if test["status"]=="walk_forward"
                        else "Short-history experimental trend without a reliable backtest."),
         "backtest":test,
         "interval_calibrated":False,
+        "range_label":"Typical range" if profile else "Range",
+        "range_profile":profile,
+        "wider_range":wider,
     }
 
 
@@ -181,8 +193,8 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
         "market_closed_tomorrow": (today + timedelta(days=1)) != target,
         "status": "unavailable",
         "scope": "India national IBJA benchmark estimate; not city retail or jewellery pricing",
-        "method": "Conservative, experimental momentum baseline with heuristic volatility range.",
-        "validity": "Not a proven statistical confidence interval. Predictions may be wrong.",
+        "method": "Chronological model selection with a typical historical-error band and a separate wider volatility scenario.",
+        "validity": "Typical range targets 50% of earlier historical errors, not a guaranteed future probability. Predictions may be wrong.",
         "source_url": "https://www.ibjarates.com/",
         "metals": {},
         "signal_summary": [],
@@ -220,7 +232,7 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
         },
         {
             "name": "Uncertainty range",
-            "details": "Uses historical absolute price movements with minimum widths of 1.5% for gold and 2.8% for silver. Heuristic, not calibrated.",
+            "details": "Typical range uses the median earlier one-step forecast error, checked on later historical closes. The wider heuristic scenario is retained separately. Neither guarantees a future price.",
             "used_in_estimate": True,
         },
         {
@@ -265,7 +277,8 @@ def score_archive(archive: list, history: dict, now: datetime):
                 "actual": actual,
                 "absolute_error_pct": round(abs(estimate - actual) / actual * 100, 3),
                 "range_covered": metal["low"] <= actual <= metal["high"],
-                "direction_correct": ((estimate - baseline >= 0) == (actual - baseline >= 0))
+                "direction_correct": (((estimate > baseline)-(estimate < baseline)) ==
+                                      ((actual > baseline)-(actual < baseline)))
                                      if abs(estimate - baseline) > 0 else None,
             }
         if outcomes:

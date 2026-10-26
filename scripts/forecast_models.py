@@ -4,6 +4,7 @@ No random train-test shuffles or inference from future observations.
 Model choice uses only the earlier validation window; the later test
 window is reserved for unbiased reporting, not additional selection.
 """
+import math
 import statistics
 
 METHODS=("last_close","damped_median","momentum_3","reversion_3","moving_average")
@@ -32,6 +33,43 @@ def estimate(prices,method):
 def errors(prices,method,start,stop):
     return [abs(estimate(prices[:i],method)-prices[i])/prices[i]*100
             for i in range(start,stop) if prices[i]>0]
+
+
+def typical_bounds(point, half_width, step):
+    """Round outwards, always keeping the point strictly inside its band."""
+    low = max(step, math.floor(point * (1-half_width) / step) * step)
+    high = math.ceil(point * (1+half_width) / step) * step
+    return (low-step if low>=point else low,
+            high+step if high<=point else high)
+
+
+def typical_range(prices, method, step):
+    """Earlier median forecast errors set the width; later closes test it.
+
+    A deliberately narrower typical-move band, not a high-confidence interval.
+    The later holdout never selects or shrinks the width.
+    """
+    n = len(prices)
+    split = max(42, int(n*.75))
+    if n < 55 or n-split < 12:
+        return None
+    residuals = []
+    for i in range(15, split):
+        point = max(1, round(estimate(prices[:i], method)))
+        residuals.append(abs(point-prices[i])/point)
+    width = statistics.median(residuals)
+    covered = 0
+    for i in range(split, n):
+        point = max(1, round(estimate(prices[:i], method)))
+        low, high = typical_bounds(point, width, step)
+        covered += low <= prices[i] <= high
+    return {"target_historical_coverage_pct": 50,
+            "half_width": width,
+            "calibration_samples": len(residuals),
+            "holdout_samples": n-split,
+            "holdout_covered": covered,
+            "holdout_coverage_pct": round(covered/(n-split)*100, 1),
+            "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."}
 
 
 def walk_forward(prices):

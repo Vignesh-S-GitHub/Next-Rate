@@ -33,3 +33,11 @@ test('Tamil translates chart controls and illustrated metal price factors',()=>{
   assert.notEqual(translate(name,'ta'),name,name);
  }
 });
+
+test('Tamil translates Home changes and provisional forecast results without altering amounts',()=>{
+ for(const text of ['Forecast check','Awaiting PM close','Within forecast range','Outside forecast range',
+  'Typical range · 50%','AM comparison only · Final result after PM close']){
+  assert.notEqual(translate(text,'ta'),text,text);
+ }
+ assert.ok(translate('Down ₹340 · 0.24%','ta').includes('₹340 · 0.24%'));
+});

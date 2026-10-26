@@ -77,6 +77,14 @@ class PublicationTests(unittest.TestCase):
                 spot={"XAU": {"usd_per_troy_ounce": -1,
                               "as_of": "2026-10-24T10:00:00+00:00"}}))
 
+    def test_range_coverage_cannot_claim_more_hits_than_were_measured(self):
+        def corrupt(d):
+            d["forecast.json"]["metals"]["gold24"]["range_profile"]={
+                "target_historical_coverage_pct":50,"holdout_samples":20,
+                "holdout_covered":10,"holdout_coverage_pct":99}
+        with self.assertRaisesRegex(ValueError,"Range coverage disagrees"):
+            self.validate(corrupt)
+
 
 if __name__ == "__main__":
     unittest.main()

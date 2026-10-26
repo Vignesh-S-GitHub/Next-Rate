@@ -49,7 +49,11 @@ The first NextRate release kept four dated IBJA PM closes. The backfill now down
 
 Both deployment workflows backfill before forecasting; the scheduled updater commits dated records. Historical daily PM observations are **not** real-time exchange ticks, and LBMA/COMEX/MCX are not yet forecast inputs.
 
-Model v2 tests multiple simple one-step methods against an unchanged last-close baseline. When 55+ historical sessions are available for a metal, a strategy is chosen on earlier chronological validation and tested on a later untouched holdout, with separate MAPE scores. If candidates do not clearly beat the baseline on validation, the model chooses last-close. Historical test improvement **does not guarantee a more accurate future forecast**.
+Model v3 retains the point-model selection from v2 and tests multiple simple one-step methods against an unchanged last-close baseline. When 55+ historical sessions are available for a metal, a strategy is chosen on earlier chronological validation and tested on a later untouched holdout, with separate MAPE scores. If candidates do not clearly beat the baseline on validation, the model chooses last-close. Historical test improvement **does not guarantee a more accurate future forecast**.
+
+Home shows the latest actual change in rupees and percent against the previous published date, with both session/date labels; weekends do not become invented observations. The compact forecast range is a **typical-move band targeting 50% of earlier historical errors**, tested on later untouched PM closes. Its actual historical coverage is shown under About this estimate. It is narrower than the retained wider heuristic scenario, not a claim of greater point accuracy or guaranteed future coverage. AM-based previews are labelled provisional.
+
+Forecast check compares immutable forecasts issued before their target day with the matching dated actual quote. AM comparisons display error but remain pending until PM; final results separate range hit/miss, rupee/percentage error, and directional correctness. No issued past forecast is rewritten to improve its score.
 
 The compact Home page shows Tomorrow, Today, gram weights and quick buying prices. Detailed calculators and all buying options expand within Home rather than filling the screen.
 

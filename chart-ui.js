@@ -97,7 +97,7 @@ function render(ctx){
   '<text x="'+xPred+'" y="278" text-anchor="middle" font-size="13" font-weight="700" fill="#aa7416">'+isoLabel(ctx.forecast.target_date)+'</text></svg><div class="chart-point-tooltip" data-chart-tooltip role="status" aria-live="polite" aria-atomic="true" hidden></div></div>'+
   '<div class="market-legend"><span><i class="market-legend-line"></i>Actual</span>'+
    '<span><i class="market-legend-dash"></i>Estimate</span>'+
-   '<span><i class="market-legend-band"></i>Range</span></div>'+
+   '<span><i class="market-legend-band"></i>'+(d.range_profile?'Typical range · 50%':'Range')+'</span></div>'+
 
   '<p class="chart-key">Estimate only · Not guaranteed</p>';
 }

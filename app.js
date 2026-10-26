@@ -306,9 +306,9 @@ function forecastMetalCard(key, title, unit, iconFile){
     '<span class="forecast-metal-head"><img class="forecast-metal-img'+(iconFile==='gold-bar.webp'?' bullion-gold':'')+'" src="./assets/silver-bar.webp?v=20261025-doublebars" width="38" height="38" alt="" loading="eager">'+
     '<span class="forecast-metal-name"><strong>'+title+'</strong><small>'+unit+'</small></span></span>'+
     '<span class="forecast-metal-quote"><small class="forecast-prediction-label">Estimate</small><strong>'+price(data.estimate)+'</strong>'+
-    '<span class="forecast-direction '+dirClass+'">'+(diff===0?'● Same as last close':
+    '<span class="forecast-direction '+dirClass+'">'+(diff===0?(forecast.based_on_session==='PM'?'● Same as last close':'● Same as latest rate'):
       (change>0?'▲ ':change<0?'▼ ':'● ')+percent+' '+delta)+'</span></span>'+
-    '<span class="forecast-range"><span>Range</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
+    '<span class="forecast-range"><span>'+(data.range_profile?'Typical range · 50%':'Range')+'</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
     '<span class="forecast-quick-weights">'+quickWeights+'</span></button>';
 }
 function marketGraph(){
@@ -347,16 +347,25 @@ function marketSnapshot(){
 function forecastProof(){
   const metal=forecast?.metals?.[activeForecastMetal];
   const evidence=metal?.backtest;
-  const count=Number(metal?.history_rows_used)||0;
+  const count=Number(metal?.history_close_rows_used??metal?.history_rows_used)||0;
   if(evidence?.status==='walk_forward'&&Number.isFinite(evidence.holdout_mape_pct)){
     const error=Number(evidence.holdout_mape_pct).toFixed(2);
     const naive=Number(evidence.holdout_naive_mape_pct).toFixed(2);
     const better=evidence.holdout_beats_naive;
     return '<span>'+count+' historical closes</span>'+
       '<span>Past simulation error '+error+'% · Last-close '+naive+'%</span>'+
-      '<span>'+(better?'Lower error in past test':'No proven improvement over last close')+'</span>';
+      '<span>'+(better?'Lower error in past test':'No proven improvement over last close')+'</span>'+forecastRangeProof(metal);
   }
   return '<span>'+count+' past rates · Prediction accuracy not established</span>';
+}
+
+function forecastRangeProof(metal){
+  const p=metal?.range_profile,w=metal?.wider_range;
+  if(!p||!Number.isFinite(p.holdout_covered)||!Number.isFinite(p.holdout_samples)||p.holdout_samples<=0)return '';
+  return '<span>Typical band in later historical tests: '+p.holdout_covered+'/'+p.holdout_samples+
+    ' closes ('+Number(p.holdout_coverage_pct).toFixed(0)+'%)</span>'+
+    (w&&Number.isFinite(w.low)&&Number.isFinite(w.high)?
+      '<span>Wider scenario: '+price(w.low)+' – '+price(w.high)+'</span>':'');
 }
 
 function forecastPanel(){
@@ -377,11 +386,13 @@ function forecastPanel(){
   }
   content+='<div class="nr-date">'+date+
     (forecast.target_date===forecast.calendar_tomorrow?'':' · Next open day')+
-    '<span>IBJA · '+based+'</span></div>'+
+    '<span>IBJA · '+based+' '+escapeHTML(forecast.based_on_session||'')+'</span></div>'+
+    (forecast.based_on_session==='AM'?'<p class="forecast-preview-note">AM preview · Updates after PM close</p>':'')+
     '<div class="forecast-grid" role="group" aria-label="Choose gold or silver">'+
     forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('silver','Silver','1 kg','silver-bar.webp')+'</div>'+
+    (forecast.metals?.gold24?.range_profile?'<p class="forecast-band-note">50% historical typical-move band. Wider moves are possible.</p>':'')+
     '<div class="nr-chart"><div class="home-chart-controls" role="group" aria-label="Chart history">'+
        [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
        '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
@@ -483,17 +494,52 @@ function wireBuyPanel(){
 }
 /* All essential figures are visible; deep comparison tools expand in-place. */
 function homeTodayPanel(){
-  const labels=[['gold24','24K Gold','10g'],['gold22','22K Gold','10g'],['silver','Silver','1kg']];
+  const labels=[['gold24','24K Gold','10 g'],['gold22','22K Gold','10 g'],['silver','Silver','1 kg']];
   const cells=labels.map(([key,label,unit])=>{
     const b=benchmark(key);
     const available=typeof b.value==='number'&&Number.isFinite(b.value)&&b.value>0;
+    const change=window.NextRateCore?.publishedChange(rates,history,key);
+    const movement=change?'<span class="home-actual-change is-'+change.direction+'">'+
+      (change.direction==='up'?'▲ Up':change.direction==='down'?'▼ Down':'● Unchanged')+' '+
+      price(Math.abs(change.amount))+' · '+Math.abs(change.percent).toFixed(2)+'%</span>'+
+      '<small class="home-actual-versus">vs '+sourceDate(change.previousDate)+' '+escapeHTML(change.previousSession||'')+'</small>':
+      '<small class="home-actual-versus">No earlier observation</small>';
     return '<div class="home-today-item"><span>'+label+' <small>'+unit+'</small></span>'+
-      '<strong>'+(available?price(b.value):'—')+'</strong></div>';
+      '<div class="home-today-values"><strong>'+(available?price(b.value):'—')+'</strong>'+movement+'</div></div>';
   }).join('');
-  return '<section class="home-brief section"><header><h2>Today · IBJA</h2>'+
-    '<span>'+(india()?sourceDate(india().date):'No quote')+'</span></header>'+
+  const current=india();
+  const title=current?.date===indiaTodayISO()?'Today · IBJA':'Latest published · IBJA';
+  return '<section class="home-brief section home-actual" aria-label="Latest price changes"><header><h2>'+title+'</h2>'+
+    '<span>'+(current?sourceDate(current.date)+' '+escapeHTML(current.session||''):'No quote')+'</span></header>'+
     '<div class="home-today-grid">'+cells+'</div>'+homeCityPrice()+
-    '<div class="home-source-note"><span>Actual national rate · IBJA published close</span>'+sourceBadge('ibja',{label:'IBJA source',compact:true})+'</div></section>';
+    '<div class="home-source-note"><span>Actual national rate · '+escapeHTML(current?.session||'')+
+      ' publication</span>'+sourceBadge('ibja',{label:'IBJA source',compact:true})+'</div></section>';
+}
+function homeForecastResultPanel(){
+  const check=window.NextRateCore?.forecastCheck(issuedForecasts?.forecasts,rates,indiaTodayISO());
+  if(!check)return '<section class="home-brief section home-result"><header><h2>Forecast check</h2></header>'+
+    '<p class="forecast-band-note">No earlier issued forecast to check yet.</p></section>';
+  const labels=[['gold24','24K Gold','10 g'],['gold22','22K Gold','10 g'],['silver','Silver','1 kg']];
+  const final=check.status==='final',provisional=check.status==='provisional';
+  const rows=labels.map(([key,label,unit])=>{
+    const r=check.metals[key];if(!r)return '';
+    const hasActual=Number.isFinite(r.actual);
+    const result=!hasActual?'Awaiting PM close':!final?'Awaiting PM close':
+      r.errorAmount===0?'Exact price':r.rangeCovered?'Within forecast range':'Outside forecast range';
+    const state=final&&hasActual?(r.rangeCovered?'hit':'miss'):'pending';
+    return '<div class="home-result-row"><span class="home-result-metal">'+label+'<small>'+unit+'</small></span>'+
+      '<div class="home-result-quote"><small>Predicted</small><strong>'+price(r.estimate)+'</strong></div>'+
+      '<div class="home-result-quote"><small>'+(provisional?'Actual · AM':'Actual · PM')+'</small><strong>'+
+      (hasActual?price(r.actual):'—')+'</strong></div>'+
+      '<div class="home-result-outcome"><span class="result-'+state+'">'+result+'</span>'+
+      (hasActual?'<span>Error '+price(r.errorAmount)+' · '+r.errorPct.toFixed(2)+'%</span>':'')+
+      (final&&hasActual?'<small>'+(r.directionCorrect===null?'No up/down call':r.directionCorrect?'Direction matched':'Direction missed')+'</small>':'')+
+      '</div></div>';
+  }).join('');
+  return '<section class="home-brief section home-result" aria-label="Issued forecast versus actual"><header><h2>Forecast check</h2><span>'+
+    sourceDate(check.targetDate)+'</span></header><p class="home-result-note">'+
+    (provisional?'AM comparison only · Final result after PM close':final?'Final · Compared with the published PM close':'Pending · Waiting for the published PM close')+
+    '</p>'+rows+'</section>';
 }
 function homeWeightPanel(){
   const tabs=[['gold24','24K'],['gold22','22K'],['silver','Silver']].map(([id,label])=>
@@ -550,7 +596,7 @@ function home(){
   const items=[['alerts','Price Alerts'],['jewellery','Jewellery Bill'],['accuracy','Accuracy'],['portfolio','My Gold']];
   const links='<section class="home-tool-links section" aria-label="NextRate tools">'+
     items.map(([key,label])=>'<a href="#tools" data-feature-link="'+key+'">'+label+' ↗</a>').join('')+'</section>';
-  return '<div class="home-dashboard">'+forecastPanel()+homeTodayPanel()+
+  return '<div class="home-dashboard">'+homeTodayPanel()+forecastPanel()+homeForecastResultPanel()+
     homeWeightPanel()+homeBuyPanel()+links+'</div>';
 }
 function featuresContext(){

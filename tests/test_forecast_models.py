@@ -1,6 +1,6 @@
 import math
 import unittest
-from scripts.forecast_models import estimate,walk_forward,errors
+from scripts.forecast_models import estimate,walk_forward,errors,typical_range,typical_bounds
 
 class WalkForwardTests(unittest.TestCase):
     def test_never_uses_prices_after_prediction_index(self):
@@ -29,6 +29,31 @@ class WalkForwardTests(unittest.TestCase):
         a=errors(prior,"damped_median",15,45)
         b=errors(prior[:45]+[999999]*15,"damped_median",15,45)
         self.assertEqual(a,b)
+
+    def test_typical_width_never_reads_later_holdout_prices(self):
+        prices=[150000+300*math.sin(i/4)+50*i for i in range(100)]
+        split=75
+        a=typical_range(prices,"last_close",100)
+        b=typical_range(prices[:split]+[300000+i*10000 for i in range(25)],"last_close",100)
+        self.assertEqual(a["half_width"],b["half_width"])
+        self.assertEqual(a["calibration_samples"],60)
+        self.assertEqual(a["holdout_samples"],25)
+        self.assertLess(b["holdout_covered"],a["holdout_covered"])
+
+    def test_typical_band_reports_large_uncovered_moves_instead_of_shrinking_error(self):
+        p=typical_range([100000]*75+[150000+i*2000 for i in range(25)],"last_close",100)
+        self.assertEqual(p["target_historical_coverage_pct"],50)
+        self.assertEqual(p["half_width"],0)
+        self.assertEqual(p["holdout_covered"],0)
+        self.assertEqual(p["holdout_coverage_pct"],0)
+        self.assertIsNone(typical_range([100000]*20,"last_close",100))
+
+    def test_outward_rounding_retains_the_point_and_units(self):
+        low,high=typical_bounds(141290,.00682,100)
+        self.assertEqual((low,high),(140300,142300))
+        self.assertLess(low,141290)
+        self.assertGreater(high,141290)
+        self.assertEqual(typical_bounds(141290,0,100),(141200,141300))
 
 if __name__=="__main__":
     unittest.main()

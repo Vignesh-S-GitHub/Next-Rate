@@ -770,3 +770,20 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
  .factor-copy h3{font-size:12px}
  .factor-copy p{font-size:10.5px}
 }
+
+/* Latest actual movement and honest issued-forecast results on Home. */
+.home-today-values{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
+.home-today-values>strong{font-size:17px;font-variant-numeric:tabular-nums;color:#172b44}
+.home-actual-change{font-size:12px;font-weight:700;line-height:1.5}
+.home-actual-change.is-up{color:#14834e}.home-actual-change.is-down{color:#c13a3a}.home-actual-change.is-steady{color:#66768a}
+.home-actual-versus{font-size:10px;color:#7d8896;text-align:right;line-height:1.5}
+.home-actual .home-today-item{padding:10px 0;align-items:center}
+.home-result-row{display:grid;grid-template-columns:minmax(70px,1fr) repeat(2,minmax(0,1fr));gap:5px 12px;padding:12px 0;border-bottom:1px solid #edf0f3}
+.home-result-row:last-child{border-bottom:0}.home-result-metal{font-size:12px;color:#34465c;font-weight:700}
+.home-result-metal small,.home-result-quote small{display:block;font-size:10px;color:#84909e;font-weight:400;margin-top:2px}
+.home-result-quote{text-align:right;min-width:0}.home-result-quote strong{font-size:14px;color:#172b44;font-variant-numeric:tabular-nums;white-space:nowrap}
+.home-result-outcome{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 12px;font-size:11px;color:#66768a;line-height:1.5}
+.home-result-outcome small{flex-basis:100%;font-size:10px}.result-hit{color:#14834e;font-weight:700}.result-miss{color:#c13a3a;font-weight:700}.result-pending{color:#89733d;font-weight:600}
+.home-result-note,.forecast-preview-note,.forecast-band-note{font-size:11px!important;line-height:1.5!important;margin:7px 0!important;color:#7b8797!important}
+.home-result-note{margin-top:0!important}.home-actual{margin-top:0!important}
+@media(max-width:380px){.home-today-values>strong{font-size:15px}.home-actual-change{font-size:11px}.home-result-row{gap:5px 8px}.home-result-quote strong{font-size:12px}}

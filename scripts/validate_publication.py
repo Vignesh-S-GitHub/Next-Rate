@@ -127,6 +127,21 @@ def verify(root: Path = ROOT, now: date | None = None, site=False):
                     "Malformed forecast values: "+name)
             require(v["low"] < v["estimate"] < v["high"],
                     "Forecast range does not contain estimate: "+name)
+            profile=v.get("range_profile")
+            if profile is not None:
+                require(isinstance(profile,dict) and profile.get("target_historical_coverage_pct")==50,
+                        "Typical range has no declared historical coverage target: "+name)
+                n=profile.get("holdout_samples")
+                covered=profile.get("holdout_covered")
+                require(type(n) is int and n>=12 and type(covered) is int and 0<=covered<=n,
+                        "Invalid independent range evaluation counts: "+name)
+                require(profile.get("holdout_coverage_pct")==round(covered/n*100,1),
+                        "Range coverage disagrees with its test results: "+name)
+                wide=v.get("wider_range",{})
+                require(isinstance(wide,dict) and price(wide.get("low"),0,10000000) and
+                        price(wide.get("high"),0,10000000) and
+                        wide["low"]<=v["low"]<v["high"]<=wide["high"],
+                        "Wider scenario is missing or narrower than typical range: "+name)
 
     issued = read(root, "forecast_history.json")
     require(issued.get("schema_version") == 1 and isinstance(issued.get("forecasts"), list),
