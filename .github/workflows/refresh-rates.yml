@@ -1,13 +1,6 @@
 name: Refresh market rates and publish NextRate
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "scripts/**"
-      - "tests/**"
-      - "i18n.js"
-      - ".github/workflows/refresh-rates.yml"
   schedule:
     # Direct daily jobs as in the successful October 25 workflow.
     # AM moved past the collector's 13:00 IST source acceptance gate.

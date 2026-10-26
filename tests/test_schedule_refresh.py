@@ -98,6 +98,8 @@ class SchedulerTests(unittest.TestCase):
         self.assertIn('cron: "45 7 * * *"', daily)
         self.assertIn('cron: "45 13 * * *"', daily)
         self.assertEqual(daily.count("    - cron:"), 2)
+        self.assertNotIn("\n  push:", daily)
+        self.assertIn("\n  workflow_dispatch:", daily)
         self.assertNotIn("needs.prepare", daily)
         self.assertNotIn("  prepare:", daily)
         self.assertIn("github.event.schedule == '45 7 * * *'", daily)
@@ -109,7 +111,7 @@ class SchedulerTests(unittest.TestCase):
         self.assertIn("python scripts/validate_publication.py", pages)
         self.assertFalse((root / ".github/workflows/market-scheduler.yml").exists())
 
-    def test_code_changes_still_exercise_the_complete_pipeline(self):
+    def test_explicit_manual_refresh_exercises_the_complete_pipeline(self):
         self.assertTrue(decide(self.root, NOW, requested=True)["refresh"])
 
 

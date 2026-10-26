@@ -13,7 +13,7 @@ NextRate is a static, bilingual Indian gold/silver dashboard on GitHub Pages. Ex
 
 ## Exactly two production workflows
 
-**[Refresh market rates](.github/workflows/refresh-rates.yml)** owns the `schedule` cron and optional manual `workflow_dispatch`. It verifies AM/PM session freshness, fetches source prices, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Each scheduled event starts the complete collector/deployment job directly, following the successful October 25 structure.
+**[Refresh market rates](.github/workflows/refresh-rates.yml)** runs only from the `schedule` cron or optional manual `workflow_dispatch`; code pushes do not trigger market collection. It verifies AM/PM session freshness, fetches source prices, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Each scheduled event starts the complete collector/deployment job directly, following the successful October 25 structure.
 
 | India time (IST) | Purpose |
 | --- | --- |

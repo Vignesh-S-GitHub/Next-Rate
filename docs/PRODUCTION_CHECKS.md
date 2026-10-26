@@ -70,7 +70,7 @@ The automated smoke validates HTTP availability and internal data integrity of t
 
 Observed: the old workflow was active on the default `main` branch with valid UTC cron settings, but no `schedule` event had created a run on 26 October. The same collector/deployment pipeline succeeded on pushes. This locates the observed failure before runner/collector execution; GitHub does not expose its internal cron queue, so a specific internal GitHub cause is not claimed.
 
-Recovery: restore the October 25 direct single-job execution structure and two daily slots, retaining current production modules, archive/session validation, safe data commits and live smoke checks. The AM slot is corrected to 13:15 IST. Retry/sample schedules and the preparation gate are removed. Pushes changing collectors or tests exercise the full pipeline. This simplification does not establish why GitHub created no October 26 schedule event.
+Recovery: restore the October 25 direct single-job execution structure and two daily slots, retaining current production modules, archive/session validation, safe data commits and live smoke checks. The AM slot is corrected to 13:15 IST. Retry/sample schedules and the preparation gate are removed. Market collection is triggered only by schedule or explicit manual recovery; code pushes run the static Pages checks. This simplification does not establish why GitHub created no October 26 schedule event.
 
 Acceptance: observe an actual `event=schedule` run, successful collection/deployment, and a matching `data/refresh_status.json` receipt with `trigger=schedule` and `published=true`. Push/manual runs alone do not satisfy this check. Tomorrow's AM/PM receipts provide independent day-boundary verification; exact-minute execution is not promised.
 
