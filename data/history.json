@@ -3,7 +3,7 @@
     "conflicting_dates_skipped": 0,
     "historical_closes": 99,
     "imported_new_dates": 0,
-    "last_checked_at": "2026-10-26T15:29:26+00:00",
+    "last_checked_at": "2026-10-26T15:30:08+00:00",
     "note": "Backfilled PM rates, not live streaming; independent IBJA latest quote takes priority.",
     "series_available": [
       "gold22_inr_10g",
@@ -1261,6 +1261,14 @@
         "source": "Gold API indicative spot",
         "source_url": "https://gold-api.com/docs",
         "usd_per_troy_ounce": 54.286
+      },
+      {
+        "as_of": "2026-10-26T15:29:43+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:30:06+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.286
       }
     ],
     "XAU": [
@@ -1476,6 +1484,14 @@
         "as_of": "2026-10-26T15:29:14+00:00",
         "date": "2026-10-26",
         "retrieved_at": "2026-10-26T15:29:23+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4018.8999
+      },
+      {
+        "as_of": "2026-10-26T15:29:44+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:30:06+00:00",
         "source": "Gold API indicative spot",
         "source_url": "https://gold-api.com/docs",
         "usd_per_troy_ounce": 4018.8999
