@@ -1,45 +1,13 @@
 name: Refresh market rates and publish NextRate
 
 on:
-  push:
-    branches: [main]
-    paths:
-      # Changes to any live collector, forecaster or integrity gate must
-      # exercise the complete daily pipeline immediately.
-      - "scripts/update_rates.py"
-      - "scripts/update_cities.py"
-      - "scripts/update_funds.py"
-      - "scripts/forecast.py"
-      - "scripts/validate_publication.py"
-      - "scripts/smoke_site.py"
-      - "tests/test_update_rates.py"
-      - "tests/test_forecast.py"
-      - "tests/test_validate_publication.py"
-      - "tests/test_funds.py"
-      - "tests/test_city_rates.py"
-      - "i18n.js"
-      - "tests/i18n.test.cjs"
-      - "tests/ui-cities.test.cjs"
-      - "scripts/backfill_rates.py"
-      - "scripts/archive_data.py"
-      - "tests/test_archive_data.py"
-      - "scripts/forecast_models.py"
-      - "tests/test_backfill_rates.py"
-      - "tests/test_forecast_models.py"
-      - ".github/workflows/refresh-rates.yml"
-      - "scripts/schedule_refresh.py"
-      - "tests/test_schedule_refresh.py"
-  # Timing is owned by market-scheduler.yml; this file is the shared pipeline.
-  workflow_call:
-    inputs:
-      session:
-        type: string
-        default: ""
-        required: false
-      session_date:
-        type: string
-        default: ""
-        required: false
+  # Primary checks after expected IBJA AM/PM publication, with late retries.
+  # GitHub schedule is best effort: a cron slot may start late or be dropped.
+  schedule:
+    - cron: "51 7,13 * * *"      # 13:21 / 19:21 IST
+    - cron: "23 8,14 * * *"      # 13:53 / 19:53 IST
+    - cron: "11,53 9,15 * * *"   # 14:41,15:23 / 20:41,21:23 IST
+    - cron: "37 10,16 * * *"     # 16:07 / 22:07 IST
   workflow_dispatch:
 
 permissions:
@@ -61,24 +29,28 @@ jobs:
       contents: read
     outputs:
       refresh: ${{ steps.session.outputs.refresh }}
+      session: ${{ steps.session.outputs.session }}
+      date: ${{ steps.session.outputs.date }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: main
           persist-credentials: false
-      - name: Recheck freshness inside the archive concurrency lock
+      - name: Determine whether the scheduled source session is missing
         id: session
-        env:
-          NEXT_RATE_REQUESTED_SESSION: ${{ inputs.session || '' }}
-          NEXT_RATE_REQUESTED_DATE: ${{ inputs.session_date || '' }}
-        run: python scripts/schedule_refresh.py --requested
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            python scripts/schedule_refresh.py --requested
+          else
+            python scripts/schedule_refresh.py
+          fi
 
   update-and-deploy:
     needs: prepare
     if: needs.prepare.outputs.refresh == 'true'
     env:
-      NEXT_RATE_REQUESTED_SESSION: ${{ inputs.session || '' }}
-      NEXT_RATE_REQUESTED_DATE: ${{ inputs.session_date || '' }}
+      NEXT_RATE_REQUESTED_SESSION: ${{ github.event_name == 'schedule' && needs.prepare.outputs.session || '' }}
+      NEXT_RATE_REQUESTED_DATE: ${{ github.event_name == 'schedule' && needs.prepare.outputs.date || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     environment:
@@ -120,51 +92,13 @@ jobs:
           python scripts/archive_data.py
           python scripts/archive_data.py --verify
 
-      - name: Validate frontend
+      - name: Verify frontend and publication integrity
         run: |
-          node --check weights.js
-          node --check buy-options.js
-          node --check i18n.js
-          node --check tools-core.js
-          node --check tools-ui.js
-          node --check features-core.js
-          node --check features.js
-          node --check source-logos.js
-          node --test tests/source-logos.test.cjs
-          node --test tests/features-core.test.cjs
-          node --test tests/ui-features.test.cjs
-          node --check chart-interaction.js
-          node --check chart-ui.js
-          node --test tests/chart-interaction.test.cjs
-          node --check app.js
-          node --check data-quality.js
-          node --test tests/data-quality.test.cjs
-          node --test tests/tools-core.test.cjs
-          node --test tests/tools-ui.test.cjs
-          node --test tests/i18n.test.cjs
-          node --test tests/ui-cities.test.cjs
-          node --test tests/weights.test.cjs
-          node --test tests/buy-options.test.cjs
-          node --test tests/ui-buy.test.cjs
-          node --test tests/ui-controls.test.cjs
-          node --test tests/ui-forecast.test.cjs
-          test -s index.html
-          test -s features.css
-          test -s data/latest.json
-          test -s data/funds.json
-          test -s data/cities.json
-          test -s data/forecast.json
-          test -s data/forecast_history.json
-          test -s data/archive/manifest.json
-          test -s assets/nextrate-icon.png
-          test -s assets/gold-bar.webp
-          test -s assets/silver-bar.webp
-          python -m json.tool data/latest.json >/dev/null
-          python -m json.tool data/funds.json >/dev/null
-          python -m json.tool data/cities.json >/dev/null
-          python -m json.tool data/history.json >/dev/null
-          python -m json.tool data/forecast.json >/dev/null
-          python -m json.tool data/forecast_history.json >/dev/null
+          set -eu
+          for file in app.js buy-options.js chart-interaction.js chart-ui.js data-quality.js features-core.js features.js i18n.js source-logos.js weights.js; do
+            node --check "$file"
+          done
+          node --test tests/*.test.cjs
           python scripts/validate_publication.py
 
       - name: Verify the requested opening or closing session
@@ -205,10 +139,11 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Build static site
+      - name: Stage verified production website
         run: |
+          set -eu
           mkdir -p _site/assets _site/data
-          cp index.html styles.css features.css app.js chart-interaction.js chart-ui.js features-core.js features.js data-quality.js source-logos.js i18n.js tools-core.js tools-ui.js weights.js buy-options.js _site/
+          cp index.html app.js chart-interaction.js chart-ui.js i18n.js weights.js buy-options.js features-core.js features.js data-quality.js source-logos.js features.css styles.css _site/
           cp assets/nextrate-icon.svg assets/nextrate-icon.png assets/apple-touch-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json data/cities.json _site/data/
           touch _site/.nojekyll
