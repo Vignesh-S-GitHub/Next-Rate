@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-26T12:46:34+00:00",
+  "checked_at": "2026-10-26T15:29:23+00:00",
   "india": {
     "date": "2026-10-26",
     "session": "PM",
@@ -9,31 +9,31 @@
     "silver999_inr_kg": 194479,
     "source": "India Bullion and Jewellers Association (IBJA)",
     "source_url": "https://www.ibjarates.com/",
-    "retrieved_at": "2026-10-26T12:46:34+00:00",
+    "retrieved_at": "2026-10-26T15:29:23+00:00",
     "gst_included": false,
     "making_charges_included": false,
     "geography": "India national reference, not city retail"
   },
   "spot": {
     "XAU": {
-      "usd_per_troy_ounce": 4020.8,
-      "as_of": "2026-10-26T12:46:14+00:00",
-      "retrieved_at": "2026-10-26T12:46:34+00:00",
+      "usd_per_troy_ounce": 4018.8999,
+      "as_of": "2026-10-26T15:29:14+00:00",
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
       "source": "Gold API indicative spot",
       "source_url": "https://gold-api.com/docs"
     },
     "XAG": {
-      "usd_per_troy_ounce": 54.206,
-      "as_of": "2026-10-26T12:46:13+00:00",
-      "retrieved_at": "2026-10-26T12:46:34+00:00",
+      "usd_per_troy_ounce": 54.286,
+      "as_of": "2026-10-26T15:29:13+00:00",
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
       "source": "Gold API indicative spot",
       "source_url": "https://gold-api.com/docs"
     }
   },
   "fx": {
-    "inr_per_usd": 94.9,
+    "inr_per_usd": 94.93,
     "date": "2026-10-26",
-    "retrieved_at": "2026-10-26T12:46:34+00:00",
+    "retrieved_at": "2026-10-26T15:29:23+00:00",
     "source": "Frankfurter daily FX reference",
     "source_url": "https://frankfurter.dev/"
   },

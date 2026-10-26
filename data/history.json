@@ -3,7 +3,7 @@
     "conflicting_dates_skipped": 0,
     "historical_closes": 99,
     "imported_new_dates": 0,
-    "last_checked_at": "2026-10-26T12:46:36+00:00",
+    "last_checked_at": "2026-10-26T15:29:26+00:00",
     "note": "Backfilled PM rates, not live streaming; independent IBJA latest quote takes priority.",
     "series_available": [
       "gold22_inr_10g",
@@ -979,24 +979,42 @@
     },
     {
       "date": "2026-10-19",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 133685,
       "gold24_inr_10g": 145944,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
       "session": "PM",
-      "silver999_inr_kg": 208750
+      "silver999_inr_kg": 208750,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-21",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 132000,
       "gold24_inr_10g": 144105,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
       "session": "PM",
-      "silver999_inr_kg": 206783
+      "silver999_inr_kg": 206783,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-22",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 130708,
       "gold24_inr_10g": 142694,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
       "session": "PM",
-      "silver999_inr_kg": 199777
+      "silver999_inr_kg": 199777,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-23",
@@ -1235,6 +1253,14 @@
         "source": "Gold API indicative spot",
         "source_url": "https://gold-api.com/docs",
         "usd_per_troy_ounce": 54.206
+      },
+      {
+        "as_of": "2026-10-26T15:29:13+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:29:23+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.286
       }
     ],
     "XAU": [
@@ -1445,6 +1471,14 @@
         "source": "Gold API indicative spot",
         "source_url": "https://gold-api.com/docs",
         "usd_per_troy_ounce": 4020.8
+      },
+      {
+        "as_of": "2026-10-26T15:29:14+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:29:23+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4018.8999
       }
     ]
   },
