@@ -597,7 +597,7 @@ function home(){
   const links='<section class="home-tool-links section" aria-label="NextRate tools">'+
     items.map(([key,label])=>'<a href="#tools" data-feature-link="'+key+'">'+label+' ↗</a>').join('')+'</section>';
   return '<div class="home-dashboard">'+homeTodayPanel()+forecastPanel()+homeForecastResultPanel()+
-    homeWeightPanel()+homeBuyPanel()+links+'</div>';
+    homeWeightPanel()+homeBuyPanel()+links+homeMetalLearning()+'</div>';
 }
 function featuresContext(){
   return {rates,history,forecast,forecastHistory:issuedForecasts,cities:cityRates,funds,
@@ -704,6 +704,61 @@ function compare() {
     '<div class="comparison-source-mark">'+sourceBadge('ibja',{label:'Official rate source',compact:true})+'</div></article>'+
     weightPriceSection();
 }
+function metalPicture(metal,size=62){
+  return '<img class="metal-guide-image'+(metal==='gold'?' bullion-gold':'')+
+    '" src="./assets/silver-bar.webp?v=20261025-doublebars" alt="'+
+    (metal==='gold'?'Two gold bars':'Two silver bars')+'" width="'+size+'" height="'+size+'" loading="lazy">';
+}
+function homeMetalLearning(){
+  return '<section class="home-brief home-metal-learning section"><header><div><span class="nr-kicker">GOLD &amp; SILVER</span>'+
+    '<h2>Know your metals</h2></div><a class="metal-guide-link" href="#insights">Explore guide →</a></header>'+
+    '<div class="metal-preview-grid">'+[['gold','Gold','Purity, weights & jewellery'],['silver','Silver','Fineness, bars & everyday buying']].map(([key,title,desc])=>
+      '<a href="#insights" class="metal-preview metal-preview-'+key+'">'+metalPicture(key,64)+
+      '<div><h3>'+title+'</h3><p>'+desc+'</p></div><span aria-hidden="true">↗</span></a>').join('')+'</div></section>';
+}
+function metalPurityGuide(){
+  const cards=[
+    {metal:'gold',title:'Gold',intro:'Read the gold content in a fineness mark.',
+      rows:[['999','99.9%'],['22K916','91.6%'],['18K750','75.0%']],
+      url:'https://www.bis.gov.in/hallmarking-jewellers/?lang=en',source:'Gold hallmarking ↗'},
+    {metal:'silver',title:'Silver',intro:'Read the silver content in a fineness mark.',
+      rows:[['999','99.9%'],['990','99.0%'],['925','92.5%']],
+      url:'https://www.pib.gov.in/PressReleasePage.aspx?PRID=2163768&lang=1&reg=3',source:'Silver hallmarking ↗'}
+  ];
+  return '<section class="metal-learning section" aria-labelledby="metal-purity-title"><div class="metal-learning-heading">'+
+    '<span class="nr-kicker">PURITY MADE SIMPLE</span><h2 id="metal-purity-title">Know your metal</h2>'+
+    '<p>Same weight. Different purity. Different metal value.</p></div><div class="metal-purity-grid">'+cards.map(c=>
+      '<article class="metal-purity-card metal-purity-'+c.metal+'"><header>'+metalPicture(c.metal,86)+
+      '<div><h3>'+c.title+'</h3><p>'+c.intro+'</p></div></header><dl class="metal-purity-list">'+c.rows.map(([mark,value])=>
+        '<div><dt>'+mark+'</dt><dd>'+value+'<small>metal content</small></dd></div>').join('')+'</dl>'+
+      '<p class="metal-source-note">Examples of fineness marks. Verify the full hallmark.</p>'+
+      '<a class="metal-guide-link" href="'+c.url+'" target="_blank" rel="noopener noreferrer">'+c.source+'</a></article>').join('')+'</div></section>';
+}
+function metalBuyingGuide(){
+  const checks=[['shield','Check purity','Match the fineness mark and verify the hallmark.'],
+    ['bank','Check weight','Ask for net metal weight, with stones listed separately.'],
+    ['rupee','Read the bill','Separate metal value, making, other charges and taxes.'],
+    ['gift','Ask about resale','Get the seller’s buyback terms and deductions in writing.']];
+  return '<section class="card section metal-buying-guide" aria-labelledby="metal-buying-title"><div class="metal-learning-heading">'+
+    '<span class="nr-kicker">AT THE COUNTER</span><h2 id="metal-buying-title">Before you buy</h2><p>Four details worth checking.</p></div>'+
+    '<div class="metal-check-grid">'+checks.map(([key,title,desc],i)=>'<article class="metal-check-card"><span class="metal-check-icon">'+
+      factorIcon(key)+'</span><small>0'+(i+1)+'</small><h3>'+title+'</h3><p>'+desc+'</p></article>').join('')+'</div>'+
+    '<div class="metal-bill-flow" aria-label="Parts of a metal purchase bill"><span>Metal value</span><b aria-hidden="true">+</b><span>Shop charges</span>'+
+      '<b aria-hidden="true">+</b><span>Taxes</span><b aria-hidden="true">=</b><strong>Invoice total</strong></div>'+
+    '<div class="metal-guide-actions"><a href="#tools" data-feature-link="hallmark">Hallmark check ↗</a>'+
+      '<a href="#tools" data-feature-link="jewellery">Jewellery bill ↗</a><a href="#tools" data-feature-link="resale">Resale estimate ↗</a></div></section>';
+}
+function metalQuestions(){
+  const questions=[
+    ['Why is the shop price different?', 'IBJA is a national metal reference. A shop quote can also include local premiums, making charges, other items and taxes. Ask for an itemised bill.'],
+    ['How do I compare two quotes?', 'Use the same purity and net metal weight. Gold rates here are per 10 g; silver rates are per 1 kg. Use By Weight for a gram comparison.'],
+    ['Why can tomorrow’s estimate equal today’s rate?', 'When other tested methods do not reliably beat the latest-price baseline, the model keeps that baseline. This is not a prediction that the market will stay unchanged.'],
+    ['When is a forecast result final?', 'The saved estimate is checked against its target-date IBJA PM close. Morning prices are provisional. Range coverage, price error and direction are different checks.']
+  ];
+  return '<section class="card section metal-questions" aria-labelledby="metal-questions-title"><div class="metal-learning-heading">'+
+    '<span class="nr-kicker">QUICK ANSWERS</span><h2 id="metal-questions-title">Make sense of the numbers</h2></div>'+questions.map(([q,a])=>
+      '<details><summary>'+q+'</summary><p>'+a+'</p></details>').join('')+'</section>';
+}
 function factorIcon(key){
  const paths={"global":"<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c-5 5-5 13 0 18 5-5 5-13 0-18Z\"/>","rupee":"<path d=\"M5 5h14M5 9h14M8 5h4a5 5 0 0 1 0 10H8l9 6\"/>","yields":"<path d=\"M4 19V6h16M7 16l5-5 4 3 4-7M20 7v5h-5\"/>","shield":"<path d=\"M12 2 4 6v6c0 6 4 9 8 10 4-1 8-4 8-10V6Z\"/><path d=\"m8 12 3 3 5-6\"/>","bank":"<path d=\"M3 10h18L12 3Zm2 0v9m4-9v9m6-9v9m4-9v9M3 21h18\"/>","gift":"<rect x=\"3\" y=\"9\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M12 9v12M3 13h18M12 9c-8 0-8-7-4-7 3 0 4 4 4 7Zm0 0c8 0 8-7 4-7-3 0-4 4-4 7Z\"/>","solar":"<rect x=\"3\" y=\"10\" width=\"18\" height=\"9\" rx=\"1\"/><path d=\"M5 14h14M9 10l-2 9m8-9 2 9M12 2v4m-5-2 2 2m10-2-2 2\"/>","chip":"<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"2\"/><rect x=\"10\" y=\"10\" width=\"4\" height=\"4\" rx=\"1\"/><path d=\"M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4\"/>","factory":"<path d=\"M3 21V10l6 4v-4l6 4V7h6v14ZM15 7V3h6v4M7 18h2m3 0h2m4 0h2\"/>","mine":"<path d=\"M3 20h18M5 20l3-10 5 3 4-8 3 15M10 4l6 8M8 6l3-3\"/>","invest":"<path d=\"M4 19V5m0 14h17M7 16l4-5 4 3 5-8m-5 0h5v5\"/>"};
  return '<svg class="factor-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths[key]+'</svg>';
@@ -719,20 +774,23 @@ function factorCard(row){
 function insights() {
  const gold=[["World gold","Global ↑ → India often ↑","global","up"],["Rupee","INR weakens → local gold may rise","rupee","up"],["Real yields","Higher real yields often pressure gold","yields","down"],["Safe-haven demand","Uncertainty may lift gold","shield","up"],["Central banks","More buying can support gold","bank","up"],["Jewellery demand","Festivals may lift shop premiums","gift","mixed"]], silver=[["Solar power","Solar panels use silver","solar","up"],["Electronics","Devices add to silver demand","chip","up"],["Industry","Growth may increase silver use","factory","mixed"],["Mine supply","More supply may pressure prices","mine","down"],["Rupee","Weak INR may lift local silver","rupee","up"],["Investors","Fund flows can move silver","invest","mixed"]];
  const factorSection=(metal,items)=>'<section class="card factor-section factor-'+metal+'">'+
-   '<header class="factor-section-header"><img src="./assets/'+metal+'-bar.webp" alt="'+
-   (metal==='gold'?'Gold':'Silver')+' bars" loading="lazy" width="62" height="62">'+
+   '<header class="factor-section-header">'+metalPicture(metal)+
    '<div><h2>'+(metal==='gold'?'Gold drivers':'Silver drivers')+'</h2>'+
    '<p>What may change '+metal+' prices</p></div></header>'+
    '<div class="factor-list">'+items.map(factorCard).join('')+'</div></section>';
  return heading('Insights','Learn what moves metal prices')+
+  '<nav class="metal-guide-nav" aria-label="Explore gold and silver">'+
+    [['metal-purity-title','Purity'],['metal-drivers-title','Price drivers'],['metal-buying-title','Buying checklist'],['metal-questions-title','Quick answers']].map(([id,label])=>
+      '<button type="button" data-insight-jump="'+id+'">'+label+'</button>').join('')+'</nav>'+
   '<section class="insight-primer card"><h2>How India prices move</h2>'+
   '<div class="insight-price-flow" role="group" aria-label="Global market quotes, currency and local charges influence prices">'+
   '<span>World price</span><b aria-hidden="true">→</b><span>USD / INR</span>'+
   '<b aria-hidden="true">→</b><span>India + costs</span></div>'+
   '<p class="insight-fineprint">Global markets, FX and local premiums shape Indian prices. GST and making charges are extra.</p></section>'+
-  '<div class="insights-metal-grid">'+factorSection('gold',gold)+factorSection('silver',silver)+'</div>'+
+  metalPurityGuide()+'<h2 class="metal-drivers-heading" id="metal-drivers-title">What moves gold &amp; silver?</h2><div class="insights-metal-grid">'+factorSection('gold',gold)+factorSection('silver',silver)+'</div>'+
   '<p class="insight-note">↗ May lift · ↘ May lower · ↔ Depends on conditions</p>'+
   '<p class="insight-fineprint">Common relationships, not the proven cause of today’s move.</p>'+
+  metalBuyingGuide()+metalQuestions()+
   '<details class="card section insight-policy"><summary>Data and forecasting policy</summary>'+
   '<p>Data updates automatically. Source dates are shown; holidays retain the last IBJA close. Forecasts are experimental, not guaranteed.</p>'+
   '<p>IBJA rates exclude GST and making charges. Global spot and FX are not Indian shop rates.</p></details>'+note();
@@ -769,6 +827,9 @@ function render() {
       render();
     })
   );
+  app.querySelectorAll('[data-insight-jump]').forEach(button=>button.addEventListener('click',()=>{
+    document.getElementById(button.dataset.insightJump)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  }));
   wireWeightCalculator();
   wireBuyPanel();
   wireHomeCompact();

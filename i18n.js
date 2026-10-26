@@ -222,6 +222,34 @@
     "Error ":"வேறுபாடு ","No up/down call":"உயர்வு / குறைவு கணிக்கப்படவில்லை",
     "Direction matched":"திசை பொருந்தியது","Direction missed":"திசை பொருந்தவில்லை"
   });
+  Object.assign(TA,{
+    "Two gold bars":"இரண்டு தங்கக் கட்டிகள்","Two silver bars":"இரண்டு வெள்ளிக் கட்டிகள்",
+    "GOLD & SILVER":"தங்கம் மற்றும் வெள்ளி","Know your metals":"உலோகங்களை அறியுங்கள்","Explore guide →":"வழிகாட்டியைப் பார்க்க →",
+    "Purity, weights & jewellery":"தூய்மை, எடை மற்றும் நகை","Fineness, bars & everyday buying":"தூய்மை, கட்டிகள் மற்றும் வாங்கும் வழிகள்",
+    "PURITY MADE SIMPLE":"தூய்மையை எளிதாக அறியுங்கள்","Know your metal":"உலோகத்தை அறியுங்கள்",
+    "Same weight. Different purity. Different metal value.":"ஒரே எடை. வெவ்வேறு தூய்மை. வெவ்வேறு உலோக மதிப்பு.",
+    "Read the gold content in a fineness mark.":"தூய்மைக் குறியில் தங்கத்தின் அளவை அறியுங்கள்.",
+    "Read the silver content in a fineness mark.":"தூய்மைக் குறியில் வெள்ளியின் அளவை அறியுங்கள்.",
+    "metal content":"உலோக அளவு","Examples of fineness marks. Verify the full hallmark.":"இவை தூய்மைக் குறிகளின் எடுத்துக்காட்டுகள். முழு ஹால்மார்க்கையும் சரிபார்க்கவும்.",
+    "Gold hallmarking ↗":"தங்க ஹால்மார்க் ↗","Silver hallmarking ↗":"வெள்ளி ஹால்மார்க் ↗",
+    "AT THE COUNTER":"வாங்கும் இடத்தில்","Before you buy":"வாங்கும் முன்","Four details worth checking.":"சரிபார்க்க வேண்டிய நான்கு விவரங்கள்.",
+    "Check purity":"தூய்மையைச் சரிபார்க்கவும்","Match the fineness mark and verify the hallmark.":"தூய்மைக் குறியையும் ஹால்மார்க்கையும் சரிபார்க்கவும்.",
+    "Check weight":"எடையைச் சரிபார்க்கவும்","Ask for net metal weight, with stones listed separately.":"கற்கள் தனியாகக் குறிப்பிடப்பட்ட நிகர உலோக எடையைக் கேளுங்கள்.",
+    "Read the bill":"பில்லைப் படிக்கவும்","Separate metal value, making, other charges and taxes.":"உலோக மதிப்பு, செய்கூலி, மற்ற கட்டணங்கள், வரிகள் தனித்தனியாக உள்ளதா பாருங்கள்.",
+    "Ask about resale":"மறுவிற்பனை பற்றி கேளுங்கள்","Get the seller’s buyback terms and deductions in writing.":"மீண்டும் வாங்கும் நிபந்தனைகள் மற்றும் கழிவுகளை எழுத்தில் பெறுங்கள்.",
+    "Parts of a metal purchase bill":"உலோகம் வாங்கும் பில்லின் பகுதிகள்","Metal value":"உலோக மதிப்பு","Shop charges":"கடைச் செலவுகள்","Taxes":"வரிகள்","Invoice total":"பில் மொத்தம்",
+    "Hallmark check ↗":"ஹால்மார்க் சரிபார்ப்பு ↗","Jewellery bill ↗":"நகை பில் ↗","Resale estimate ↗":"மறுவிற்பனை மதிப்பு ↗",
+    "QUICK ANSWERS":"சுருக்கமான பதில்கள்","Make sense of the numbers":"விலைகளைப் புரிந்துகொள்ளுங்கள்",
+    "Why is the shop price different?":"கடை விலை ஏன் வேறுபடுகிறது?",
+    "IBJA is a national metal reference. A shop quote can also include local premiums, making charges, other items and taxes. Ask for an itemised bill.":"IBJA என்பது இந்திய உலோகக் குறிப்பு விலை. கடை விலையில் உள்ளூர் கூடுதல் தொகை, செய்கூலி, மற்ற பொருட்கள் மற்றும் வரிகளும் இருக்கலாம். விவரமான பில்லைக் கேளுங்கள்.",
+    "How do I compare two quotes?":"இரண்டு விலைகளை எப்படி ஒப்பிடுவது?",
+    "Use the same purity and net metal weight. Gold rates here are per 10 g; silver rates are per 1 kg. Use By Weight for a gram comparison.":"ஒரே தூய்மை மற்றும் நிகர உலோக எடையை ஒப்பிடவும். இங்கு தங்க விலை 10 கிராமுக்கும் வெள்ளி விலை 1 கிலோவுக்கும் காட்டப்படுகிறது. கிராம் ஒப்பீட்டுக்கு எடை வாரியாக பகுதியைப் பயன்படுத்தவும்.",
+    "Why can tomorrow’s estimate equal today’s rate?":"நாளைய கணிப்பு ஏன் இன்றைய விலைக்கு சமமாக இருக்கலாம்?",
+    "When other tested methods do not reliably beat the latest-price baseline, the model keeps that baseline. This is not a prediction that the market will stay unchanged.":"சோதிக்கப்பட்ட மற்ற முறைகள் கடைசி விலையைவிட நம்பகமான முடிவு தராவிட்டால், மாதிரி கடைசி விலையை அடிப்படையாகப் பயன்படுத்தும். சந்தை மாறாது என்று இதற்குப் பொருளல்ல.",
+    "When is a forecast result final?":"கணிப்பின் முடிவு எப்போது இறுதியாகும்?",
+    "The saved estimate is checked against its target-date IBJA PM close. Morning prices are provisional. Range coverage, price error and direction are different checks.":"சேமிக்கப்பட்ட கணிப்பு அதன் இலக்குத் தேதியின் IBJA மாலை முடிவு விலையுடன் சரிபார்க்கப்படும். காலை விலை தற்காலிகமானது. வரம்பு, விலை வேறுபாடு, திசை ஆகியவை தனித்தனி சோதனைகள்."
+  });
+  Object.assign(TA,{"Explore gold and silver":"தங்கம் மற்றும் வெள்ளியை அறியுங்கள்","Purity":"தூய்மை","Price drivers":"விலை மாற்றக் காரணங்கள்","Buying checklist":"வாங்கும் சரிபார்ப்பு","Quick answers":"சுருக்கமான பதில்கள்","What moves gold & silver?":"தங்கம், வெள்ளி விலையை மாற்றுவது என்ன?"});
   const keys=Object.keys(TA).sort((a,b)=>b.length-a.length);
   const textOriginals=new WeakMap();
   const attrOriginals=new WeakMap();

@@ -113,7 +113,10 @@ test('Insights teaches price drivers visually using gold/silver images',()=>{
  assert.match(app,/function factorIcon/);
  assert.match(app,/class="factor-svg"/);
  assert.match(app,/class="factor-card"/);
- assert.match(app,/\.\/assets\/'\+metal\+'-bar\.webp/);
+ assert.match(app,/function metalPicture\(metal,size=62\)/);
+ assert.match(app,/Two gold bars/);
+ assert.match(app,/Two silver bars/);
+ assert.doesNotMatch(app,/assets\/'\+metal\+'-bar\.webp/);
  assert.match(app,/Gold drivers/);
  assert.match(app,/Silver drivers/);
  assert.match(app,/Solar panels use silver/);
