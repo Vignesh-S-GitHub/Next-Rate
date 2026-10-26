@@ -1,0 +1,52 @@
+name: NextRate market scheduler
+
+on:
+  schedule:
+    # Primary opening and closing checks: 13:15 and 19:15 IST.
+    - cron: "45 7,13 * * *"
+    # Retry/heartbeat slots: 15-minute checks during publication/recovery hours.
+    # Only a missing/failed session causes a full refresh and deployment.
+    - cron: "7,22,37,52 7-17 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/market-scheduler.yml"
+      - "scripts/schedule_refresh.py"
+      - "tests/test_schedule_refresh.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nextrate-market-scheduler
+  cancel-in-progress: false
+
+jobs:
+  check-session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      refresh: ${{ steps.session.outputs.refresh }}
+      session: ${{ steps.session.outputs.session }}
+      date: ${{ steps.session.outputs.date }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Check dated session and scheduled-publication receipt
+        id: session
+        run: python scripts/schedule_refresh.py
+
+  refresh-session:
+    needs: check-session
+    if: needs.check-session.outputs.refresh == 'true'
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/refresh-rates.yml
+    with:
+      session: ${{ needs.check-session.outputs.session }}
+      session_date: ${{ needs.check-session.outputs.date }}

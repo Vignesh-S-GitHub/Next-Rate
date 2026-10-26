@@ -112,7 +112,7 @@ def validate_rates(row: dict):
             5000 < silver < 3000000)
 
 
-def dated_rows(html: str, parser: RowExtractor):
+def dated_rows(html: str, parser: RowExtractor, retain_sessions=False):
     matches = []
     for i, row in enumerate(parser.rows):
         joined = " ".join(row)
@@ -163,7 +163,7 @@ def dated_rows(html: str, parser: RowExtractor):
         if day in seen:
             row["session"] = "PM"
         seen[day] = row
-    return seen
+    return [row for _, row in matches] if retain_sessions else seen
 
 
 def current_session_rows(parser: RowExtractor):
@@ -244,6 +244,40 @@ def parse_ibja(html: str, now: datetime):
              current["gold24_inr_10g"], current["gold22_inr_10g"],
              current["silver999_inr_kg"], len(history))
     return current, sorted(history.values(), key=lambda x: x["date"])
+
+
+def source_sessions(html: str, current: dict, now: datetime):
+    """Recover both source sessions even when the AM scheduled job was late.
+
+    Past dates must be explicitly printed by IBJA. Today's undated table is
+    used only after parse_ibja has independently accepted its date/session.
+    A PM publication includes its opening AM values; it is not two PM closes.
+    """
+    parser = RowExtractor()
+    parser.feed(html)
+    rows = dated_rows(html, parser, retain_sessions=True)
+    rows = [r for r in rows if r["date"] <= current["date"]]
+    today = now.astimezone(IST).date().isoformat()
+    if current["date"] == today:
+        values = current_session_rows(parser)
+        for session in ("AM", "PM"):
+            if session in values and (session == "AM" or current["session"] == "PM"):
+                rows.append({"date": today, "session": session, **values[session]})
+    metadata = {k: current[k] for k in (
+        "source", "source_url", "retrieved_at", "gst_included",
+        "making_charges_included", "geography") if k in current}
+    return [{**metadata, **row} for row in rows]
+
+
+def archive_source_sessions(html: str, current: dict, now: datetime, annual: Path):
+    try:
+        from scripts.archive_data import write_archive, validate_manifest
+    except ModuleNotFoundError:
+        from archive_data import write_archive, validate_manifest
+    if (annual / "manifest.json").exists():
+        validate_manifest(annual)
+    write_archive({"india": source_sessions(html, current, now)}, {"forecasts": []}, root=annual)
+    validate_manifest(annual)
 
 
 def parse_spot(body: bytes, symbol: str, now: datetime):
@@ -349,6 +383,9 @@ def refresh(now=None):
     try:
         html = download(IBJA_URL).decode("utf-8", errors="replace")
         india, observed = parse_ibja(html, now)
+        # Capture opening and closing observations to canonical annual storage
+        # before compacting the public one-row-per-day chart cache.
+        archive_source_sessions(html, india, now, LATEST.parent / "archive")
         snapshot["india"] = india
         records["india"] = append_history(records["india"], observed, ("date",))
         snapshot["sources_checked"]["ibja"] = "ok"

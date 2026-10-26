@@ -27,14 +27,19 @@ on:
       - "tests/test_backfill_rates.py"
       - "tests/test_forecast_models.py"
       - ".github/workflows/refresh-rates.yml"
-  schedule:
-    # AM collection must be after the collector's 13:00 IST gate.
-    # Follow-up checks reduce missed updates when schedules/sources are late.
-    # 13:15, 13:45, 19:15 and 19:45 IST (UTC cron).
-    - cron: "45 7 * * *"
-    - cron: "15 8 * * *"
-    - cron: "45 13 * * *"
-    - cron: "15 14 * * *"
+      - "scripts/schedule_refresh.py"
+      - "tests/test_schedule_refresh.py"
+  # Timing is owned by market-scheduler.yml; this file is the shared pipeline.
+  workflow_call:
+    inputs:
+      session:
+        type: string
+        default: ""
+        required: false
+      session_date:
+        type: string
+        default: ""
+        required: false
   workflow_dispatch:
 
 permissions:
@@ -49,7 +54,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      refresh: ${{ steps.session.outputs.refresh }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Recheck freshness inside the archive concurrency lock
+        id: session
+        env:
+          NEXT_RATE_REQUESTED_SESSION: ${{ inputs.session || '' }}
+          NEXT_RATE_REQUESTED_DATE: ${{ inputs.session_date || '' }}
+        run: python scripts/schedule_refresh.py --requested
+
   update-and-deploy:
+    needs: prepare
+    if: needs.prepare.outputs.refresh == 'true'
+    env:
+      NEXT_RATE_REQUESTED_SESSION: ${{ inputs.session || '' }}
+      NEXT_RATE_REQUESTED_DATE: ${{ inputs.session_date || '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 35
     environment:
@@ -59,6 +88,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
         with:
+          ref: main
           persist-credentials: true
 
       - name: Run collector tests
@@ -137,6 +167,9 @@ jobs:
           python -m json.tool data/forecast_history.json >/dev/null
           python scripts/validate_publication.py
 
+      - name: Verify the requested opening or closing session
+        run: python scripts/schedule_refresh.py --verify
+
       - name: Commit changed daily observations
         run: |
           set -eu
@@ -192,3 +225,27 @@ jobs:
 
       - name: Verify live site after deployment
         run: python scripts/smoke_site.py --url "https://vignesh-s-github.github.io/Next-Rate/"
+
+      - name: Record a verified timer and live-publication receipt
+        run: |
+          python scripts/schedule_refresh.py --record
+          if test -f data/refresh_status.json; then
+            git add data/refresh_status.json
+            if ! git diff --cached --quiet; then
+              git commit -m "ops: record verified market publication [skip ci]"
+              published=false
+              for attempt in 1 2 3 4; do
+                if git push origin HEAD:main; then
+                  published=true
+                  break
+                fi
+                git fetch origin main
+                git rebase -X theirs origin/main
+                sleep 2
+              done
+              if [ "$published" != "true" ]; then
+                echo "Publication receipt could not be saved"
+                exit 1
+              fi
+            fi
+          fi

@@ -1,7 +1,9 @@
 import json
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from datetime import datetime, timezone
-from scripts.update_rates import parse_ibja, parse_spot, parse_fx
+from scripts.update_rates import parse_ibja, parse_spot, parse_fx, source_sessions, archive_source_sessions
 
 SAMPLE = """
 <html><body>
@@ -23,6 +25,44 @@ SAMPLE = """
 
 
 class RatesTests(unittest.TestCase):
+    def test_late_pm_collection_recovers_both_open_and_close(self):
+        doc = SAMPLE.replace("23/10/2026", "22/10/2026")
+        now = datetime(2026, 10, 23, 14, tzinfo=timezone.utc)
+        current, _ = parse_ibja(doc, now)
+        rows = [r for r in source_sessions(doc, current, now) if r["date"] == "2026-10-23"]
+        self.assertEqual([r["session"] for r in rows], ["AM", "PM"])
+        self.assertEqual(rows[0]["gold24_inr_10g"], 141448)
+        self.assertEqual(rows[1]["gold24_inr_10g"], 141630)
+
+    def test_am_recovery_does_not_invent_an_early_pm_observation(self):
+        doc = SAMPLE.replace("23/10/2026", "22/10/2026")
+        now = datetime(2026, 10, 23, 8, tzinfo=timezone.utc)
+        current, _ = parse_ibja(doc, now)
+        rows = [r for r in source_sessions(doc, current, now) if r["date"] == "2026-10-23"]
+        self.assertEqual([r["session"] for r in rows], ["AM"])
+
+    def test_session_recovery_on_weekend_keeps_explicit_prior_dates(self):
+        now = datetime(2026, 10, 24, 14, tzinfo=timezone.utc)
+        current, _ = parse_ibja(SAMPLE, now)
+        rows = source_sessions(SAMPLE, current, now)
+        self.assertNotIn("2026-10-24", [r["date"] for r in rows])
+        self.assertEqual({r["session"] for r in rows if r["date"] == "2026-10-23"}, {"AM", "PM"})
+
+    def test_recovered_sessions_cannot_silently_rehash_a_corrupted_archive(self):
+        now = datetime(2026, 10, 24, 14, tzinfo=timezone.utc)
+        current, _ = parse_ibja(SAMPLE, now)
+        with TemporaryDirectory() as folder:
+            annual = Path(folder)
+            archive_source_sessions(SAMPLE, current, now, annual)
+            shard = annual / "ibja/2026.json"
+            original = shard.read_text()
+            broken = original.replace('141630', '141631')
+            self.assertNotEqual(original, broken)
+            shard.write_text(broken)
+            with self.assertRaisesRegex(ValueError, "hash mismatch"):
+                archive_source_sessions(SAMPLE, current, now, annual)
+            self.assertEqual(shard.read_text(), broken)
+
     def test_weekend_uses_dated_prior_close(self):
         current, history = parse_ibja(SAMPLE, datetime(2026, 10, 24, 12, tzinfo=timezone.utc))
         self.assertEqual(current["date"], "2026-10-23")

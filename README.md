@@ -63,16 +63,17 @@ The compact Home page shows Tomorrow, Today, gram weights and quick buying price
 
 ## What updates automatically
 
-The [Refresh market rates and publish NextRate](.github/workflows/refresh-rates.yml) workflow runs on GitHub Actions twice daily:
+The [NextRate market scheduler](.github/workflows/market-scheduler.yml) owns the clock. It calls the existing [Refresh market rates and publish NextRate](.github/workflows/refresh-rates.yml) pipeline only when the source session or a verified timer/publication receipt is missing.
 
 | UTC | India time (IST) | Purpose |
 |---|---|---|
-| 07:45 | 1:15 PM | Check Indian bullion AM rates after the collector publication gate |
-| 08:15 | 1:45 PM | Follow-up AM check |
-| 13:45 | 7:15 PM | Check Indian bullion PM rates and daily international references |
-| 14:15 | 7:45 PM | Follow-up PM check |
+| 07:45 | 1:15 PM | Primary AM collection |
+| 13:45 | 7:15 PM | Primary PM collection |
+| Minutes 07, 22, 37, 52 during 07–17 UTC | 12:37 PM–11:22 PM | Lightweight heartbeat and recovery checks; checks before 1:15 PM skip collection |
 
-GitHub-hosted scheduled jobs may begin later than the specified minute. Workflows can also be run manually using **Actions → Refresh market rates and publish NextRate → Run workflow**.
+Retries skip completed sessions. A receipt in `data/refresh_status.json` certifies a timer only when the original trigger is `schedule`, source/AM/PM archive checks pass, and the deployed site passes its live HTTP smoke test. Push/manual successes cannot certify the timer. Each check writes its reason to the GitHub job summary. Late PM collection also retains the opening AM rate from the same validated source table.
+
+GitHub cron remains a best-effort service; it can be delayed or dropped. Extra check slots improve recovery but do not guarantee execution at an exact minute. The actual scheduler event must be observed before claiming that the automatic path is verified. Both workflows can also be started manually from Actions. Archive concurrency is separate from UI deployments; a delayed job checks out current `main` and rechecks freshness after acquiring the market lock.
 
 The workflow executes:
 

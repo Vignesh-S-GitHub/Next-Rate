@@ -12,7 +12,7 @@ Updated 25 October 2026. **No new end-user features**: these are reliability gat
 - **Permanent history:** `python scripts/archive_data.py --verify` checks every annual shard against SHA-256 manifest, record counts, order and identity. Neither scheduled workflow nor UI build is allowed to erase old archive records.
 - **Production source vs projection:** actual IBJA rates retain their source date/session. Estimates appear only when target date, source session, and all three model baselines agree with the independently fetched benchmark.
 
-GitHub Pages remains the static website. Scheduled market-data updates are managed by the existing `.github/workflows/refresh-rates.yml`; they run at **07:45, 08:15, 13:45 and 14:15 UTC** (13:15, 13:45, 19:15 and 19:45 India time). The morning checks follow the collector’s 13:00 IST publication gate. GitHub-hosted schedules can start later than requested. The regular Pages workflow also runs for code commits.
+GitHub Pages remains the static website. `.github/workflows/market-scheduler.yml` owns the primary **07:45 and 13:45 UTC** clock (13:15 and 19:15 IST), plus guarded recovery checks at minutes 07, 22, 37 and 52 during 07–17 UTC. It calls the shared `.github/workflows/refresh-rates.yml` pipeline only when needed. Timer success requires a `schedule` event receipt saved after source, archive and live deployment verification; a code-push success is not timer proof. GitHub schedules remain best effort. The regular Pages workflow also runs for code commits.
 
 ## Failure scenarios and expected behaviour
 
@@ -64,3 +64,11 @@ The automated smoke validates HTTP availability and internal data integrity of t
 - Model v3 changes interval presentation, not the point-model selection policy. Earlier median absolute relative forecast errors set the typical 50% historical band; the subsequent holdout only reports realised coverage. AM observations do not become validation closes.
 - The wider heuristic scenario remains available in About this estimate. Neither range is a guaranteed future probability; a tighter interval alone is not higher accuracy.
 - Forecast check requires an issuance before the target day, preserves the issued estimate, and marks matching AM prices provisional. PM results show error, range coverage and direction separately. Earlier model versions remain in the audit archive.
+
+### Scheduled-trigger investigation and recovery — 26 October 2026
+
+Observed: the old workflow was active on the default `main` branch with valid UTC cron settings, but no `schedule` event had created a run on 26 October. The same collector/deployment pipeline succeeded on pushes. This locates the observed failure before runner/collector execution; GitHub does not expose its internal cron queue, so a specific internal GitHub cause is not claimed.
+
+Recovery: a newly registered dedicated scheduler calls the existing tested pipeline, with primary AM/PM slots and guarded retry heartbeats. The collector preserves both source sessions when the AM job was missed. Annual manifests are verified before and after recovery writes. A freshness check is repeated inside the archive concurrency lock, and current `main` is checked out to avoid deploying stale queued code. Source failure, missing sessions, or unsuccessful publication leave the session due for retry.
+
+Acceptance: observe an actual `event=schedule` run, successful nested collection/deployment, and a matching `data/refresh_status.json` receipt with `trigger=schedule` and `published=true`. Push/manual runs alone do not satisfy this check. Tomorrow's AM/PM receipts provide independent day-boundary verification; exact-minute execution is not promised.
