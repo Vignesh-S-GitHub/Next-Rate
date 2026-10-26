@@ -28,9 +28,13 @@ on:
       - "tests/test_forecast_models.py"
       - ".github/workflows/refresh-rates.yml"
   schedule:
-    # After the Indian AM and PM bullion price publications (UTC times).
-    - cron: "15 7 * * *"
+    # AM collection must be after the collector's 13:00 IST gate.
+    # Follow-up checks reduce missed updates when schedules/sources are late.
+    # 13:15, 13:45, 19:15 and 19:45 IST (UTC cron).
+    - cron: "45 7 * * *"
+    - cron: "15 8 * * *"
     - cron: "45 13 * * *"
+    - cron: "15 14 * * *"
   workflow_dispatch:
 
 permissions:
@@ -172,7 +176,7 @@ jobs:
         run: |
           mkdir -p _site/assets _site/data
           cp index.html styles.css features.css app.js chart-interaction.js chart-ui.js features-core.js features.js data-quality.js source-logos.js i18n.js tools-core.js tools-ui.js weights.js buy-options.js _site/
-          cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
+          cp assets/nextrate-icon.svg assets/nextrate-icon.png assets/apple-touch-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json data/cities.json _site/data/
           touch _site/.nojekyll
           python scripts/validate_publication.py --root _site --site

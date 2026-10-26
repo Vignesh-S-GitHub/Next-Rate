@@ -63,8 +63,10 @@ The [Refresh market rates and publish NextRate](.github/workflows/refresh-rates.
 
 | UTC | India time (IST) | Purpose |
 |---|---|---|
-| 07:15 | 12:45 PM | Check newly published Indian bullion AM rates |
+| 07:45 | 1:15 PM | Check Indian bullion AM rates after the collector publication gate |
+| 08:15 | 1:45 PM | Follow-up AM check |
 | 13:45 | 7:15 PM | Check Indian bullion PM rates and daily international references |
+| 14:15 | 7:45 PM | Follow-up PM check |
 
 GitHub-hosted scheduled jobs may begin later than the specified minute. Workflows can also be run manually using **Actions → Refresh market rates and publish NextRate → Run workflow**.
 

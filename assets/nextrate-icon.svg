@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFEA9B"/><stop offset=".5" stop-color="#DF9F1D"/><stop offset="1" stop-color="#AC7112"/></linearGradient><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E9EBEF"/><stop offset="1" stop-color="#778391"/></linearGradient></defs><path d="M21 82V66l19-12v28l-19 9Z" fill="url(#s)"/><path d="M44 82V43l20-11v59l-20 6Z" fill="url(#g)"/><path d="M67 91V33l20-11v59L67 94Z" fill="url(#s)"/><path d="m16 59 30-28 18 10L105 7" stroke="url(#g)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M91 10 111 1l-4 22Z" fill="#E9AE33"/><path d="M10 76c5 48 80 47 109-14-6 67-95 81-109 14Z" fill="url(#g)"/><path d="M25 110c37 18 80-5 96-37-10 43-55 61-96 37Z" fill="url(#s)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>NextRate</title>
+  <rect width="128" height="128" rx="30" fill="#102038"/>
+  <path d="M27 88V66h18v22Z" fill="#aebbc9"/>
+  <path d="M55 88V53h18v35Z" fill="#e5ad37"/>
+  <path d="M83 88V36h18v52Z" fill="#e8edf3"/>
+  <path d="m28 48 25-19 19 9 25-17M82 21h15v15" fill="none" stroke="#efbd53" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 103h72" stroke="#efbd53" stroke-width="6" stroke-linecap="round"/>
+</svg>

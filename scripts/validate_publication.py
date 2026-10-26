@@ -167,7 +167,8 @@ def verify(root: Path = ROOT, now: date | None = None, site=False):
     if site:
         for name in ("index.html", "app.js", "data-quality.js", "chart-ui.js",
                      "styles.css", "i18n.js", "features.js", "features.css",
-                     "assets/nextrate-icon.png", "assets/gold-bar.webp",
+                     "assets/nextrate-icon.svg", "assets/nextrate-icon.png",
+                     "assets/apple-touch-icon.png", "assets/gold-bar.webp",
                      "assets/silver-bar.webp"):
             path = root / name
             require(path.exists() and path.stat().st_size > 0,

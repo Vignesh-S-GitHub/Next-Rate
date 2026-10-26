@@ -12,7 +12,7 @@ Updated 25 October 2026. **No new end-user features**: these are reliability gat
 - **Permanent history:** `python scripts/archive_data.py --verify` checks every annual shard against SHA-256 manifest, record counts, order and identity. Neither scheduled workflow nor UI build is allowed to erase old archive records.
 - **Production source vs projection:** actual IBJA rates retain their source date/session. Estimates appear only when target date, source session, and all three model baselines agree with the independently fetched benchmark.
 
-GitHub Pages remains the static website. Scheduled market-data updates are managed by the existing `.github/workflows/refresh-rates.yml`; they run at **07:15 UTC and 13:45 UTC** (12:45 and 19:15 India time). GitHub-hosted schedules can start later than requested. The regular Pages workflow also runs for code commits.
+GitHub Pages remains the static website. Scheduled market-data updates are managed by the existing `.github/workflows/refresh-rates.yml`; they run at **07:45, 08:15, 13:45 and 14:15 UTC** (13:15, 13:45, 19:15 and 19:45 India time). The morning checks follow the collector’s 13:00 IST publication gate. GitHub-hosted schedules can start later than requested. The regular Pages workflow also runs for code commits.
 
 ## Failure scenarios and expected behaviour
 

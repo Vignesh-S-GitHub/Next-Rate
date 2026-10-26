@@ -62,6 +62,9 @@ jobs:
           python -m unittest discover -s tests -v
           node --test tests/ui-forecast.test.cjs
 
+      - name: Fetch validated market rates
+        run: python scripts/update_rates.py
+
       - name: Refresh dated city prices
         run: |
           python scripts/update_cities.py
@@ -101,7 +104,7 @@ jobs:
         run: |
           mkdir -p _site/assets _site/data
           cp index.html app.js chart-interaction.js chart-ui.js i18n.js tools-core.js tools-ui.js weights.js buy-options.js features-core.js features.js data-quality.js source-logos.js features.css styles.css _site/
-          cp assets/nextrate-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
+          cp assets/nextrate-icon.svg assets/nextrate-icon.png assets/apple-touch-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           if test -s data/latest.json && test -s data/history.json; then
             python -m json.tool data/latest.json >/dev/null
             python -m json.tool data/history.json >/dev/null

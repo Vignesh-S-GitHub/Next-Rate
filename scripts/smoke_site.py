@@ -26,7 +26,8 @@ DEFAULT_URL = "https://vignesh-s-github.github.io/Next-Rate/"
 ASSETS = (
     "index.html", "app.js", "data-quality.js", "chart-ui.js", "features.js",
     "styles.css", "features.css", "i18n.js",
-    "assets/nextrate-icon.png", "assets/gold-bar.webp", "assets/silver-bar.webp",
+    "assets/nextrate-icon.svg", "assets/nextrate-icon.png",
+    "assets/apple-touch-icon.png", "assets/gold-bar.webp", "assets/silver-bar.webp",
     "data/latest.json", "data/history.json", "data/forecast.json",
     "data/forecast_history.json", "data/cities.json", "data/funds.json",
 )
@@ -57,6 +58,8 @@ def check(url: str):
         index = (root/"index.html").read_text(encoding="utf-8")
         if "data-quality.js?v=20261025-production1" not in index:
             raise ValueError("Live HTML still points to an older NextRate build")
+        if "nextrate-icon.svg?v=20261026" not in index:
+            raise ValueError("Live HTML still points to the old logo")
         for tab in ('data-route="home"', 'data-route="markets"',
                     'data-route="compare"', 'data-route="insights"',
                     'data-route="tools"'):
