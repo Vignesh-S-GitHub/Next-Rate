@@ -59,11 +59,10 @@ test('Market signals never fabricate COMEX LBMA or MCX and ETFs never fake LTP',
 });
 test('Both deployments stage tool scripts, stylesheet and run tests',()=>{
  for(const workflow of [pages,daily]){
+   assert.ok(workflow.includes('node --test tests/*.test.cjs'));
    for(const script of ['features.js','features-core.js','features.css']){
     assert.ok(workflow.includes(script),script+' staged');
    }
-   assert.match(workflow,/tests\/features-core\.test\.cjs/);
-   assert.match(workflow,/tests\/ui-features\.test\.cjs/);
    assert.ok(!workflow.includes('tests/browser-notifications.test.cjs'));
    assert.ok(!workflow.includes('browser-notifications.js'));
    assert.ok(!workflow.includes('notification-sw.js'));

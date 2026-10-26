@@ -37,12 +37,13 @@ test('Both metal tabs and popular weights use published IBJA benchmarks',()=>{
  assert.match(app,/buyGrams=buyMetal==='gold'\?8:100/);
  for(const metal of ['gold24','gold22','silver'])assert.ok(app.includes("benchmark('"+metal+"')"));
 });
-test('Both workflows publish AMFI and validated GST helper',()=>{
- for(const wf of [pages,daily]){
-  assert.match(wf,/python scripts\/update_funds\.py/);
-  assert.match(wf,/data\/funds\.json/);
-  assert.match(wf,/buy-options\.js/);
-  assert.match(wf,/buy-options\.test\.cjs/);
+test('Daily pipeline collects NAV while Pages serves committed NAV',()=>{
+ assert.match(daily,/python scripts\/update_funds\.py/);
+ assert.doesNotMatch(pages,/python scripts\/update_funds\.py/);
+ for(const workflow of [pages,daily]){
+  assert.ok(workflow.includes('data/funds.json'));
+  assert.ok(workflow.includes('buy-options.js'));
+  assert.ok(workflow.includes('node --test tests/*.test.cjs'));
  }
  assert.match(html,/buy-options\.js/);
 });

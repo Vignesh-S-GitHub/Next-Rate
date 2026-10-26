@@ -49,15 +49,15 @@ test('Mobile chart and price rows remain responsive',()=>{
  assert.match(css,/\.nr-chart/);
  assert.match(css,/@media\(max-width:680px\)/);
 });
-test('Both workflows generate archived dated forecasts',()=>{
- for(const wf of [pages,daily]){
-  assert.match(wf,/python scripts\/forecast\.py/);
-  assert.match(wf,/data\/forecast\.json/);
-  assert.match(wf,/data\/forecast_history\.json/);
-  assert.match(wf,/ui-forecast\.test\.cjs/);
+test('Only the daily pipeline builds forecasts; Pages serves committed forecasts',()=>{
+ assert.match(daily,/python scripts\/forecast\.py/);
+ assert.doesNotMatch(pages,/python scripts\/forecast\.py/);
+ for(const workflow of [pages,daily]){
+  assert.ok(workflow.includes('data/forecast.json'));
+  assert.ok(workflow.includes('data/forecast_history.json'));
+  assert.ok(workflow.includes('node --test tests/*.test.cjs'));
  }
 });
-
 test('Chart periods and measured model error stay visible and compact',()=>{
  assert.match(app,/function forecastProof\(\)/);
  assert.match(app,/holdout_mape_pct/);

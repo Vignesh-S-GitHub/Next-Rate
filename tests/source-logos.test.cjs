@@ -56,8 +56,8 @@ test('Both deployment pipelines include source logos module and cache version is
  assert.match(html,/source-logos\.js\?v=20261025-official-sources1/);
  assert.match(html,/features\.css\?v=20261025-official-sources1/);
  for(const wf of workflows){
-  assert.match(wf,/node --check source-logos\.js/);
-  assert.match(wf,/node --test tests\/source-logos\.test\.cjs/);
+  assert.ok(wf.includes('source-logos.js'));
+  assert.ok(wf.includes('node --test tests/*.test.cjs'));
   assert.match(wf,/cp index\.html .* source-logos\.js .* _site\//);
  }
 });

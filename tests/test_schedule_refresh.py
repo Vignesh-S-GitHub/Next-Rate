@@ -91,6 +91,19 @@ class SchedulerTests(unittest.TestCase):
         self.assertFalse(decide(self.root, now)["refresh"])
         self.assertEqual(self.latest["india"]["date"], "2026-10-23")
 
+    def test_direct_production_cron_and_static_only_pages(self):
+        root = Path(__file__).resolve().parents[1]
+        daily = (root / ".github/workflows/refresh-rates.yml").read_text()
+        pages = (root / ".github/workflows/pages.yml").read_text()
+        self.assertIn('cron: "51 7,13 * * *"', daily)
+        self.assertIn('cron: "37 10,16 * * *"', daily)
+        self.assertIn("needs.prepare.outputs.session", daily)
+        self.assertNotIn("workflow_call:", daily)
+        self.assertIn("python scripts/update_rates.py", daily)
+        self.assertNotIn("python scripts/update_rates.py", pages)
+        self.assertIn("python scripts/validate_publication.py", pages)
+        self.assertFalse((root / ".github/workflows/market-scheduler.yml").exists())
+
     def test_code_changes_still_exercise_the_complete_pipeline(self):
         self.assertTrue(decide(self.root, NOW, requested=True)["refresh"])
 

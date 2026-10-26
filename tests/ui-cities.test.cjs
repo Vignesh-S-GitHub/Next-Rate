@@ -44,15 +44,15 @@ test('Tamil control is accessible, theme-matched and renders across all routes',
  assert.match(css,/\.lang-button\.active/);
  assert.match(css,/@media\(max-width:520px\)/);
 });
-test('both deployments refresh and publish city data and language assets',()=>{
- for(const wf of [pages,scheduled]){
-  assert.match(wf,/python scripts\/update_cities\.py/);
-  assert.match(wf,/data\/cities\.json/);
-  assert.match(wf,/i18n\.js/);
-  assert.match(wf,/ui-cities\.test\.cjs/);
+test('Scheduled pipeline fetches city prices; Pages publishes committed quotes',()=>{
+ assert.match(scheduled,/python scripts\/update_cities\.py/);
+ assert.doesNotMatch(pages,/python scripts\/update_cities\.py/);
+ for(const workflow of [pages,scheduled]){
+  assert.ok(workflow.includes('data/cities.json'));
+  assert.ok(workflow.includes('i18n.js'));
+  assert.ok(workflow.includes('node --test tests/*.test.cjs'));
  }
-});
-test('city prices carry an observation date and must not be called live checkout prices',()=>{
+});test('city prices carry an observation date and must not be called live checkout prices',()=>{
  assert.equal(cities.schema_version,1);
  assert.equal(cities.source,'Goodreturns indicative city rate tables');
  assert.ok(cities.dates.gold);
