@@ -1,6 +1,6 @@
 # NextRate production operations and verification
 
-Updated 25 October 2026. **No new end-user features**: these are reliability gates for the existing GitHub Pages site.
+Updated 26 October 2026. **No new end-user features**: these are reliability gates for the existing GitHub Pages site.
 
 ## Release acceptance
 
@@ -8,7 +8,7 @@ Updated 25 October 2026. **No new end-user features**: these are reliability gat
 - **UI regressions:** `node --test tests/*.test.cjs` covers all five tabs, nine existing tools, 7D/30D/90D chart, tooltip behaviour, responsive CSS structure, calculations, locale switching, and source/price labelling.
 - **Pre-publication gate:** `python scripts/validate_publication.py` rejects mismatched latest/history, dates in the future, bad purity ratios, impossible prices, mismatched model baselines, malformed ranges, duplicate forecast issue identifiers, invalid NAVs/city quotes.
 - **Staged-artifact gate:** `python scripts/validate_publication.py --root _site --site` validates the actual deployable folder, not just source files.
-- **Live-site verification:** both workflows fetch the published URL, 17 essential files, and the six market JSON feeds through `scripts/smoke_site.py`. Invalid HTTP responses, missing assets, old HTML, or inconsistent live market data fail the workflow.
+- **Live-site verification:** the market pipeline and regular Pages workflow fetch the published URL, 19 essential assets, and the six market JSON feeds through `scripts/smoke_site.py`. Invalid HTTP responses, missing assets, old HTML, or inconsistent live market data fail the workflow.
 - **Permanent history:** `python scripts/archive_data.py --verify` checks every annual shard against SHA-256 manifest, record counts, order and identity. Neither scheduled workflow nor UI build is allowed to erase old archive records.
 - **Production source vs projection:** actual IBJA rates retain their source date/session. Estimates appear only when target date, source session, and all three model baselines agree with the independently fetched benchmark.
 
@@ -18,6 +18,7 @@ GitHub Pages remains the static website. `.github/workflows/market-scheduler.yml
 
 | Scenario | Collector/publisher behaviour | Browser behaviour |
 | --- | --- | --- |
+| Scheduled session missing, source not yet published, or deployment fails | Later scheduler slots retry until dated source/archive checks and a successful scheduled-publication receipt exist | Keep the last verified dated deployment until a valid replacement is published |
 | IBJA market closed on weekend or declared exchange holiday | Retain the last actual dated close; never infer a new holiday session from the undated AM/PM table | Display original date and market-closed or older-reference messaging |
 | IBJA HTML stale for more than four days | Do not stamp undated source prices with today's date; retain dated historical observation | Warn when the reference is old; do not substitute a made-up daily close |
 | One upstream source unavailable | Preserve the previous value **with original source date**; record unavailable source status | Show old source dates or unavailable values, never invented market prices |
@@ -47,7 +48,7 @@ Look at the failing step in [GitHub Actions](https://github.com/Vignesh-S-GitHub
 
 ## Manual incident procedure
 
-1. Inspect the latest runs for **both** `Deploy NextRate to GitHub Pages` and `Refresh market rates and publish NextRate`, including the post-deployment live smoke result.
+1. Inspect `NextRate market scheduler` for a real `schedule` event, the nested `Refresh market rates and publish NextRate` jobs and live smoke result, and `Deploy NextRate to GitHub Pages` for code-only deployments. Match the session's `data/refresh_status.json` receipt to the successful scheduled run; a push or manual success alone does not verify the timer.
 2. Check the source/date in `data/latest.json`, `data/cities.json`, `data/funds.json`, `data/forecast.json`; compare the IBJA price with official AM/PM source **for that date**, not calendar today's date when the market is closed.
 3. Run `python -m unittest discover -s tests -v`, `node --test tests/*.test.cjs`, and `python scripts/validate_publication.py` before any corrective commit.
 4. If an upstream publisher is unavailable, preserve original dated records. Do not backfill from predictions, shop websites, or guessed currency conversion. Wait for the verified source or correct the parser with documented tests.
@@ -72,3 +73,7 @@ Observed: the old workflow was active on the default `main` branch with valid UT
 Recovery: a newly registered dedicated scheduler calls the existing tested pipeline, with primary AM/PM slots and guarded retry heartbeats. The collector preserves both source sessions when the AM job was missed. Annual manifests are verified before and after recovery writes. A freshness check is repeated inside the archive concurrency lock, and current `main` is checked out to avoid deploying stale queued code. Source failure, missing sessions, or unsuccessful publication leave the session due for retry.
 
 Acceptance: observe an actual `event=schedule` run, successful nested collection/deployment, and a matching `data/refresh_status.json` receipt with `trigger=schedule` and `published=true`. Push/manual runs alone do not satisfy this check. Tomorrow's AM/PM receipts provide independent day-boundary verification; exact-minute execution is not promised.
+
+Integration verification: [run 40349765480](https://github.com/Vignesh-S-GitHub/Next-Rate/actions/runs/40349765480), triggered by the repair commit's **push**, passed the session guard, shared collection pipeline, archive validation, 82 Python tests, 101 JavaScript tests and live verification of 19 assets. It published the 26 October PM source snapshot at 21:00 IST. This verifies the reusable pipeline and recovery logic; it is not evidence that GitHub's timer has recovered.
+
+Timer acceptance remains **pending** as of 26 October 2026, 21:23 IST: the public run history still has no `schedule` event on 26 October, including after the new 21:07 and 21:22 recovery slots. The scheduler is active and integration has passed, but the internal GitHub scheduling reason is unavailable. Do not report automatic triggering as resolved until the acceptance evidence above exists.
