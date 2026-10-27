@@ -1,13 +1,10 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "nextrate-scheduler",
   "main": "worker.mjs",
   "compatibility_date": "2026-10-27",
-  "workers_dev": false,
+  "workers_dev": true,
   "preview_urls": false,
-  "observability": { "enabled": true, "head_sampling_rate": 1 },
-  // Activate these only after installing the secret and checking the live path.
-  "triggers": {
-    "crons": ["45 7 * * *", "45 13 * * *", "15 8,14 * * *", "45 8,14 * * *"]
-  }
+  "observability": {"enabled": true, "head_sampling_rate": 1},
+  "d1_databases": [{"binding": "DB", "database_name": "nextrate-data", "database_id": "9bbbac81-d301-42fc-8686-6ef910b9cb59"}],
+  "triggers": {"crons": ["45 7,13 * * *", "15,45 8,14 * * *"]}
 }

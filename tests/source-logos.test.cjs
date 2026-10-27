@@ -9,7 +9,7 @@ const home=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const tools=fs.readFileSync(path.join(root,'features.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'features.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const workflows=['pages.yml','refresh-rates.yml'].map(f=>fs.readFileSync(path.join(root,'.github/workflows',f),'utf8'));
+const workflows=['pages.yml'].map(f=>fs.readFileSync(path.join(root,'.github/workflows',f),'utf8'));
 
 test('Publisher logo URLs come from original official websites, never stock or AI images',()=>{
  const p=sources.providers;
@@ -52,7 +52,7 @@ test('Source links are at Home, Markets, Compare, Hallmark, Buy, ETF, and Shop c
  assert.match(tools,/official\('goodreturns',\{label:'City source'/);
  assert.match(tools,/official\('amfi',\{label:'AMFI NAV source'/);
 });
-test('Both deployment pipelines include source logos module and cache version is bumped',()=>{
+test('The website deployment includes source logos module and cache version is bumped',()=>{
  assert.match(html,/source-logos\.js\?v=20261025-official-sources1/);
  assert.match(html,/features\.css\?v=20261025-official-sources1/);
  for(const wf of workflows){

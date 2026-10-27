@@ -7,7 +7,6 @@ const index=fs.readFileSync(root+'/index.html','utf8');
 const css=fs.readFileSync(root+'/features.css','utf8');
 const feature=fs.readFileSync(root+'/features.js','utf8');
 const pages=fs.readFileSync(root+'/.github/workflows/pages.yml','utf8');
-const daily=fs.readFileSync(root+'/.github/workflows/refresh-rates.yml','utf8');
 test('Tools route is reachable on desktop and phone without losing logo and four original tabs',()=>{
  for(const route of ['home','markets','compare','insights','tools']){
   assert.match(index,new RegExp('data-route="'+route+'"'));
@@ -57,8 +56,8 @@ test('Market signals never fabricate COMEX LBMA or MCX and ETFs never fake LTP',
  assert.match(feature,/NAV is not an executable exchange quote/);
  assert.match(feature,/Expense ratios, tracking differences/);
 });
-test('Both deployments stage tool scripts, stylesheet and run tests',()=>{
- for(const workflow of [pages,daily]){
+test('The Pages deployment stages tool scripts, stylesheet and run tests',()=>{
+ for(const workflow of [pages]){
    assert.ok(workflow.includes('node --test tests/*.test.cjs'));
    for(const script of ['features.js','features-core.js','features.css']){
     assert.ok(workflow.includes(script),script+' staged');

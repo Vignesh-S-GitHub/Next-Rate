@@ -27,6 +27,10 @@ class LiveAssetTests(unittest.TestCase):
 
     def test_valid_site_checks_every_script_and_stylesheet(self):
         def fetch(url):
+            if url.endswith('/bundle.json'):
+                import json
+                documents={p.name:json.loads(p.read_text()) for p in (ROOT/'data').glob('*.json') if p.name in {'latest.json','history.json','forecast.json','forecast_history.json','cities.json','funds.json'}}
+                return json.dumps({'schema_version':1,'revision':1,'documents':documents}).encode()
             return (ROOT / urlsplit(url).path.removeprefix('/Next-Rate/')).read_bytes()
 
         with patch.object(smoke_site, 'fetch', side_effect=fetch):

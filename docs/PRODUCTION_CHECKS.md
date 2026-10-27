@@ -1,3 +1,18 @@
+# Current production model (27 October 2026)
+
+Cloudflare now owns market refreshes, verified publication receipts and permanent
+D1 observations. GitHub Actions only deploys UI code to GitHub Pages. The former
+`refresh-rates.yml` workflow and its GitHub cron have been removed. The prior
+GitHub-to-Cloudflare dispatch proposal is superseded: **no GitHub token is used**.
+
+Use [Cloudflare operations](CLOUDFLARE_SCHEDULER.md) and the
+[live status endpoint](https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json)
+for current timer verification and incident handling. The historical notes below
+record the previous architecture and October 26 GitHub scheduling incident; their
+GitHub refresh-workflow procedures no longer apply.
+
+---
+
 # NextRate production operations and verification
 
 Updated 26 October 2026. **No new end-user features**: these are reliability gates for the existing GitHub Pages site.

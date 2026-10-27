@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Decide/recheck AM/PM refreshes and record actual scheduled publications.
 
-Price timestamps, successful deployment, and a dated timer event are all
+Price timestamps, successful deployment, and a genuine schedule event are all
 required. A code-push run cannot certify that the timer worked.
 """
 from __future__ import annotations
@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import re
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -24,44 +23,6 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 IST = ZoneInfo("Asia/Kolkata")
 CUTOFF = {"AM": time(13, 15), "PM": time(19, 15)}
-CLOUDFLARE_SLOTS = {
-    "45 7 * * *": {(7, 45)},
-    "45 13 * * *": {(13, 45)},
-    "15 8,14 * * *": {(8, 15), (14, 15)},
-    "45 8,14 * * *": {(8, 45), (14, 45)},
-}
-
-
-def cloudflare_target(scheduled_at, cron, now=None):
-    """Reject malformed, early, stale, or off-schedule dispatch metadata."""
-    if not isinstance(scheduled_at, str) or not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|\+00:00)", scheduled_at):
-        raise ValueError("Cloudflare timestamp must be a single UTC ISO timestamp")
-    stamp = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00"))
-    if stamp.tzinfo is None or stamp.utcoffset() != timedelta(0):
-        raise ValueError("Cloudflare timestamp must have a UTC timezone")
-    at = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    if not timedelta(0) <= at-stamp <= timedelta(hours=3):
-        raise ValueError("Cloudflare timer is future-dated or more than three hours old")
-    if ((stamp.hour, stamp.minute) not in CLOUDFLARE_SLOTS.get(cron, set())
-            or stamp.second or stamp.microsecond):
-        raise ValueError("Cloudflare timestamp does not match an approved timer slot")
-    local = stamp.astimezone(IST)
-    session = "PM" if local.time() >= CUTOFF["PM"] else "AM"
-    return local.date(), session
-
-
-def certified_timer(receipt, day, session):
-    if receipt.get("trigger") == "schedule":
-        return True  # Retain valid receipts from the previous GitHub timer.
-    if receipt.get("trigger") != "cloudflare" or receipt.get("event") != "workflow_dispatch":
-        return False
-    try:
-        completed = datetime.fromisoformat(receipt.get("completed_at", "").replace("Z", "+00:00"))
-        target = cloudflare_target(receipt.get("scheduled_at", ""), receipt.get("cron", ""), completed)
-        return target == (day, session)
-    except (ValueError, TypeError, AttributeError):
-        return False
 
 
 def read(path, default=None):
@@ -114,7 +75,7 @@ def decide(root=ROOT, now=None, session=None, day=None, requested=False):
     local = (now or datetime.now(timezone.utc)).astimezone(IST)
     if requested and not session:
         return {"refresh": True, "session": "", "date": local.date().isoformat(),
-                "reason": "Explicit manual refresh"}
+                "reason": "Explicit code-push/manual refresh"}
     day = day or local.date()
     if session not in (None, "AM", "PM"):
         raise ValueError("Session must be AM or PM")
@@ -129,7 +90,7 @@ def decide(root=ROOT, now=None, session=None, day=None, requested=False):
     receipt = receipts.get(day.isoformat()+":"+session, {}) if isinstance(receipts, dict) else {}
     if not isinstance(receipt, dict):
         receipt = {}
-    certified = (certified_timer(receipt, day, session) and receipt.get("published") is True
+    certified = (receipt.get("trigger") == "schedule" and receipt.get("published") is True
                  and receipt.get("target_date") == day.isoformat() and receipt.get("session") == session
                  and str(receipt.get("run_id", "")).isdigit())
     try:
@@ -145,11 +106,8 @@ def decide(root=ROOT, now=None, session=None, day=None, requested=False):
             "date": day.isoformat(), "reason": reason}
 
 
-def record(root, day, session, now=None, trigger="", run_id="", scheduled_at="", cron="", event=""):
+def record(root, day, session, now=None, trigger="", run_id=""):
     now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    if trigger == "cloudflare":
-        if event != "workflow_dispatch" or cloudflare_target(scheduled_at, cron, now) != (day, session):
-            raise ValueError("Cloudflare receipt must match the authenticated workflow dispatch target")
     healthy, reason = session_health(root, day, session, now=now)
     if not healthy:
         raise ValueError(reason)
@@ -165,10 +123,6 @@ def record(root, day, session, now=None, trigger="", run_id="", scheduled_at="",
         "published": True, "quote_date": latest["india"]["date"],
         "quote_session": latest["india"]["session"], "market_closed": closed(day),
     }
-    if trigger == "cloudflare":
-        sessions[day.isoformat()+":"+session].update({
-            "event": event, "scheduled_at": scheduled_at, "cron": cron,
-        })
     # Operational receipts are bounded; permanent price archives are untouched.
     oldest = (day-timedelta(days=30)).isoformat()
     status["sessions"] = {k:v for k,v in sessions.items() if k[:10] >= oldest}
@@ -186,18 +140,6 @@ def main():
     session = os.environ.get("NEXT_RATE_REQUESTED_SESSION") or None
     raw_day = os.environ.get("NEXT_RATE_REQUESTED_DATE")
     day = date.fromisoformat(raw_day) if raw_day else None
-    scheduler = os.environ.get("NEXT_RATE_SCHEDULER", "")
-    scheduled_at = os.environ.get("NEXT_RATE_SCHEDULED_AT", "")
-    cron = os.environ.get("NEXT_RATE_CRON", "")
-    event = os.environ.get("GITHUB_EVENT_NAME", "")
-    if scheduler not in ("", "manual", "cloudflare"):
-        raise ValueError("Unknown scheduler")
-    if scheduler == "cloudflare":
-        if event != "workflow_dispatch":
-            raise ValueError("Cloudflare must use authenticated workflow_dispatch")
-        day, session = cloudflare_target(scheduled_at, cron)
-    elif scheduled_at or cron:
-        raise ValueError("Timer metadata requires the Cloudflare scheduler")
     if args.verify or args.record:
         if not session:
             print("No scheduled session requested; ordinary publication checks apply")
@@ -207,12 +149,11 @@ def main():
         if not healthy:
             raise ValueError(reason)
         if args.record:
-            record(ROOT, day, session, trigger="cloudflare" if scheduler == "cloudflare" else event,
-                   run_id=os.environ.get("GITHUB_RUN_ID", ""), scheduled_at=scheduled_at,
-                   cron=cron, event=event)
+            record(ROOT, day, session, trigger=os.environ.get("GITHUB_EVENT_NAME", ""),
+                   run_id=os.environ.get("GITHUB_RUN_ID", ""))
         print("SESSION VERIFIED:", day, session, reason)
         return 0
-    outcome = decide(ROOT, session=session, day=day, requested=args.requested and scheduler != "cloudflare")
+    outcome = decide(ROOT, session=session, day=day, requested=args.requested)
     print(json.dumps(outcome))
     output = os.environ.get("GITHUB_OUTPUT")
     if output:

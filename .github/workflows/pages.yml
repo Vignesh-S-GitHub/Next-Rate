@@ -26,10 +26,15 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Set up Node for Worker and browser regression tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
       - name: Verify production frontend and committed market data
         run: |
           set -eu
-          for file in app.js buy-options.js chart-interaction.js chart-ui.js data-quality.js features-core.js features.js i18n.js source-logos.js weights.js; do
+          for file in app.js data-loader.js buy-options.js chart-interaction.js chart-ui.js data-quality.js features-core.js features.js i18n.js source-logos.js weights.js; do
             node --check "$file"
           done
           node --test tests/*.test.cjs
@@ -41,7 +46,7 @@ jobs:
         run: |
           set -eu
           mkdir -p _site/assets _site/data
-          cp index.html app.js chart-interaction.js chart-ui.js i18n.js weights.js buy-options.js features-core.js features.js data-quality.js source-logos.js features.css styles.css _site/
+          cp index.html app.js data-loader.js chart-interaction.js chart-ui.js i18n.js weights.js buy-options.js features-core.js features.js data-quality.js source-logos.js features.css styles.css _site/
           cp assets/nextrate-icon.svg assets/nextrate-icon.png assets/apple-touch-icon.png assets/gold-bar.webp assets/silver-bar.webp _site/assets/
           cp data/latest.json data/history.json data/forecast.json data/forecast_history.json data/funds.json data/cities.json _site/data/
           touch _site/.nojekyll

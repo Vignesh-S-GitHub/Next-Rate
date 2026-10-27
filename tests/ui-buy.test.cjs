@@ -5,7 +5,6 @@ const root=path.resolve(__dirname,'..');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
-const daily=fs.readFileSync(path.join(root,'.github/workflows/refresh-rates.yml'),'utf8');
 test('Buy Gold section shows all India ownership routes',()=>{
  for(const title of ['Gold Bar','Gold Coin','Jewellery','Gold ETF','Gold Fund',
   'Gold Bond (SGB)','Digital Gold','Silver Bar','Silver Coin','Silver ETF','Silver Fund']){
@@ -37,10 +36,10 @@ test('Both metal tabs and popular weights use published IBJA benchmarks',()=>{
  assert.match(app,/buyGrams=buyMetal==='gold'\?8:100/);
  for(const metal of ['gold24','gold22','silver'])assert.ok(app.includes("benchmark('"+metal+"')"));
 });
-test('Daily pipeline collects NAV while Pages serves committed NAV',()=>{
- assert.match(daily,/python scripts\/update_funds\.py/);
+test('Cloudflare collects NAV while Pages serves committed NAV',()=>{
+ assert.match(fs.readFileSync(root+'/cloudflare/nextrate-scheduler/pipeline.mjs','utf8'),/parseNAV/);
  assert.doesNotMatch(pages,/python scripts\/update_funds\.py/);
- for(const workflow of [pages,daily]){
+ for(const workflow of [pages]){
   assert.ok(workflow.includes('data/funds.json'));
   assert.ok(workflow.includes('buy-options.js'));
   assert.ok(workflow.includes('node --test tests/*.test.cjs'));
