@@ -1,8 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
-  <title>NextRate</title>
-  <rect width="128" height="128" rx="30" fill="#102038"/>
-  <path d="M27 88V66h18v22Z" fill="#aebbc9"/>
-  <path d="M55 88V53h18v35Z" fill="#e5ad37"/>
-  <path d="M83 88V36h18v52Z" fill="#e8edf3"/>
-  <path d="M28 103h72" stroke="#efbd53" stroke-width="6" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">NextRate</title>
+  <desc id="desc">A navy N linking gold and silver bullion bars on warm ivory.</desc>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e0bc63"/>
+      <stop offset="1" stop-color="#b5821d"/>
+    </linearGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#dce3eb"/>
+      <stop offset="1" stop-color="#98a8ba"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="124" height="124" rx="30" fill="#fffaf0" stroke="#e9d9ad" stroke-width="2"/>
+  <path d="M28 39 34 32H49V96H28Z" fill="url(#gold)"/>
+  <path d="M28 39 34 32H49L43 39Z" fill="#efd797"/>
+  <path d="M28 39H34V96H28Z" fill="#b5821d"/>
+  <path d="M79 39 85 32H101V96H79Z" fill="url(#silver)"/>
+  <path d="M79 39 85 32H101L95 39Z" fill="#edf1f6"/>
+  <path d="M79 39H85V96H79Z" fill="#899aad"/>
+  <path d="M43 32H51L85 77V96H77L43 51Z" fill="#172b44"/>
 </svg>

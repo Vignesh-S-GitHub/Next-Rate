@@ -61,7 +61,7 @@ def check(url: str):
         index = (root/"index.html").read_text(encoding="utf-8")
         if "data-quality.js?v=20261027-market1" not in index:
             raise ValueError("Live HTML still points to an older NextRate build")
-        if "nextrate-icon.svg?v=20261026" not in index:
+        if "nextrate-icon.svg?v=20261027-bullion-n1" not in index:
             raise ValueError("Live HTML still points to the old logo")
         if "app.js?v=20261027-compact1" not in index:
             raise ValueError("Live HTML still points to an older Home comparison build")
