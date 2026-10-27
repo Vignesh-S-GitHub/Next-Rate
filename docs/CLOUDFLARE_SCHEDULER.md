@@ -30,7 +30,12 @@ reports the original quote date rather than labelling stale data as today's pric
 
 ## Collection and safety
 
-Collectors retain explicitly dated IBJA AM/PM observations, timestamped indicative
+Collectors retain explicitly dated IBJA AM/PM observations from the historical
+HTML rows and the official dated 30-day PDF linked by IBJA. The PDF is used when
+HTML history trails the requested session. Its purity/unit/session headers and
+column coordinates are verified; blank PM cells remain blank. PDF filenames and
+undated current-page quotes are never used to invent an observation date.
+Collectors also retain timestamped indicative
 spot/FX data, dated Goodreturns city indications and selected AMFI NAVs. Attributed
 TrackLivePrice history can enrich gaps without replacing directly observed rates.
 The chronological model and prospective forecast scoring match the Python
@@ -78,7 +83,7 @@ collection. A UI source commit still uses the ordinary GitHub Pages deployment.
 A real Cloudflare test timer at `2026-10-27T08:41:08.895Z` (14:11 IST)
 completed successfully and committed publication revision 1. Run ID:
 `925db092-d66a-4883-81a7-0d0cac8f9de9`. The public bundle then passed the
-existing Python publication validator. At that check IBJA still supplied
+existing Python publication validator. At that check the collector only consumed HTML history through
 26 October PM; the receipt correctly reported `waiting_source` and
 `session_verified=false` for the requested 27 October AM session. No price date
 was fabricated. Spot, FX, city and NAV checks also succeeded. This verifies the
@@ -90,3 +95,23 @@ production expressions above remain. The migration retained all 104 IBJA session
 rows, 4 forecasts, 30 observations of each spot metal and 3 FX observations before
 new collections. Regression validation: 97 Python tests and 101 JavaScript tests,
 including real SQLite transaction/fencing tests and Python/JavaScript parity.
+
+## Dated PDF correction — 27 October 2026
+
+The first collector missed today's AM quote because IBJA's current HTML quote
+table has no explicit observation date and its historical HTML rows lagged a day.
+IBJA's official PDF already contained the dated 27 October AM row. This was a
+collector limitation, not evidence that IBJA had not published its AM rate.
+
+The collector now reads the official linked PDF when HTML lacks the requested
+session. It validates the document's 12 AM/PM columns, rupee units, purities,
+observation dates and plausible numeric ratios. PDF.js text coordinates preserve
+missing PM prices. Existing verified HTML and PDF observations must agree for
+the same source date/session; source changes cannot overwrite issued forecasts.
+The PDF has a 3 MB download limit and must contain one recognized table page.
+
+Dependencies are pinned in `cloudflare/nextrate-scheduler/package-lock.json`.
+Build the deployable bundle with `npm ci --prefix cloudflare/nextrate-scheduler`
+and `npm run build --prefix cloudflare/nextrate-scheduler`. Pages CI builds and
+tests the collector without collecting live prices. Daily collection still runs
+entirely on Cloudflare. No GitHub runtime credential is used.
