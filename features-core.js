@@ -113,6 +113,7 @@ function historicalAccuracy(entries,metal,modelVersion=null) {
  };
  for(const e of Array.isArray(entries)?entries:[]){
    if(!e?.evaluation?.metals?.[metal]||!isoDay(e.target_date))continue;
+   if(!prospective(e))continue;
    if(modelVersion!==null && Number(e.model_version||1)!==Number(modelVersion))continue;
    const record=e.evaluation.metals[metal];
    if(typeof record.absolute_error_pct!=='number'||
@@ -128,6 +129,12 @@ function historicalAccuracy(entries,metal,modelVersion=null) {
    directionCorrect:matches.filter(x=>x.direction_correct===true).length};
 }
 function isoDay(value) {return typeof value==='string'&&/^\d{4}-\d\d-\d\d$/.test(value)?value:'';}
+function prospective(e){
+ if(!isoDay(e?.target_date)||!isoDay(e?.based_on_date)||e.based_on_date>=e.target_date)return false;
+ if(typeof e.issued_at!=='string'||!/(?:Z|[+-]\d\d:\d\d)$/i.test(e.issued_at))return false;
+ const issued=Date.parse(e.issued_at),cutoff=Date.parse(e.target_date+'T00:00:00+05:30');
+ return Number.isFinite(issued)&&issued<cutoff;
+}
 function publishedChange(snapshot,history,metal){
  const field={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'}[metal];
  const current=snapshot?.india,value=current?.[field];
@@ -146,9 +153,7 @@ function forecastCheck(entries,snapshot,today){
  // a regenerated/hindsight forecast against a price already known at issuance.
  if(!isoDay(today))return null;
  const eligible=(Array.isArray(entries)?entries:[]).filter(e=>{
-  if(!isoDay(e?.target_date)||e.target_date>today||!isoDay(e.based_on_date)||e.based_on_date>=e.target_date)return false;
-  const issued=Date.parse(e.issued_at),cutoff=Date.parse(e.target_date+'T00:00:00+05:30');
-  return Number.isFinite(issued)&&issued<cutoff;
+  return prospective(e)&&e.target_date<=today;
  }).sort((a,b)=>b.target_date.localeCompare(a.target_date)||
   Date.parse(b.issued_at)-Date.parse(a.issued_at));
  const entry=eligible[0];

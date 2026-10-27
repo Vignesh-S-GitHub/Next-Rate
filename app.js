@@ -385,7 +385,7 @@ function forecastPanel(){
     return content+'<p class="nr-empty">'+reason+'</p></section>';
   }
   content+='<div class="nr-date">'+date+
-    (forecast.target_date===forecast.calendar_tomorrow?'':' · Next open day')+
+    (forecast.target_date===forecast.calendar_tomorrow||forecast.target_date===indiaTodayISO()?'':' · Next open day')+
     '<span>IBJA · '+based+' '+escapeHTML(forecast.based_on_session||'')+'</span></div>'+
     (forecast.based_on_session==='AM'?'<p class="forecast-preview-note">AM preview · Updates after PM close</p>':'')+
     '<div class="forecast-grid" role="group" aria-label="Choose gold or silver">'+

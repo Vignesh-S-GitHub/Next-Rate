@@ -11,7 +11,9 @@ import json
 import math
 import sys
 from datetime import date, datetime
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +23,33 @@ METALS = {
     "silver": ("silver999_inr_kg", 5000, 3000000),
 }
 EXPECTED_CITIES = {"Chennai", "Mumbai", "Delhi", "Bengaluru", "Hyderabad"}
+
+
+def referenced_frontend_assets(html: str):
+    """Return local script and stylesheet dependencies declared in HTML."""
+    class Assets(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.paths = []
+
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            value = (attrs.get("src") if tag == "script" else
+                     attrs.get("href") if tag == "link" and
+                     "stylesheet" in attrs.get("rel", "").lower().split() else None)
+            if not value:
+                return
+            url = urlsplit(value)
+            if url.scheme or url.netloc:
+                return
+            name = url.path.removeprefix("./")
+            if not name or name.startswith("/") or ".." in Path(name).parts:
+                raise ValueError("Invalid local frontend asset path")
+            self.paths.append(name)
+
+    parser = Assets()
+    parser.feed(html)
+    return parser.paths
 
 
 def require(condition: bool, reason: str):
@@ -191,6 +220,10 @@ def verify(root: Path = ROOT, now: date | None = None, site=False):
         html = (root / "index.html").read_text(encoding="utf-8")
         require("data-quality.js" in html and "browser-notifications.js" not in html,
                 "Site contains outdated or missing scripts")
+        for name in referenced_frontend_assets(html):
+            path = root / name
+            require(path.is_file() and path.stat().st_size > 0,
+                    "Published site missing required asset: "+name)
 
     summary = {
         "india": india["date"]+" "+india["session"],

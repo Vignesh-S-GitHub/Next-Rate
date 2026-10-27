@@ -18,9 +18,9 @@ from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 try:
-    from scripts.validate_publication import verify
+    from scripts.validate_publication import verify, referenced_frontend_assets
 except ModuleNotFoundError:
-    from validate_publication import verify
+    from validate_publication import verify, referenced_frontend_assets
 
 DEFAULT_URL = "https://vignesh-s-github.github.io/Next-Rate/"
 ASSETS = (
@@ -48,10 +48,13 @@ def fetch(url: str):
 def check(url: str):
     with tempfile.TemporaryDirectory() as folder:
         root = Path(folder)
-        for asset in ASSETS:
+        index_data = fetch(urljoin(url, "index.html")+"?smoke="+str(int(time.time())))
+        index_text = index_data.decode("utf-8")
+        assets = list(dict.fromkeys((*ASSETS, *referenced_frontend_assets(index_text))))
+        for asset in assets:
             # Query parameters avoid a stale CDN cache but never change the
             # relative pathname of the file being checked.
-            data = fetch(urljoin(url, asset)+"?smoke="+str(int(time.time())))
+            data = index_data if asset == "index.html" else fetch(urljoin(url, asset)+"?smoke="+str(int(time.time())))
             path = root/asset
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
@@ -60,7 +63,7 @@ def check(url: str):
             raise ValueError("Live HTML still points to an older NextRate build")
         if "nextrate-icon.svg?v=20261026" not in index:
             raise ValueError("Live HTML still points to the old logo")
-        if "app.js?v=20261026-metal-guide1" not in index:
+        if "app.js?v=20261027-risk1" not in index:
             raise ValueError("Live HTML still points to an older Home comparison build")
         for tab in ('data-route="home"', 'data-route="markets"',
                     'data-route="compare"', 'data-route="insights"',
@@ -68,7 +71,7 @@ def check(url: str):
             if tab not in index:
                 raise ValueError("Missing navigation route: "+tab)
         outcome = verify(root, site=True)
-        outcome["served_assets"] = len(ASSETS)
+        outcome["served_assets"] = len(assets)
         outcome["html_sha256"] = hashlib.sha256((root/"index.html").read_bytes()).hexdigest()[:16]
         return outcome
 

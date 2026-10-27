@@ -1,6 +1,12 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
 const {translate,TA}=require('../i18n.js');
+test('Tamil preserves proper names and translates the audited source and city labels',()=>{
+ assert.equal(translate('Jewellers Association','ta'),'Jewellers Association');
+ assert.equal(translate('Major city prices · 1 g','ta'),'முக்கிய நகர விலைகள் · 1 கிராம்');
+ assert.equal(translate('Switch language to Tamil','ta'),'தமிழ் மொழிக்கு மாற்று');
+ assert.ok(translate('Image hosted by India Bullion and Jewellers Association','ta').includes('சங்கம்'));
+});
 test('Tamil navigation translates all four tabs and locale switches back to English',()=>{
  for(const label of ['Home','Markets','Compare','Insights']){
    assert.notEqual(translate(label,'ta'),label);

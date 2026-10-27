@@ -250,16 +250,32 @@
     "The saved estimate is checked against its target-date IBJA PM close. Morning prices are provisional. Range coverage, price error and direction are different checks.":"சேமிக்கப்பட்ட கணிப்பு அதன் இலக்குத் தேதியின் IBJA மாலை முடிவு விலையுடன் சரிபார்க்கப்படும். காலை விலை தற்காலிகமானது. வரம்பு, விலை வேறுபாடு, திசை ஆகியவை தனித்தனி சோதனைகள்."
   });
   Object.assign(TA,{"Explore gold and silver":"தங்கம் மற்றும் வெள்ளியை அறியுங்கள்","Purity":"தூய்மை","Price drivers":"விலை மாற்றக் காரணங்கள்","Buying checklist":"வாங்கும் சரிபார்ப்பு","Quick answers":"சுருக்கமான பதில்கள்","What moves gold & silver?":"தங்கம், வெள்ளி விலையை மாற்றுவது என்ன?"});
+  Object.assign(TA,{
+    "Major city prices · 1 g":"முக்கிய நகர விலைகள் · 1 கிராம்",
+    "Open official Goodreturns source":"அதிகாரப்பூர்வ Goodreturns மூலத்தைத் திறக்கவும்",
+    "Open official IBJA source":"அதிகாரப்பூர்வ IBJA மூலத்தைத் திறக்கவும்",
+    "Image hosted by India Bullion and Jewellers Association":"படம்: இந்திய தங்கம் மற்றும் நகைக்கடை சங்கம்",
+    "Switch language to English":"ஆங்கில மொழிக்கு மாற்று",
+    "Switch language to Tamil":"தமிழ் மொழிக்கு மாற்று",
+    "24K gold":"24K தங்கம்","22K gold":"22K தங்கம்",
+    "Gold tools":"தங்கக் கருவிகள்","Important:":"முக்கியம்:",
+    "1 g · 8 g (Pavan) · 10 g":"1 கிராம் · 8 கிராம் (பவுன்) · 10 கிராம்",
+    "The IBJA holiday calendar for the next publication year is not verified.":"அடுத்த ஆண்டிற்கான IBJA விடுமுறை நாட்கள் உறுதிப்படுத்தப்படவில்லை.",
+    "Targets are checked when this page opens or regains focus. This tool does not send browser or phone notifications. No alert is triggered from rates older than 7 days.":"இந்தப் பக்கம் திறக்கப்படும்போதோ மீண்டும் கவனத்தில் வரும்போதோ இலக்குகள் சரிபார்க்கப்படும். உலாவி அல்லது கைபேசி அறிவிப்புகள் அனுப்பப்படாது. ஏழு நாட்களுக்கு மேல் பழைய விலைகளுக்கு எச்சரிக்கை வராது."
+  });
   const keys=Object.keys(TA).sort((a,b)=>b.length-a.length);
+  const patterns=new RegExp(keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
   const textOriginals=new WeakMap();
   const attrOriginals=new WeakMap();
   function translate(text,language){
     if(language!=="ta") return text;
-    let result=String(text);
-    for(const k of keys){
-      if(result.includes(k))result=result.replaceAll(k,TA[k]);
-    }
-    return result;
+    return String(text).replace(patterns,(match,offset,whole)=>{
+      // Never rewrite a dictionary word inside a longer Latin name or word.
+      if (/^[A-Za-z0-9]/.test(match) && offset>0 && /[A-Za-z0-9]/.test(whole[offset-1])) return match;
+      const end=offset+match.length;
+      if (/[A-Za-z0-9]$/.test(match) && end<whole.length && /[A-Za-z0-9]/.test(whole[end])) return match;
+      return TA[match];
+    });
   }
   function apply(rootElement,language){
     if(!rootElement||!rootElement.ownerDocument)return;

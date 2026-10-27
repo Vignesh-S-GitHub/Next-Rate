@@ -13,14 +13,15 @@ NextRate is a static, bilingual Indian gold/silver dashboard on GitHub Pages. Ex
 
 ## Exactly two production workflows
 
-**[Refresh market rates](.github/workflows/refresh-rates.yml)** runs only from the `schedule` cron or optional manual `workflow_dispatch`; code pushes do not trigger market collection. It verifies AM/PM session freshness, fetches source prices, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Each scheduled event starts the complete collector/deployment job directly, following the successful October 25 structure.
+**[Refresh market rates](.github/workflows/refresh-rates.yml)** runs only from the `schedule` cron or optional manual `workflow_dispatch`; code pushes do not trigger market collection. It accepts only explicitly dated and AM/PM-labelled IBJA rows, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Later scheduled checks rerun collection only when a verified scheduled publication receipt is missing.
 
 | India time (IST) | Purpose |
 | --- | --- |
-| 13:15 | AM collection (after the collector’s 13:00 source acceptance gate) |
+| 13:15 | AM collection after the expected source publication |
 | 19:15 | PM collection |
+| 13:45, 14:15 and 19:45, 20:15 | Guarded AM/PM recovery checks |
 
-GitHub Actions cron is **best-effort**, evaluated in UTC on the default branch; GitHub can delay or drop a run. A successful push or manual collection does **not** prove scheduling. Timer acceptance requires a real `event=schedule` workflow run and `trigger=schedule` entry in `data/refresh_status.json`.
+GitHub Actions cron is **best-effort**, evaluated in UTC on the default branch; GitHub can delay or drop a run. Recovery checks use the same GitHub scheduler and cannot guarantee execution during a scheduler-wide outage. If a dated source row is delayed, the last verified rate stays visible and the scheduled run may fail until a recovery check. Timer acceptance requires a real `event=schedule` workflow run and `trigger=schedule` entry in `data/refresh_status.json`.
 
 **[Deploy to GitHub Pages](.github/workflows/pages.yml)** tests normal source commits and serves **the already committed source-backed snapshots**. It never fetches bullion rates, refits forecasts or rewrites historical archives. GitHub-token market-data commits do not trigger a new Pages build, so the refresh pipeline deploys itself.
 
@@ -30,7 +31,7 @@ GitHub Actions cron is **best-effort**, evaluated in UTC on the default branch; 
 - [Goodreturns](https://www.goodreturns.in/gold-rates/): indicative dated city prices, not guaranteed dealer offers.
 - [AMFI](https://www.amfiindia.com/): dated NAVs, not executable ETF trade prices.
 - [Gold API](https://gold-api.com/docs) and [Frankfurter](https://frankfurter.dev/): indicative global spot and dated USD/INR; licensed LBMA/COMEX/MCX data not connected.
-- Forecast estimates and model ranges are experimental. Historical backtests do not establish a guarantee of future predictive accuracy.
+- Forecast estimates and model ranges are experimental. Historical backtests do not establish a guarantee of future predictive accuracy. Forecasts pause when the next publication year's holiday calendar is not verified.
 
 ## Production verification
 

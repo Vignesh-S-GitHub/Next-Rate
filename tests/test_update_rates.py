@@ -14,19 +14,19 @@ SAMPLE = """
 </table>
 <h2>Previous 30 Days</h2>
 <table>
-<tr><td>23/10/2026</td><td>141448</td><td>140882</td><td>129566</td><td>106086</td><td>82747</td><td>195027</td><td>55916</td></tr>
-<tr><td>22/10/2026</td><td>143152</td><td>142579</td><td>131127</td><td>107364</td><td>83744</td><td>200748</td><td>56858</td></tr>
+<tr><td data-label="AM">23/10/2026</td><td>141448</td><td>140882</td><td>129566</td><td>106086</td><td>82747</td><td>195027</td><td>55916</td></tr>
+<tr><td data-label="AM">22/10/2026</td><td>143152</td><td>142579</td><td>131127</td><td>107364</td><td>83744</td><td>200748</td><td>56858</td></tr>
 </table>
 <table>
-<tr><td>23/10/2026</td><td>141630</td><td>141063</td><td>129733</td><td>106223</td><td>82854</td><td>194415</td><td>55743</td></tr>
-<tr><td>22/10/2026</td><td>142694</td><td>142123</td><td>130708</td><td>107021</td><td>83476</td><td>199777</td><td>56347</td></tr>
+<tr><td data-label="PM">23/10/2026</td><td>141630</td><td>141063</td><td>129733</td><td>106223</td><td>82854</td><td>194415</td><td>55743</td></tr>
+<tr><td data-label="PM">22/10/2026</td><td>142694</td><td>142123</td><td>130708</td><td>107021</td><td>83476</td><td>199777</td><td>56347</td></tr>
 </table></body></html>
 """
 
 
 class RatesTests(unittest.TestCase):
     def test_late_pm_collection_recovers_both_open_and_close(self):
-        doc = SAMPLE.replace("23/10/2026", "22/10/2026")
+        doc = SAMPLE
         now = datetime(2026, 10, 23, 14, tzinfo=timezone.utc)
         current, _ = parse_ibja(doc, now)
         rows = [r for r in source_sessions(doc, current, now) if r["date"] == "2026-10-23"]
@@ -35,7 +35,7 @@ class RatesTests(unittest.TestCase):
         self.assertEqual(rows[1]["gold24_inr_10g"], 141630)
 
     def test_am_recovery_does_not_invent_an_early_pm_observation(self):
-        doc = SAMPLE.replace("23/10/2026", "22/10/2026")
+        doc = SAMPLE.replace('<tr><td data-label="PM">23/10/2026</td><td>141630</td><td>141063</td><td>129733</td><td>106223</td><td>82854</td><td>194415</td><td>55743</td></tr>', '')
         now = datetime(2026, 10, 23, 8, tzinfo=timezone.utc)
         current, _ = parse_ibja(doc, now)
         rows = [r for r in source_sessions(doc, current, now) if r["date"] == "2026-10-23"]
@@ -73,10 +73,46 @@ class RatesTests(unittest.TestCase):
         self.assertEqual(len(history), 2)
 
     def test_current_session_during_business_day(self):
-        doc = SAMPLE.replace("23/10/2026", "22/10/2026")
+        doc = SAMPLE
         current, _ = parse_ibja(doc, datetime(2026, 10, 23, 14, tzinfo=timezone.utc))
         self.assertEqual(current["date"], "2026-10-23")
         self.assertEqual(current["session"], "PM")
+
+    def test_recent_but_undated_table_cannot_create_a_new_session(self):
+        now = datetime(2026, 10, 26, 14, tzinfo=timezone.utc)
+        current, history = parse_ibja(SAMPLE, now)
+        self.assertEqual(current["date"], "2026-10-23")
+        self.assertEqual(current["session"], "PM")
+        self.assertFalse(any(row["date"] == "2026-10-26" for row in history))
+        self.assertFalse(any(row["date"] == "2026-10-26"
+                             for row in source_sessions(SAMPLE, current, now)))
+        from scripts.schedule_refresh import session_health
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "data/archive/ibja").mkdir(parents=True)
+            (root / "data/latest.json").write_text(json.dumps({
+                "india": current, "checked_at": now.isoformat(),
+                "sources_checked": {"ibja": "ok"}}))
+            (root / "data/archive/ibja/2026.json").write_text(json.dumps({
+                "records": source_sessions(SAMPLE, current, now)}))
+            self.assertFalse(session_health(root, now.date(), "PM", now)[0])
+
+    def test_future_dated_rows_are_ignored(self):
+        doc = SAMPLE.replace("23/10/2026", "27/10/2026")
+        current, _ = parse_ibja(doc, datetime(2026, 10, 26, 14, tzinfo=timezone.utc))
+        self.assertEqual(current["date"], "2026-10-22")
+
+    def test_unlabelled_rows_do_not_invent_sessions(self):
+        doc = SAMPLE.replace(' data-label="AM"', '').replace(' data-label="PM"', '')
+        with self.assertRaisesRegex(ValueError, 'no valid, dated'):
+            parse_ibja(doc, datetime(2026, 10, 26, 14, tzinfo=timezone.utc))
+
+    def test_explicit_session_labels_win_over_source_order(self):
+        doc = SAMPLE.replace('data-label="AM"', 'data-label="TEMP"')
+        doc = doc.replace('data-label="PM"', 'data-label="AM"')
+        doc = doc.replace('data-label="TEMP"', 'data-label="PM"')
+        current, _ = parse_ibja(doc, datetime(2026, 10, 23, 14, tzinfo=timezone.utc))
+        self.assertEqual((current["session"], current["gold24_inr_10g"]), ("PM", 141448))
 
     def test_exchange_holiday_keeps_real_previous_dated_close(self):
         doc = SAMPLE.replace("23/10/2026", "19/10/2026").replace(

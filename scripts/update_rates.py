@@ -18,12 +18,6 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
-# Share the already-reviewed IBJA commodity holiday calendar with forecasts.
-try:
-    from scripts.forecast import IBJA_2026_EXCHANGE_HOLIDAYS
-except ModuleNotFoundError:
-    from forecast import IBJA_2026_EXCHANGE_HOLIDAYS
-
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data" / "latest.json"
 HISTORY = ROOT / "data" / "history.json"
@@ -45,15 +39,24 @@ class RowExtractor(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
         self.rows = []
+        self.row_sessions = []
         self.fragments = []
         self.row = None
         self.cell = None
+        self.row_session = None
 
     def handle_starttag(self, tag, attrs):
         if tag == "tr":
             self.row = []
+            self.row_session = None
         elif tag in ("td", "th") and self.row is not None:
             self.cell = []
+            label = dict(attrs).get("data-label", "").strip().upper()
+            if label in ("AM", "PM"):
+                if self.row_session and self.row_session != label:
+                    self.row_session = "conflict"
+                else:
+                    self.row_session = label
         elif tag in ("br", "p", "div", "li"):
             self.fragments.append(" ")
 
@@ -70,6 +73,7 @@ class RowExtractor(HTMLParser):
         elif tag == "tr" and self.row is not None:
             if any(self.row):
                 self.rows.append(self.row)
+                self.row_sessions.append(self.row_session)
             self.row = None
 
 
@@ -115,6 +119,9 @@ def validate_rates(row: dict):
 def dated_rows(html: str, parser: RowExtractor, retain_sessions=False):
     matches = []
     for i, row in enumerate(parser.rows):
+        session = parser.row_sessions[i]
+        if session not in ("AM", "PM"):
+            continue
         joined = " ".join(row)
         m = re.search(r"\b(\d{1,2}/\d{1,2}/20\d{2})\b", joined)
         if not m:
@@ -130,65 +137,27 @@ def dated_rows(html: str, parser: RowExtractor, retain_sessions=False):
             continue
         item = {
             "date": day.isoformat(),
-            "session": "AM",
+            "session": session,
             "gold24_inr_10g": nums[0],
             "gold22_inr_10g": nums[2],
             "silver999_inr_kg": nums[5],
         }
         if validate_rates(item):
             matches.append((i, item))
-    # Fallback for pages where the dated historical table is not represented by <tr>.
-    if not matches:
-        text = " ".join(" ".join(parser.fragments).split())
-        rg = r"(\d{1,2}/\d{1,2}/20\d{2})\s+(\d{4,8})\s+(\d{4,8})\s+(\d{4,8})\s+(\d{4,8})\s+(\d{4,8})\s+(\d{4,8})"
-        for i, m in enumerate(re.finditer(rg, text)):
-            try:
-                day = datetime.strptime(m.group(1), "%d/%m/%Y").date()
-            except ValueError:
-                continue
-            nums = list(map(int, m.groups()[1:]))
-            item = {
-                "date": day.isoformat(), "session": "AM",
-                "gold24_inr_10g": nums[0],
-                "gold22_inr_10g": nums[2],
-                "silver999_inr_kg": nums[5],
-            }
-            if validate_rates(item):
-                matches.append((i, item))
-    # IBJA displays separate AM and PM historical sections. When a date occurs
-    # twice, the latter section is PM; never infer price movements from row order.
+    # Source rows explicitly carry data-label="AM" / "PM". Never infer a
+    # session from row order, which changes if a section is absent or reordered.
     seen = {}
+    by_session = {}
     for _, row in matches:
-        day = row["date"]
-        if day in seen:
-            row["session"] = "PM"
-        seen[day] = row
+        day, session = row["date"], row["session"]
+        key = (day, session)
+        prior = by_session.get(key)
+        if prior and prior != row:
+            raise ValueError("Conflicting dated IBJA observations for " + day + " " + session)
+        by_session[key] = row
+        if day not in seen or session == "PM":
+            seen[day] = row
     return [row for _, row in matches] if retain_sessions else seen
-
-
-def current_session_rows(parser: RowExtractor):
-    numbers = {}
-    for row in parser.rows:
-        if len(row) < 2:
-            continue
-        label = re.sub(r"\s+", " ", row[0]).lower().strip()
-        key = None
-        if re.fullmatch(r"gold\s*999", label):
-            key = "gold24_inr_10g"
-        elif re.fullmatch(r"gold\s*916", label):
-            key = "gold22_inr_10g"
-        elif re.fullmatch(r"silver\s*999", label):
-            key = "silver999_inr_kg"
-        if key:
-            # HTML has AM and PM columns. Blank PM is a normal pre-close state.
-            numbers[key] = [integer(c) for c in row[1:3]]
-    result = {}
-    for idx, session in ((0, "AM"), (1, "PM")):
-        row = {name: (vals[idx] if len(vals) > idx else None)
-               for name, vals in numbers.items()}
-        if validate_rates(row):
-            result[session] = row
-    return result
 
 
 def parse_ibja(html: str, now: datetime):
@@ -197,36 +166,14 @@ def parse_ibja(html: str, now: datetime):
     history = dated_rows(html, parser)
     today = now.astimezone(IST).date()
     today_iso = today.isoformat()
-    # Use a timestamped historical session whenever it exists.
-    if today_iso in history:
-        current = history[today_iso].copy()
-    else:
-        # Only infer today's date from the site's current AM/PM table during
-        # normal publication hours on weekdays. The schedule runs after close.
-        current = None
-        today_rows = current_session_rows(parser)
-        local = now.astimezone(IST)
-        # The undated AM/PM table may still contain the last working day's
-        # rates. Never re-label that table as a new publication on a known
-        # exchange holiday or after a prolonged source outage.
-        last_dated = date.fromisoformat(max(history)) if history else None
-        prior_recent = last_dated is not None and (today-last_dated).days <= 4
-        if (local.weekday() < 5 and today_iso not in IBJA_2026_EXCHANGE_HOLIDAYS
-                and (local.hour >= 13) and today_rows and prior_recent):
-            session = "PM" if local.hour >= 18 and "PM" in today_rows else "AM"
-            if session in today_rows:
-                current = {
-                    "date": today_iso,
-                    "session": session,
-                    **today_rows[session],
-                }
-    if current is not None:
-        history[today_iso] = current
+    # The undated quote table can retain a prior session or be delayed. A
+    # weekday and the wall clock do not prove its source date; publish only
+    # explicitly dated IBJA rows, even when the source has not updated yet.
+    history = {day: row for day, row in history.items() if day <= today_iso}
     if not history:
         raise ValueError("IBJA source has no valid, dated market observations")
     most_recent = max(history)
-    if current is None:
-        current = history[most_recent]
+    current = history[most_recent]
     published_date = date.fromisoformat(current["date"])
     if published_date > today or (today - published_date).days > 14:
         raise ValueError("IBJA observation date out of expected range")
@@ -249,20 +196,13 @@ def parse_ibja(html: str, now: datetime):
 def source_sessions(html: str, current: dict, now: datetime):
     """Recover both source sessions even when the AM scheduled job was late.
 
-    Past dates must be explicitly printed by IBJA. Today's undated table is
-    used only after parse_ibja has independently accepted its date/session.
-    A PM publication includes its opening AM values; it is not two PM closes.
+    Every archived row must carry its own date in the IBJA historical table.
+    An undated current quote cannot prove a date, even alongside a dated row.
     """
     parser = RowExtractor()
     parser.feed(html)
     rows = dated_rows(html, parser, retain_sessions=True)
     rows = [r for r in rows if r["date"] <= current["date"]]
-    today = now.astimezone(IST).date().isoformat()
-    if current["date"] == today:
-        values = current_session_rows(parser)
-        for session in ("AM", "PM"):
-            if session in values and (session == "AM" or current["session"] == "PM"):
-                rows.append({"date": today, "session": session, **values[session]})
     metadata = {k: current[k] for k in (
         "source", "source_url", "retrieved_at", "gst_included",
         "making_charges_included", "geography") if k in current}

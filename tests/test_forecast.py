@@ -77,8 +77,9 @@ class ForecastTests(unittest.TestCase):
         history = {"india": rows}
         now = datetime(2027, 10, 24, 19, tzinfo=timezone.utc)
         pred = forecast.generate(latest, history, now)
-        self.assertEqual(pred["status"], "experimental")
+        self.assertEqual(pred["status"], "unavailable")
         self.assertFalse(pred["holiday_calendar_verified"])
+        self.assertIn("holiday calendar", pred["reason"])
 
     def test_sunday_forecast_is_dated_monday_and_sourced_friday(self):
         result = forecast.generate(self.latest(), self.history(), NOW)
@@ -88,11 +89,14 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(result["target_date"], "2026-10-26")
         self.assertEqual(result["based_on_date"], "2026-10-23")
         self.assertFalse(result["market_closed_tomorrow"])
+        self.assertFalse(result["market_closed_tomorrow"])
         self.assertEqual(result["observations"], 4)
         self.assertFalse(result["metals"]["gold24"]["interval_calibrated"])
 
     def test_forecast_never_claims_a_calibrated_probability(self):
         result = forecast.generate(self.latest(), self.history(), NOW)
+        self.assertEqual(result["signal_summary"][0]["name"], "Selected historical price model")
+        self.assertIn("last-close", result["signal_summary"][0]["details"])
         self.assertEqual(set(result["metals"]), {"gold24", "gold22", "silver"})
         for metal, p in result["metals"].items():
             self.assertLess(p["low"], p["estimate"])
@@ -109,6 +113,19 @@ class ForecastTests(unittest.TestCase):
         snapshot["india"]["date"] = "2026-10-27"
         result = forecast.generate(snapshot, self.history(), today)
         self.assertEqual(result["status"], "unavailable")
+
+    def test_refresh_before_today_source_keeps_today_as_forecast_target(self):
+        today = datetime(2026, 10, 26, 3, tzinfo=timezone.utc)
+        result = forecast.generate(self.latest(), self.history(), today)
+        self.assertEqual(result["status"], "experimental")
+        self.assertEqual(result["target_date"], "2026-10-26")
+        self.assertEqual(result["based_on_date"], "2026-10-23")
+
+    def test_fresh_today_source_targets_the_next_publication(self):
+        today = datetime(2026, 10, 26, 10, tzinfo=timezone.utc)
+        latest = self.latest()
+        latest["india"]["date"] = "2026-10-26"
+        self.assertEqual(forecast.generate(latest, self.history(), today)["target_date"], "2026-10-27")
 
     def test_history_after_source_date_does_not_leak_into_forecast(self):
         a = self.history()
@@ -160,6 +177,7 @@ class ForecastTests(unittest.TestCase):
         prediction = [{
             "target_date": "2026-10-26",
             "based_on_date": "2026-10-23",
+            "issued_at": NOW.isoformat(),
             "metals": issued["metals"],
         }]
         am = {**SAMPLE[-1], "date": "2026-10-26", "session": "AM",
@@ -172,6 +190,21 @@ class ForecastTests(unittest.TestCase):
         hist["india"][-1] = {**am, "session": "PM"}
         evaluated = forecast.score_archive(pending, hist, monday)
         self.assertIn("evaluation", evaluated[0])
+
+    def test_same_day_or_undated_issuance_is_never_scored_as_prediction(self):
+        issued = forecast.generate(self.latest(), self.history(), NOW)
+        actual = {**SAMPLE[-1], "date": "2026-10-26", "session": "PM"}
+        hist = self.history()
+        hist["india"].append(actual)
+        base = {"model_version": forecast.MODEL_VERSION, "target_date": "2026-10-26",
+                "based_on_date": "2026-10-23", "metals": issued["metals"]}
+        for timestamp in ("2026-10-25T18:30:00Z", "2026-10-26T12:00:00", None):
+            row = {**base, "issued_at": timestamp}
+            self.assertFalse(forecast.prospective_issuance(row))
+            self.assertNotIn("evaluation", forecast.score_archive([row], hist,
+                datetime(2026, 10, 26, 15, tzinfo=timezone.utc))[0])
+            row["evaluation"] = {"metals": {"gold24": {"absolute_error_pct": 0}}}
+            self.assertEqual(forecast.independent_evaluations([row], forecast.MODEL_VERSION), [])
 
     def test_archive_keeps_first_forecast_for_same_source_session(self):
         with TemporaryDirectory() as tmp:

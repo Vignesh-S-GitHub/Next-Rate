@@ -156,8 +156,8 @@
   },
   "signal_summary": [
     {
-      "name": "Domestic published momentum",
-      "details": "Uses up to seven successive IBJA rate changes. Recent direction is damped to avoid extrapolating full daily jumps.",
+      "name": "Selected historical price model",
+      "details": "Each metal uses the model selected on earlier dated IBJA closes. The last-close model repeats the latest price; it does not use momentum in its point estimate.",
       "used_in_estimate": true
     },
     {

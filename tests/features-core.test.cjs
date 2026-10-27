@@ -64,7 +64,7 @@ test('one-shot target alert uses exact weight and direction',()=>{
  assert.equal(result.hit,false);
 });
 test('prospective errors are model-specific and count each target day only once',()=>{
- const row=(v,d,err,covered)=>({model_version:v,target_date:d,
+ const row=(v,d,err,covered)=>({model_version:v,target_date:d,based_on_date:'2026-10-23',issued_at:'2026-10-23T12:00:00Z',
    evaluation:{metals:{gold24:{absolute_error_pct:err,range_covered:covered,direction_correct:true}}}});
  const stats=C.historicalAccuracy([
   row(2,'2026-10-26',1,true),
@@ -82,6 +82,9 @@ test('prospective errors are model-specific and count each target day only once'
  assert.equal(current.evaluated,2);
  assert.equal(current.mape,.75);
  assert.equal(current.covered,2);
+ const invalid={...row(3,'2026-10-26',0,true),issued_at:'2026-10-25T18:30:00Z'};
+ assert.equal(C.historicalAccuracy([invalid],'gold24').evaluated,0);
+ assert.equal(C.historicalAccuracy([{...invalid,issued_at:'2026-10-25T12:00:00'}],'gold24').evaluated,0);
 });
 test('Indian source-date freshness never uses browser locale parsing assumptions',()=>{
  const now=new Date('2026-10-25T06:00:00Z');

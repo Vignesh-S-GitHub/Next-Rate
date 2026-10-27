@@ -5,7 +5,7 @@ from datetime import date
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from scripts.validate_publication import verify
+from scripts.validate_publication import verify, referenced_frontend_assets
 
 DAY = date(2026, 10, 25)
 INDIA = {"date": "2026-10-23", "session": "PM",
@@ -33,6 +33,24 @@ def fixture():
 
 
 class PublicationTests(unittest.TestCase):
+    def test_declared_scripts_and_styles_are_discovered(self):
+        html = '<script src="./weights.js?v=1"></script><link rel="stylesheet" href="./styles.css?v=2">'
+        self.assertEqual(referenced_frontend_assets(html), ["weights.js", "styles.css"])
+
+    def test_site_validation_rejects_a_missing_declared_script(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / "data").mkdir()
+            for name, body in fixture().items():
+                (root / "data" / name).write_text(json.dumps(body))
+            for name in ("app.js", "data-quality.js", "chart-ui.js", "styles.css", "i18n.js", "features.js", "features.css", "assets/nextrate-icon.svg", "assets/nextrate-icon.png", "assets/apple-touch-icon.png", "assets/gold-bar.webp", "assets/silver-bar.webp"):
+                path = root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("x")
+            (root / "index.html").write_text('<script src="data-quality.js"></script><script src="weights.js?v=1"></script>')
+            with self.assertRaisesRegex(ValueError, 'missing required asset: weights.js'):
+                verify(root, now=DAY, site=True)
+
     def validate(self, change=None):
         with TemporaryDirectory() as folder:
             data = Path(folder)/"data"

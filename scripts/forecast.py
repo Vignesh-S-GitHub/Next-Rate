@@ -179,7 +179,15 @@ def metal_forecast(rows: list, anchor: dict, code: str):
 
 def generate(latest: dict, history: dict, now: datetime) -> dict:
     today = now.astimezone(IST).date()
-    target = next_ibja_publication_day(today)
+    rows, anchor = prepare_history(latest, history, today)
+    next_publication = next_ibja_publication_day(today)
+    target = next_publication
+    # A refresh before today's IBJA publication must not discard today's
+    # existing outlook and pretend yesterday's quote already predicts tomorrow.
+    if (anchor is not None and today.year == 2026 and today.weekday() < 5
+            and today.isoformat() not in IBJA_2026_EXCHANGE_HOLIDAYS
+            and anchor["date"] < today.isoformat()):
+        target = today
     output = {
         "schema_version": 1,
         "model_version": MODEL_VERSION,
@@ -190,7 +198,7 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
         "target_type": "expected_IBJA_publication_day",
         "holiday_calendar_verified": target.year == 2026,
         "holiday_calendar_source": IBJA_HOLIDAY_SOURCE if target.year == 2026 else None,
-        "market_closed_tomorrow": (today + timedelta(days=1)) != target,
+        "market_closed_tomorrow": (today + timedelta(days=1)) != next_publication,
         "status": "unavailable",
         "scope": "India national IBJA benchmark estimate; not city retail or jewellery pricing",
         "method": "Chronological model selection with a typical historical-error band and a separate wider volatility scenario.",
@@ -199,7 +207,9 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
         "metals": {},
         "signal_summary": [],
     }
-    rows, anchor = prepare_history(latest, history, today)
+    if not output["holiday_calendar_verified"]:
+        output["reason"] = "The IBJA holiday calendar for the next publication year is not verified."
+        return output
     if anchor is None:
         output["reason"] = "Last valid Indian benchmark is missing or over five days old."
         return output
@@ -226,8 +236,8 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
     }
     output["signal_summary"] = [
         {
-            "name": "Domestic published momentum",
-            "details": "Uses up to seven successive IBJA rate changes. Recent direction is damped to avoid extrapolating full daily jumps.",
+            "name": "Selected historical price model",
+            "details": "Each metal uses the model selected on earlier dated IBJA closes. The last-close model repeats the latest price; it does not use momentum in its point estimate.",
             "used_in_estimate": True,
         },
         {
@@ -249,11 +259,24 @@ def generate(latest: dict, history: dict, now: datetime) -> dict:
     return output
 
 
+def prospective_issuance(item: dict) -> bool:
+    """Only forecasts issued before their target day count as predictions."""
+    try:
+        target = date.fromisoformat(item["target_date"])
+        based = date.fromisoformat(item["based_on_date"])
+        issued = datetime.fromisoformat(item["issued_at"].replace("Z", "+00:00"))
+        return issued.tzinfo is not None and based < target and issued.astimezone(IST).date() < target
+    except (KeyError, TypeError, ValueError, AttributeError):
+        return False
+
+
 def score_archive(archive: list, history: dict, now: datetime):
     today = now.astimezone(IST).date()
     actuals = {r.get("date"): r for r in history.get("india", []) if isinstance(r, dict)}
     for item in archive:
         if item.get("evaluation"):
+            continue
+        if not prospective_issuance(item):
             continue
         target = item.get("target_date")
         try:
@@ -298,7 +321,7 @@ def independent_evaluations(issued: list, model_version: int) -> list:
     """
     chosen = {}
     for item in issued:
-        if item.get("model_version", 1) != model_version or not item.get("evaluation"):
+        if item.get("model_version", 1) != model_version or not item.get("evaluation") or not prospective_issuance(item):
             continue
         day = item.get("target_date")
         if not isinstance(day, str):

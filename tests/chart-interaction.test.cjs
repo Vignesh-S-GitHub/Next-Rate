@@ -15,8 +15,8 @@ const ctx0={
 };
 function sampleHistory(){
  const india=[];
- const start=new Date('2026-06-01T00:00:00Z');
- for(let i=0;i<90;i++){
+ const start=new Date('2026-07-26T00:00:00Z');
+ for(let i=0;i<88;i++){
   const iso=new Date(start.getTime()+i*86400000).toISOString().slice(0,10);
   india.push({date:iso,session:'PM',
    gold24_inr_10g:140000+i*20,gold22_inr_10g:128000+i*19,silver999_inr_kg:190000+i*30});
@@ -36,6 +36,15 @@ test('7D, 30D and 90D views use verified dated rows before the forecast',()=>{
   assert.ok(points.every(x=>x.date<='2026-10-23'&&x.value<200000));
   assert.equal(points.at(-1).session,'PM');
  }
+});
+test('Chart period means calendar days even when weekends have no observations',()=>{
+ const h={india:[
+  {date:'2026-10-16',session:'PM',gold24_inr_10g:140000},
+  {date:'2026-10-19',session:'PM',gold24_inr_10g:141000},
+  {date:'2026-10-23',session:'PM',gold24_inr_10g:141630}
+ ]};
+ const points=Model.observations(h,ctx0.forecast,'gold24',7);
+ assert.deepEqual(points.map(x=>x.date),['2026-10-19','2026-10-23']);
 });
 test('PM supersedes AM on same date, keeping only one actual for each session-day',()=>{
  const h=sampleHistory();

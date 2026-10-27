@@ -9,16 +9,19 @@ const X_FIRST=55,X_LAST=480,X_PROJECTION=590,X_SEPARATOR=533;
 function observations(history,forecast,metal,days=7){
  const key=FIELDS[metal];
  if(!key||!forecast||!/^\d{4}-\d\d-\d\d$/.test(forecast.based_on_date||''))return [];
+ const anchor=Date.parse(forecast.based_on_date+'T00:00:00Z');
+ if(!Number.isFinite(anchor))return [];
+ const span=Math.max(2,Math.min(90,Math.trunc(days)||7));
+ const start=new Date(anchor-(span-1)*86400000).toISOString().slice(0,10);
  const cleaned=new Map();
  const values=Array.isArray(history?.india)?history.india:[];
  for(const r of values){
-  if(!r||typeof r.date!=='string'||r.date>forecast.based_on_date)continue;
+  if(!r||typeof r.date!=='string'||r.date<start||r.date>forecast.based_on_date)continue;
   if(!Number.isFinite(r[key])||r[key]<=0)continue;
   const prior=cleaned.get(r.date);
   if(!prior||r.session==='PM'&&prior.session!=='PM')cleaned.set(r.date,r);
  }
  return [...cleaned.values()].sort((a,b)=>a.date.localeCompare(b.date))
-  .slice(-Math.max(2,Math.min(90,Math.trunc(days)||7)))
   .map(r=>({date:r.date,value:r[key],session:r.session||'PM'}));
 }
 function clampIndex(index,n){
