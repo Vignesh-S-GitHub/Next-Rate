@@ -8,6 +8,22 @@ on:
     - cron: "15 8,14 * * *"    # 13:45 / 19:45 IST retry
     - cron: "45 8,14 * * *"    # 14:15 / 20:15 IST retry
   workflow_dispatch:
+    inputs:
+      scheduler:
+        description: 'Refresh source (Cloudflare uses dated timer inputs)'
+        type: choice
+        options: [manual, cloudflare]
+        default: manual
+      scheduled_at:
+        description: 'Cloudflare scheduled UTC timestamp; required for cloudflare'
+        type: string
+        default: ''
+      cron:
+        description: 'Cloudflare cron expression; required for cloudflare'
+        type: string
+        default: ''
+
+run-name: Refresh rates · ${{ inputs.scheduler || github.event_name }} · ${{ inputs.scheduled_at || github.run_number }}
 
 permissions:
   contents: write
@@ -36,6 +52,10 @@ jobs:
 
       - name: Check session and verified scheduled-publication receipt
         id: guard
+        env:
+          NEXT_RATE_SCHEDULER: ${{ inputs.scheduler }}
+          NEXT_RATE_SCHEDULED_AT: ${{ inputs.scheduled_at }}
+          NEXT_RATE_CRON: ${{ inputs.cron }}
         run: |
           set -eu
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -43,6 +63,9 @@ jobs:
           else
             python scripts/schedule_refresh.py
           fi
+          printf 'NEXT_RATE_SCHEDULER=%s\n' "$NEXT_RATE_SCHEDULER" >> "$GITHUB_ENV"
+          printf 'NEXT_RATE_SCHEDULED_AT=%s\n' "$NEXT_RATE_SCHEDULED_AT" >> "$GITHUB_ENV"
+          printf 'NEXT_RATE_CRON=%s\n' "$NEXT_RATE_CRON" >> "$GITHUB_ENV"
           printf 'NEXT_RATE_REQUESTED_SESSION=%s\n' "$(sed -n 's/^session=//p' "$GITHUB_OUTPUT" | tail -1)" >> "$GITHUB_ENV"
           printf 'NEXT_RATE_REQUESTED_DATE=%s\n' "$(sed -n 's/^date=//p' "$GITHUB_OUTPUT" | tail -1)" >> "$GITHUB_ENV"
 

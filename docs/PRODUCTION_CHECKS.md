@@ -83,3 +83,13 @@ Timer acceptance remains **pending** until an actual `schedule` event and succes
 IBJA observations are accepted only from explicitly dated historical rows with the source's AM/PM labels; undated current quotes are never assigned a guessed date or session. A delayed dated row retains the last verified publication and can cause the session check to fail until a later retry. Eight recent explicitly labelled AM/PM rows from the IBJA source matched the existing archive during this review; this is not a full independent verification of the entire archive. For a target year without a verified IBJA holiday calendar, forecasting fails closed with an unavailable reason until the calendar is reviewed and updated. Chart periods count calendar days ending at the latest reference date, not a fixed number of trading observations.
 
 If a refresh happens on a publication day before that day's dated IBJA observation exists, the existing same-day outlook stays targeted to today rather than being reissued as tomorrow's forecast using an older reference. Issued predictions remain immutable and same-day issuances do not count as earlier predictive evidence.
+
+
+## Cloudflare timer cutover (prepared 27 October 2026)
+
+Cloudflare dispatch inputs and verified `trigger=cloudflare` receipts are now
+supported. The Worker source, recovery schedules, secret setup, acceptance checks
+and rollback procedure are in [CLOUDFLARE_SCHEDULER.md](CLOUDFLARE_SCHEDULER.md).
+GitHub cron remains active until a real Cloudflare invocation and full successful
+refresh/deployment are observed. Neither a local test nor HTTP 204 certifies that
+cutover. No Cloudflare-triggered publication has been verified yet.

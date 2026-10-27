@@ -25,6 +25,23 @@ GitHub Actions cron is **best-effort**, evaluated in UTC on the default branch; 
 
 **[Deploy to GitHub Pages](.github/workflows/pages.yml)** tests normal source commits and serves **the already committed source-backed snapshots**. It never fetches bullion rates, refits forecasts or rewrites historical archives. GitHub-token market-data commits do not trigger a new Pages build, so the refresh pipeline deploys itself.
 
+## Cloudflare scheduler migration — activation pending
+
+The timer-only Worker source and intended UTC schedules live in
+[`cloudflare/nextrate-scheduler/`](cloudflare/nextrate-scheduler/).
+The refresh workflow now accepts authenticated `workflow_dispatch` with
+`scheduler=cloudflare`, the original `scheduled_at` UTC timestamp and an approved
+`cron` expression. It validates the event time and session before collecting.
+Recovery runs skip a session only after source checks, live deployment and a
+matching publication receipt pass. A dispatch acceptance alone does not prove
+publication. Manual dispatch without timer inputs remains available.
+
+The Worker `nextrate-scheduler` has been created. GitHub's existing cron remains
+in place until the independent path passes live acceptance. Cloudflare schedules
+are intentionally not activated while its GitHub credential is missing.
+
+Credential and cutover instructions: [Cloudflare scheduler](docs/CLOUDFLARE_SCHEDULER.md).
+
 ## Market data and forecast limitations
 
 - [IBJA](https://www.ibjarates.com/): national AM/PM gold and silver benchmark observations, not shop checkout prices; GST and making charges excluded.
