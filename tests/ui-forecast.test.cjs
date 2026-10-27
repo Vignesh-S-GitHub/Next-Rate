@@ -7,7 +7,6 @@ const chart=fs.readFileSync(path.join(root,'chart-ui.js'),'utf8');
 const model=fs.readFileSync(path.join(root,'chart-interaction.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
-const daily=fs.readFileSync(path.join(root,'.github/workflows/refresh-rates.yml'),'utf8');
 
 test('Home shows tomorrow, today, weights and buy together',()=>{
  const s=app.slice(app.indexOf('function home(){'),app.indexOf('function marketCard(',app.indexOf('function home(){')));
@@ -49,10 +48,10 @@ test('Mobile chart and price rows remain responsive',()=>{
  assert.match(css,/\.nr-chart/);
  assert.match(css,/@media\(max-width:680px\)/);
 });
-test('Only the daily pipeline builds forecasts; Pages serves committed forecasts',()=>{
- assert.match(daily,/python scripts\/forecast\.py/);
+test('Only Cloudflare builds forecasts; Pages serves committed forecasts',()=>{
+ assert.match(fs.readFileSync(root+'/cloudflare/nextrate-scheduler/pipeline.mjs','utf8'),/publishForecast/);
  assert.doesNotMatch(pages,/python scripts\/forecast\.py/);
- for(const workflow of [pages,daily]){
+ for(const workflow of [pages]){
   assert.ok(workflow.includes('data/forecast.json'));
   assert.ok(workflow.includes('data/forecast_history.json'));
   assert.ok(workflow.includes('node --test tests/*.test.cjs'));

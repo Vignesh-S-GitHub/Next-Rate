@@ -4,7 +4,7 @@ import unittest
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from scripts.schedule_refresh import decide, record, session_health, cloudflare_target
+from scripts.schedule_refresh import decide, record, session_health
 
 DAY = date(2026, 10, 26)
 NOW = datetime(2026, 10, 26, 14, 30, tzinfo=timezone.utc)  # 20:00 IST
@@ -91,65 +91,18 @@ class SchedulerTests(unittest.TestCase):
         self.assertFalse(decide(self.root, now)["refresh"])
         self.assertEqual(self.latest["india"]["date"], "2026-10-23")
 
-    def test_direct_production_cron_and_static_only_pages(self):
+    def test_cloudflare_owns_refresh_and_github_only_deploys_static_ui(self):
         root = Path(__file__).resolve().parents[1]
-        daily = (root / ".github/workflows/refresh-rates.yml").read_text()
+        self.assertFalse((root / ".github/workflows/refresh-rates.yml").exists())
         pages = (root / ".github/workflows/pages.yml").read_text()
-        self.assertIn('cron: "45 7 * * *"', daily)
-        self.assertIn('cron: "45 13 * * *"', daily)
-        self.assertIn('cron: "15 8,14 * * *"', daily)
-        self.assertIn('cron: "45 8,14 * * *"', daily)
-        self.assertEqual(daily.count("    - cron:"), 4)
-        self.assertNotIn("\n  push:", daily)
-        self.assertIn("\n  workflow_dispatch:", daily)
-        self.assertNotIn("needs.prepare", daily)
-        self.assertNotIn("  prepare:", daily)
-        self.assertIn("steps.guard.outputs.refresh == 'true'", daily)
-        self.assertIn("python scripts/schedule_refresh.py --verify", daily)
-        self.assertIn("python scripts/schedule_refresh.py --record", daily)
-        self.assertNotIn("workflow_call:", daily)
-        self.assertIn("python scripts/update_rates.py", daily)
+        self.assertNotIn("schedule:", pages)
         self.assertNotIn("python scripts/update_rates.py", pages)
+        self.assertNotIn("python scripts/forecast.py", pages)
         self.assertIn("python scripts/validate_publication.py", pages)
-        self.assertFalse((root / ".github/workflows/market-scheduler.yml").exists())
-
-    def test_cloudflare_receipt_skips_recovery_only_after_verified_publication(self):
-        record(self.root, DAY, "PM", NOW, trigger="cloudflare", run_id="1234",
-               scheduled_at="2026-10-26T13:45:00Z", cron="45 13 * * *", event="workflow_dispatch")
-        self.assertFalse(decide(self.root, NOW)["refresh"])
-        # Receipt remains valid when recovery is checked later.
-        late = datetime(2026, 10, 26, 18, 0, tzinfo=timezone.utc)
-        self.assertFalse(decide(self.root, late)["refresh"])
-        path = self.root / "data/refresh_status.json"
-        receipt = json.loads(path.read_text())
-        receipt["sessions"]["2026-10-26:PM"]["cron"] = "* * * * *"
-        path.write_text(json.dumps(receipt))
-        self.assertTrue(decide(self.root, NOW)["refresh"])
-
-    def test_plain_manual_dispatch_cannot_certify_the_timer(self):
-        record(self.root, DAY, "PM", NOW, trigger="workflow_dispatch", run_id="1234")
-        self.assertTrue(decide(self.root, NOW)["refresh"])
-
-    def test_cloudflare_rejects_bad_target_or_event(self):
-        for stamp, cron in [("2026-10-26T13:45:00", "45 13 * * *"),
-                            ("2026-10-26T13:45:00Z", "* * * * *"),
-                            ("2026-10-26T13:46:00Z", "45 13 * * *"),
-                            ("2026-10-26T13:45:01Z", "45 13 * * *"),
-                            ("2026-10-26\n13:45:00Z", "45 13 * * *"),
-                            ("2026-10-26T07:45:00Z", "45 7 * * *"),
-                            ("2026-10-27T13:45:00Z", "45 13 * * *")]:
-            with self.assertRaises(ValueError):
-                cloudflare_target(stamp, cron, NOW)
-        with self.assertRaises(ValueError):
-            record(self.root, DAY, "AM", NOW, trigger="cloudflare", run_id="1234",
-                   scheduled_at="2026-10-26T13:45:00Z", cron="45 13 * * *", event="workflow_dispatch")
-        with self.assertRaises(ValueError):
-            record(self.root, DAY, "PM", NOW, trigger="cloudflare", run_id="1234",
-                   scheduled_at="2026-10-26T13:45:00Z", cron="45 13 * * *", event="push")
-
-    def test_delayed_cloudflare_event_retains_its_original_session(self):
-        self.assertEqual(cloudflare_target("2026-10-26T08:45:00Z", "45 8,14 * * *",
-                         datetime(2026, 10, 26, 9, 0, tzinfo=timezone.utc)), (DAY, "AM"))
+        worker = json.loads((root / "cloudflare/nextrate-scheduler/wrangler.jsonc").read_text())
+        self.assertEqual(worker['triggers']['crons'], ["45 7,13 * * *", "15,45 8,14 * * *"])
+        self.assertEqual(worker['d1_databases'][0]['binding'], "DB")
+        self.assertIn("data-loader.js", pages)
 
     def test_explicit_manual_refresh_exercises_the_complete_pipeline(self):
         self.assertTrue(decide(self.root, NOW, requested=True)["refresh"])

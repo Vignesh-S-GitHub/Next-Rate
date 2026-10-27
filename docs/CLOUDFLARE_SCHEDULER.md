@@ -1,84 +1,92 @@
-# Cloudflare scheduler cutover
+# Cloudflare-owned data refresh
 
-## Current state
+NextRate uses Cloudflare for scheduling, market collection, validation, forecast
+calculation and permanent storage. The browser loads one consistent publication
+from Cloudflare. GitHub Pages hosts the website; its code deployment workflow does
+not collect data or run on a cron timer. No GitHub runtime token is required.
 
-The `nextrate-scheduler` Worker is prepared as a timer-only dispatcher. The
-repository supports its dated workflow inputs and publication receipts. Its
-GitHub credential is still required. GitHub cron stays enabled until live
-acceptance passes; Cloudflare schedules stay unconfigured during this preparation.
-The website and market collectors continue running on GitHub Pages and Actions.
+## Production resources
 
-## Restricted credential
+- Worker: `nextrate-scheduler`.
+- Data API: `https://nextrate-scheduler.vigneshshanmugam.workers.dev`.
+- D1 database: `nextrate-data` (`9bbbac81-d301-42fc-8686-6ef910b9cb59`).
+- Source: `cloudflare/nextrate-scheduler/`; schema: `schema.sql`.
+- `GET /bundle.json` supplies all six documents from one database publication.
+- `GET /status.json` exposes the latest timer attempts and verified receipts.
+- `GET /data/<filename>` supports direct inspection of individual documents.
+- Public HTTP access is read-only. It cannot start collection or write data.
 
-Create a fine-grained GitHub personal access token owned by the repository owner:
+## Timers
 
-- Repository access: **Only select repositories → Vignesh-S-GitHub/Next-Rate**.
-- Repository permission: **Actions: Read and write**. Metadata read is automatic.
-- No Contents, Workflows, administration or other write permissions are needed.
-- Use an expiry date and renew before expiration. An expired/revoked token causes
-  dispatch failure and requires replacement; recovery timers cannot repair it.
+| UTC cron | IST collection times |
+| --- | --- |
+| `45 7,13 * * *` | 13:15 AM check; 19:15 PM check |
+| `15,45 8,14 * * *` | 13:45, 14:15 AM recovery; 19:45, 20:15 PM recovery |
 
-Add its value directly to the Worker's **Settings → Variables and Secrets** as an
-encrypted **Secret** named `GITHUB_ACTIONS_TOKEN`. Never paste it into an issue,
-chat, source file, plain-text variable or workflow input. The existing GitHub app
-connection does not supply a reusable runtime token to Cloudflare.
+Two cron expressions retain all six intended times while fitting the account's
+remaining free-plan trigger allowance. Changes can take up to 15 minutes to
+propagate. Timer execution and source availability remain best effort; the API
+reports the original quote date rather than labelling stale data as today's price.
 
-## Schedule and safeguards
+## Collection and safety
 
-| UTC cron | IST | Purpose |
-| --- | --- | --- |
-| `45 7 * * *` | 13:15 | AM primary |
-| `45 13 * * *` | 19:15 | PM primary |
-| `15 8,14 * * *` | 13:45, 19:45 | First recovery |
-| `45 8,14 * * *` | 14:15, 20:15 | Second recovery |
+Collectors retain explicitly dated IBJA AM/PM observations, timestamped indicative
+spot/FX data, dated Goodreturns city indications and selected AMFI NAVs. Attributed
+TrackLivePrice history can enrich gaps without replacing directly observed rates.
+The chronological model and prospective forecast scoring match the Python
+regression implementation. Forecasts pause beyond the verified holiday year.
 
-The Worker has no HTTP handler. Destination, workflow and branch are fixed.
-Dispatches have a 15-second timeout, reject redirects and do not log credentials.
-Cloudflare logs record acceptance without claiming the workflow completed.
-A network failure is not blindly retried because GitHub may already have accepted
-the POST; the next recovery slot can safely recheck the session.
+A database lease serializes collectors. A transaction fence rejects an expired
+or superseded writer. Archive changes, all six browser documents and the receipt
+commit in one D1 transaction. A complete source outage keeps the previous publication. A delayed IBJA session
+retains its real quote date while independently verified references may update;
+its receipt has `session_verified=false` and the run is `waiting_source`. Recovery runs skip only after a successful, session-verified Cloudflare
+publication for that IST date/session. Original GitHub annual archives remain as
+the migration backup; D1 observations have no automatic deletion policy.
 
-Both Worker and workflow validate the approved cron and original timer time.
-Future, malformed and more-than-three-hours-old events fail. Delayed invocations
-retain their original IST date/session. Workflow concurrency serializes refreshes;
-source/date validation and successful-publication receipts suppress redundant
-collection after success. Prior GitHub timer receipts remain valid during migration.
+Requests enforce response-size and timeout limits. Source failures retain their
+original timestamps; optional sources report unavailable status. CORS permits the
+GitHub Pages origin. `data-loader.js` fetches one publication per page load; if the
+API is unavailable it loads the committed static fallback as a set, preserving
+its older dates. It does not mix documents from two publications.
 
-## Live acceptance and cutover
+## Verification and operations
 
-1. Deploy the source at `cloudflare/nextrate-scheduler/worker.mjs`, preserving the
-   encrypted secret, with compatibility date `2026-10-27` and full observability.
-   Keep workers.dev and preview URLs disabled.
-2. Configure the four Cloudflare cron expressions above. Changes can take up to
-   15 minutes to propagate. Observe a real configured primary or recovery event.
-3. Match its `dispatch_accepted` log timestamp/cron to a GitHub run titled
-   `Refresh rates · cloudflare · <scheduled_at>`. GitHub records its event type as
-   `workflow_dispatch`, which is expected for this architecture.
-4. Verify collector tests, session/archive checks, Pages deployment and the live
-   asset smoke check all succeed. Match `data/refresh_status.json` to that run:
-   `trigger=cloudflare`, `event=workflow_dispatch`, `published=true`, its `run_id`,
-   original `scheduled_at`, `cron`, target date and AM/PM session.
-5. A skipped run after an existing GitHub receipt does not establish Cloudflare
-   publication. Verify a session that lacks a prior receipt, or remove only the
-   relevant operational receipt before an approved test; never alter price history.
-6. After acceptance, remove only the `on.schedule` block from
-   `.github/workflows/refresh-rates.yml`, update its workflow test and README, and
-   rerun tests. Keep `workflow_dispatch` and the code-only Pages workflow.
-7. Confirm GitHub has no remaining cron trigger and Cloudflare still lists all
-   four schedules. Check the next AM and PM receipts across a day boundary.
+Check `/status.json` for `trigger=cloudflare`, its real `scheduled_at`, `cron`,
+`published=true`, `session_verified=true`, source quote date/session and run ID. Check the associated
+Cloudflare scheduled invocation, then validate the browser bundle with
+`scripts/validate_publication.py`. A code push or HTTP health request does not
+prove that a timer ran. GitHub Actions is not part of the data-refresh path.
 
-No Cloudflare-triggered live publication has been verified at this preparation
-stage. Exact-minute delivery and scheduler/provider availability are not guaranteed.
+The Pages smoke check validates both the static fallback and the live Cloudflare
+bundle, plus every referenced frontend script and stylesheet. Tests cover
+cross-runtime forecast parity, source parsing, SQLite transactions, expired
+writers, overlapping timers, failed sources, API read-only behavior and fallback.
 
-## Recovery and rollback
+For an incident, inspect the scheduled invocation and `/status.json`, check the
+source's actual publication date, fix the collector, and deploy the Worker.
+Recovery slots retry automatically. Do not change archived prices or clear a
+valid receipt to make a failed check appear successful. The public API provides
+no manual write/refresh endpoint.
 
-Inspect Cloudflare invocation logs and the corresponding Actions run when a
-receipt is missing. HTTP 401/403 indicates an expired/revoked token or insufficient
-Actions permission; 404 can also indicate inaccessible repo/workflow; 422 indicates
-invalid workflow inputs/ref. Replace credentials privately in Worker secrets.
-Source failures keep the previous dated quote and are retried at recovery slots.
+Worker deployments use the Cloudflare connection or Wrangler. No GitHub Action,
+personal access token, GitHub browser session or secret is needed for daily data
+collection. A UI source commit still uses the ordinary GitHub Pages deployment.
 
-To roll back after cutover, restore the prior GitHub `on.schedule` block and disable
-Cloudflare cron triggers. Keep the compatibility code and all price archives.
-Before a manual recovery refresh, inspect the source dates. Manual success by
-itself does not prove a timer event.
+## Cutover verification — 27 October 2026
+
+A real Cloudflare test timer at `2026-10-27T08:41:08.895Z` (14:11 IST)
+completed successfully and committed publication revision 1. Run ID:
+`925db092-d66a-4883-81a7-0d0cac8f9de9`. The public bundle then passed the
+existing Python publication validator. At that check IBJA still supplied
+26 October PM; the receipt correctly reported `waiting_source` and
+`session_verified=false` for the requested 27 October AM session. No price date
+was fabricated. Spot, FX, city and NAV checks also succeeded. This verifies the
+independent timer, collector, transaction and public delivery path; it does not
+claim that IBJA has released the missing AM row.
+
+The temporary every-minute test schedule was removed from configuration. The two
+production expressions above remain. The migration retained all 104 IBJA session
+rows, 4 forecasts, 30 observations of each spot metal and 3 FX observations before
+new collections. Regression validation: 97 Python tests and 101 JavaScript tests,
+including real SQLite transaction/fencing tests and Python/JavaScript parity.

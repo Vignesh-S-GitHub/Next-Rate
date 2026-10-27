@@ -6,7 +6,6 @@ const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
-const scheduled=fs.readFileSync(path.join(root,'.github/workflows/refresh-rates.yml'),'utf8');
 const cities=JSON.parse(fs.readFileSync(path.join(root,'data/cities.json'),'utf8'));
 test('all five city labels and source attribution are actually displayed',()=>{
  for(const city of ['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad']){
@@ -44,10 +43,10 @@ test('Tamil control is accessible, theme-matched and renders across all routes',
  assert.match(css,/\.lang-button\.active/);
  assert.match(css,/@media\(max-width:520px\)/);
 });
-test('Scheduled pipeline fetches city prices; Pages publishes committed quotes',()=>{
- assert.match(scheduled,/python scripts\/update_cities\.py/);
+test('Cloudflare fetches city prices; Pages publishes committed quotes',()=>{
+ assert.match(fs.readFileSync(root+'/cloudflare/nextrate-scheduler/pipeline.mjs','utf8'),/parseCities/);
  assert.doesNotMatch(pages,/python scripts\/update_cities\.py/);
- for(const workflow of [pages,scheduled]){
+ for(const workflow of [pages]){
   assert.ok(workflow.includes('data/cities.json'));
   assert.ok(workflow.includes('i18n.js'));
   assert.ok(workflow.includes('node --test tests/*.test.cjs'));

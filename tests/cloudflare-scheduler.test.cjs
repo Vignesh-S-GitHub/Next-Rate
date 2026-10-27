@@ -1,61 +1,77 @@
-const { test } = require('node:test');
-const assert = require('node:assert/strict');
-const modulePromise = import('../cloudflare/nextrate-scheduler/worker.mjs');
-const now = Date.parse('2026-10-27T13:46:00Z');
-const event = { scheduledTime: Date.parse('2026-10-27T13:45:00Z'), cron: '45 13 * * *' };
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {DatabaseSync}=require('node:sqlite');
+const root=require('node:path').resolve(__dirname,'..');
+function database(){
+ const sql=new DatabaseSync(':memory:');sql.exec(fs.readFileSync(root+'/cloudflare/nextrate-scheduler/schema.sql','utf8'));
+ const documents=Object.fromEntries(['latest','history','forecast','forecast_history','cities','funds'].map(n=>[n+'.json',JSON.parse(fs.readFileSync(root+'/data/'+n+'.json'))]));
+ sql.prepare('INSERT INTO publication VALUES(1,0,?)').run(JSON.stringify({documents,receipts:{}}));
+ for(const kind of ['ibja','fx','spot-xau','spot-xag','forecasts'])for(const row of JSON.parse(fs.readFileSync(root+'/data/archive/'+kind+'/2026.json')).records){const id=kind==='ibja'?row.date+':'+row.session:kind==='forecasts'?row.issuance_key:kind==='fx'?row.date:row.as_of;sql.prepare('INSERT INTO observations VALUES(?,?,?)').run(kind,id,JSON.stringify(row));}
+ const prepare=text=>{let args=[];const stmt=sql.prepare(text);return {bind(...a){args=a;return this;},async first(){return stmt.get(...args)||null;},async all(){return {results:stmt.all(...args)};},async run(){return stmt.run(...args);},execute(){return stmt.all(...args);}};};
+ const db={prepare,async batch(stmts){sql.exec('BEGIN');try{const out=stmts.map(s=>s.execute());sql.exec('COMMIT');return out;}catch(e){sql.exec('ROLLBACK');throw e;}}};
+ return {sql,db,documents};
+}
+function ibja(date='26/10/2026',gold=141710){return '<table>'+['AM','PM'].map(s=>`<tr><td data-label="${s}">${date}</td><td>${gold}</td><td>141143</td><td>129806</td><td>106000</td><td>82700</td><td>194479</td></tr>`).join('')+'</table>';}
+function sources(html=ibja()) {return async url=>{assert.ok(!url.includes('api.github.com'));if(url==='https://www.ibjarates.com/')return new Response(html);return new Response('unavailable',{status:503});};}
+const controller={scheduledTime:Date.parse('2026-10-26T13:45:00Z'),cron:'45 7,13 * * *'};
+const clock=()=>new Date('2026-10-26T14:00:00Z');
 
-test('Cloudflare dispatch carries fixed destination, target time and timer provenance', async () => {
-  const { dispatch } = await modulePromise;
-  let calls = 0;
-  await dispatch(event, 'test-token', async (url, options) => {
-    calls++;
-    assert.equal(url, 'https://api.github.com/repos/Vignesh-S-GitHub/Next-Rate/actions/workflows/refresh-rates.yml/dispatches');
-    assert.equal(options.headers.Authorization, 'Bearer test-token');
-    assert.equal(options.method, 'POST');
-    assert.equal(options.redirect, 'error');
-    assert.deepEqual(JSON.parse(options.body), { ref: 'main', inputs: {
-      scheduler: 'cloudflare', scheduled_at: '2026-10-27T13:45:00.000Z', cron: event.cron,
-    }});
-    return { status: 204 };
-  }, now);
-  assert.equal(calls, 1);
+test('Real SQLite publication transaction preserves all archives and records the Cloudflare receipt',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database();
+ const before=sql.prepare('SELECT count(*) n FROM observations').get().n;
+ await refresh(controller,{DB:db},sources(),clock);
+ const pub=sql.prepare('SELECT * FROM publication').get(),value=JSON.parse(pub.payload);
+ assert.equal(pub.revision,1);assert.equal(value.receipts['2026-10-26:PM'].trigger,'cloudflare');assert.equal(value.receipts['2026-10-26:PM'].published,true);
+ assert.equal(value.documents['latest.json'].india.gold24_inr_10g,141710);assert.ok(sql.prepare('SELECT count(*) n FROM observations').get().n>=before);
+ assert.equal(sql.prepare('SELECT status FROM refresh_runs').get().status,'published');assert.equal(sql.prepare('SELECT count(*) n FROM refresh_lease').get().n,0);
+ // Recovery does no network collection after verified publication.
+ await refresh(controller,{DB:db},()=>{throw Error('unexpected recollection');},clock);assert.equal(sql.prepare('SELECT revision FROM publication').get().revision,1);
 });
 
-test('Missing secret and bad timer metadata fail before network access', async () => {
-  const { dispatch } = await modulePromise;
-  const noFetch = () => { throw new Error('unexpected request'); };
-  await assert.rejects(dispatch(event, '', noFetch, now), /missing/);
-  for (const bad of [
-    { ...event, cron: '* * * * *' },
-    { ...event, scheduledTime: now },
-    { ...event, scheduledTime: event.scheduledTime + 1000 },
-    { ...event, scheduledTime: NaN },
-  ]) await assert.rejects(dispatch(bad, 'test-token', noFetch, now), /timer/);
-  await assert.rejects(dispatch(event, 'test-token', noFetch, now + 4*3600000), /timer/);
-  await assert.rejects(dispatch(event, 'test-token', noFetch, event.scheduledTime - 1), /timer/);
+test('Delayed source keeps real quote date, publishes attributed checks and does not suppress recovery',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database();
+ const event={scheduledTime:Date.parse('2026-10-27T07:45:00Z'),cron:'45 7,13 * * *'},now=()=>new Date('2026-10-27T08:00:00Z');
+ await refresh(event,{DB:db},sources(),now);
+ const pub=JSON.parse(sql.prepare('SELECT payload FROM publication').get().payload);
+ assert.equal(pub.documents['latest.json'].india.date,'2026-10-26');assert.equal(pub.receipts['2026-10-27:AM'].session_verified,false);
+ assert.equal(sql.prepare('SELECT status FROM refresh_runs').get().status,'waiting_source');
+ await refresh(event,{DB:db},sources(),now);assert.equal(sql.prepare('SELECT revision FROM publication').get().revision,2);
 });
 
-test('GitHub rejection never becomes success and never reveals credentials', async () => {
-  const { dispatch } = await modulePromise;
-  for (const status of [401, 403, 404, 422, 429, 500]) {
-    await assert.rejects(dispatch(event, 'hidden-token', async () => ({ status }), now),
-      error => error.message === `GitHub dispatch failed (${status})`);
-  }
+test('Complete upstream outage preserves the entire published bundle',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database(),old=sql.prepare('SELECT payload FROM publication').get().payload;
+ await assert.rejects(refresh(controller,{DB:db},async()=>new Response('offline',{status:503}),clock),/All primary sources unavailable/);
+ assert.equal(sql.prepare('SELECT payload FROM publication').get().payload,old);assert.equal(sql.prepare('SELECT status FROM refresh_runs').get().status,'failed');
 });
 
-test('All six daily primary and recovery times are allowed', async () => {
-  const { SLOTS, timerInputs } = await modulePromise;
-  let slots = 0;
-  for (const [cron, times] of Object.entries(SLOTS)) for (const [h, m] of times) {
-    const scheduledTime = Date.UTC(2026, 9, 27, h, m);
-    assert.equal(timerInputs({ cron, scheduledTime }, scheduledTime).cron, cron);
-    slots++;
-  }
-  assert.equal(slots, 6);
+test('Expired writer is fenced out and the SQLite batch rolls back every change',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database(),before=sql.prepare('SELECT count(*) n FROM observations').get().n;let calls=0;
+ const longClock=()=>new Date(calls++===0?'2026-10-26T14:00:00Z':'2026-10-26T14:10:00Z');
+ await assert.rejects(refresh(controller,{DB:db},sources(),longClock),/CHECK constraint/);
+ assert.equal(sql.prepare('SELECT revision FROM publication').get().revision,0);assert.equal(sql.prepare('SELECT count(*) n FROM observations').get().n,before);
 });
 
-test('Worker exposes a scheduled handler without an HTTP trigger', async () => {
-  const { default: worker } = await modulePromise;
-  assert.equal(typeof worker.scheduled, 'function');
-  assert.equal(worker.fetch, undefined);
+test('Existing active lease skips overlapping timer before network access',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database();sql.prepare('INSERT INTO refresh_lease VALUES(1,?,?)').run('other',+clock()+60000);
+ await refresh(controller,{DB:db},()=>{throw Error('unexpected request');},clock);assert.equal(sql.prepare('SELECT revision FROM publication').get().revision,0);
+});
+
+test('Public API is read-only and exposes a single consistent bundle with CORS',async()=>{
+ const {default:worker}=await import('../cloudflare/nextrate-scheduler/worker.mjs'),{db}=database();
+ const res=await worker.fetch(new Request('https://example.test/bundle.json'),{DB:db});assert.equal(res.status,200);assert.equal(res.headers.get('access-control-allow-origin'),'https://vignesh-s-github.github.io');assert.equal((await res.json()).revision,0);
+ assert.equal((await worker.fetch(new Request('https://example.test/refresh',{method:'POST'}),{DB:db})).status,405);
+ assert.equal((await worker.fetch(new Request('https://example.test/data/../secret'),{DB:db})).status,404);
+});
+
+test('Undated source quotes, conflicting rows and future FX values are rejected',async()=>{
+ const {parseIBJA,parseFX}=await import('../cloudflare/nextrate-scheduler/market.mjs');
+ assert.throws(()=>parseIBJA('<td>Today</td><td>141710</td>',clock()));
+ assert.throws(()=>parseIBJA(ibja()+ibja('26/10/2026',142000),clock()),/Conflicting/);
+ assert.throws(()=>parseFX({base:'USD',quote:'INR',rate:94,date:'2026-10-27'},clock()));
+});
+
+test('Source response size is bounded before parsing',async()=>{
+ const {getText}=await import('../cloudflare/nextrate-scheduler/pipeline.mjs');
+ await assert.rejects(getText('https://example.test',async()=>new Response('too large'),3),/too large/);
 });

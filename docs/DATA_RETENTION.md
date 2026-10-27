@@ -1,3 +1,17 @@
+# Current storage
+
+Since 27 October 2026, the Cloudflare `nextrate-data` D1 database owns new market
+observations and issued forecasts. Its `observations` table never automatically
+prunes rows. The six browser documents are bounded cache views committed together
+with the refresh receipt in a transaction. All pre-migration annual archives and
+forecasts were copied into D1; the original GitHub annual files remain unchanged
+as a migration backup. See [Cloudflare operations](CLOUDFLARE_SCHEDULER.md).
+
+The following documents the original annual-file format and its offline
+verification tools. It remains relevant to the preserved migration backup.
+
+---
+
 # NextRate historical data policy
 
 NextRate keeps **verified historical observations indefinitely** in annual archives while serving small recent-data files to GitHub Pages. No scheduled task deletes an annual archive record.

@@ -6,41 +6,35 @@ NextRate is a static, bilingual Indian gold/silver dashboard on GitHub Pages. Ex
 
 ## Production application and data
 
-- **Web UI:** `index.html`, `app.js`, `styles.css`, `features.js`, `features-core.js`, `features.css`, `chart-ui.js`, `chart-interaction.js`, `weights.js`, `buy-options.js`, `i18n.js`, `data-quality.js`, `source-logos.js`, `assets/`.
+- **Web UI:** `index.html`, `app.js`, `styles.css`, `features.js`, `features-core.js`, `features.css`, `chart-ui.js`, `chart-interaction.js`, `weights.js`, `buy-options.js`, `i18n.js`, `data-quality.js`, `source-logos.js`, `data-loader.js`, `assets/`.
 - **Collectors and safety checks:** `scripts/update_rates.py`, `update_cities.py`, `update_funds.py`, `backfill_rates.py`, `forecast.py`, `forecast_models.py`, `archive_data.py`, `schedule_refresh.py`, `validate_publication.py`, `smoke_site.py`.
-- **Published data:** `data/latest.json`, `history.json`, `cities.json`, `funds.json`, `forecast.json`, `forecast_history.json`. Permanent history lives in `data/archive/`; `data/refresh_status.json` tracks completed publication sessions.
+- **Published data:** `data/latest.json`, `history.json`, `cities.json`, `funds.json`, `forecast.json`, `forecast_history.json`. Permanent history lives in `data/archive/`; Cloudflare D1 stores current publication receipts; `data/refresh_status.json` retains the former GitHub timer record.
 - **Tests:** `tests/` guards parsing, dates, prices, source attribution, forecast accuracy, archive integrity, retries, accessibility and existing UI functions.
 
-## Exactly two production workflows
+## Cloudflare data refresh; GitHub Pages website
 
-**[Refresh market rates](.github/workflows/refresh-rates.yml)** runs only from the `schedule` cron or optional manual `workflow_dispatch`; code pushes do not trigger market collection. It accepts only explicitly dated and AM/PM-labelled IBJA rows, produces dated forecasts, validates and archives data, safely commits data-only changes, deploys Pages directly and smoke-tests the live site. Later scheduled checks rerun collection only when a verified scheduled publication receipt is missing.
+Cloudflare owns the timer, source collection, validation, forecasts and durable
+D1 storage. The GitHub Pages website reads all six documents from one consistent
+Cloudflare publication. No GitHub runtime token or Actions refresh workflow is
+needed. The original dated static files remain an outage fallback and the
+original annual archives remain a migration backup.
 
 | India time (IST) | Purpose |
 | --- | --- |
-| 13:15 | AM collection after the expected source publication |
+| 13:15 | AM collection |
 | 19:15 | PM collection |
-| 13:45, 14:15 and 19:45, 20:15 | Guarded AM/PM recovery checks |
+| 13:45, 14:15 and 19:45, 20:15 | Guarded recovery checks |
 
-GitHub Actions cron is **best-effort**, evaluated in UTC on the default branch; GitHub can delay or drop a run. Recovery checks use the same GitHub scheduler and cannot guarantee execution during a scheduler-wide outage. If a dated source row is delayed, the last verified rate stays visible and the scheduled run may fail until a recovery check. Timer acceptance requires a real `event=schedule` workflow run and `trigger=schedule` entry in `data/refresh_status.json`.
+Worker: `nextrate-scheduler`. Database: `nextrate-data`.
+[Live timer/publication status](https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json).
+See [Cloudflare operations](docs/CLOUDFLARE_SCHEDULER.md) for source, schedules,
+transaction safeguards, retention and recovery behavior.
 
-**[Deploy to GitHub Pages](.github/workflows/pages.yml)** tests normal source commits and serves **the already committed source-backed snapshots**. It never fetches bullion rates, refits forecasts or rewrites historical archives. GitHub-token market-data commits do not trigger a new Pages build, so the refresh pipeline deploys itself.
-
-## Cloudflare scheduler migration — activation pending
-
-The timer-only Worker source and intended UTC schedules live in
-[`cloudflare/nextrate-scheduler/`](cloudflare/nextrate-scheduler/).
-The refresh workflow now accepts authenticated `workflow_dispatch` with
-`scheduler=cloudflare`, the original `scheduled_at` UTC timestamp and an approved
-`cron` expression. It validates the event time and session before collecting.
-Recovery runs skip a session only after source checks, live deployment and a
-matching publication receipt pass. A dispatch acceptance alone does not prove
-publication. Manual dispatch without timer inputs remains available.
-
-The Worker `nextrate-scheduler` has been created. GitHub's existing cron remains
-in place until the independent path passes live acceptance. Cloudflare schedules
-are intentionally not activated while its GitHub credential is missing.
-
-Credential and cutover instructions: [Cloudflare scheduler](docs/CLOUDFLARE_SCHEDULER.md).
+**[Deploy to GitHub Pages](.github/workflows/pages.yml)** is the only production
+GitHub workflow. It tests code changes and publishes the static website without
+collecting bullion data. There is no GitHub cron trigger. Python collectors remain
+as regression references and offline migration/verification tools; production
+collection runs in `cloudflare/nextrate-scheduler/`.
 
 ## Market data and forecast limitations
 

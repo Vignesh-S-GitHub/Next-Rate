@@ -63,14 +63,27 @@ def check(url: str):
             raise ValueError("Live HTML still points to an older NextRate build")
         if "nextrate-icon.svg?v=20261026" not in index:
             raise ValueError("Live HTML still points to the old logo")
-        if "app.js?v=20261027-risk1" not in index:
+        if "app.js?v=20261027-cloudflare1" not in index:
             raise ValueError("Live HTML still points to an older Home comparison build")
         for tab in ('data-route="home"', 'data-route="markets"',
                     'data-route="compare"', 'data-route="insights"',
                     'data-route="tools"'):
             if tab not in index:
                 raise ValueError("Missing navigation route: "+tab)
+        # Verify the same atomic data bundle consumed by the browser as well
+        # as the static, dated fallback deployed on GitHub Pages.
+        verify(root, site=True)
+        api = "https://nextrate-scheduler.vigneshshanmugam.workers.dev"
+        bundle = json.loads(fetch(api+"/bundle.json"))
+        if bundle.get("schema_version") != 1:
+            raise ValueError("Cloudflare publication schema mismatch")
+        for name, payload in bundle["documents"].items():
+            if name not in {"latest.json", "history.json", "forecast.json", "forecast_history.json", "cities.json", "funds.json"}:
+                raise ValueError("Unexpected market document")
+            (root/"data"/name).write_text(json.dumps(payload), encoding="utf-8")
         outcome = verify(root, site=True)
+        outcome["data_source"] = "cloudflare"
+        outcome["data_revision"] = bundle["revision"]
         outcome["served_assets"] = len(assets)
         outcome["html_sha256"] = hashlib.sha256((root/"index.html").read_bytes()).hexdigest()[:16]
         return outcome
