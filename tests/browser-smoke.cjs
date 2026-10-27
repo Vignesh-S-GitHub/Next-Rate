@@ -73,6 +73,34 @@ async function audit(viewport){
  context=await browser.newContext();await open(context,'ok',broken,{version:1,alerts:[null],shops:[{}],holdings:[null,{qty:-1}],preferred:'portfolio'});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('portfolio');await text('.tool-list',/No holdings saved/);await tool('accuracy');await layout();assert.deepEqual(page._errors,[]);await context.close();
  // A later failed API must not roll the app back to its committed dated backup.
  context=await browser.newContext();await open(context);const before=await page.locator('.home-actual').innerText();await page.unroute(endpoint+'/**');await page.route(endpoint+'/**',r=>r.abort());await click('[data-refresh]');await text('.data-status',/Keeping the last verified prices/);assert.equal(await page.locator('.home-actual').innerText(),before);checks++;await context.close();
+ // Exercise the market-adjusted publication, rather than only legacy fallback fixtures.
+ const {generate}=await import('../cloudflare/nextrate-scheduler/forecast.mjs');
+ const {captureAnchors,adjustForecast}=await import('../cloudflare/nextrate-scheduler/market-forecast.mjs');
+ const marketDocs=clone(documents),reference=clone(documents['latest.json']);
+ reference.india={...reference.india,date:'2026-10-27',session:'AM',gold24_inr_10g:141082,gold22_inr_10g:129231,silver999_inr_kg:192037};
+ reference.checked_at='2026-10-27T08:00:00Z';reference.sources_checked={ibja:'ok',xau:'ok',xag:'ok',usd_inr:'ok'};
+ for(const [symbol,price]of [['XAU',4000],['XAG',50]])reference.spot[symbol]={usd_per_troy_ounce:price,as_of:reference.checked_at,source_url:'https://gold-api.com/docs'};
+ reference.fx={inr_per_usd:95,date:'2026-10-27',source_url:'https://frankfurter.dev/'};
+ const current=clone(reference);current.checked_at='2026-10-27T10:00:00Z';current.fx.inr_per_usd=95.05;
+ current.spot.XAU={...current.spot.XAU,usd_per_troy_ounce:4040,as_of:current.checked_at};
+ current.spot.XAG={...current.spot.XAG,usd_per_troy_ounce:49,as_of:current.checked_at};
+ marketDocs['latest.json']=current;marketDocs['history.json'].india.push(current.india);
+ marketDocs['forecast.json']=adjustForecast(generate(current,marketDocs['history.json'].india,current.checked_at),current,captureAnchors(reference,current),marketDocs['history.json'].india,[],current.checked_at);
+ for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:360,height:800}]){
+  context=await browser.newContext({viewport});await open(context,'ok',marketDocs);
+  await text('.forecast-model-note',/Market-adjusted/);await text('.forecast-reference-time',/27 Oct/);
+  for(const metal of ['gold24','gold22','silver']){
+   await click('[data-forecast-metal="'+metal+'"]');
+   const expected=marketDocs['forecast.json'].metals[metal].estimate;
+   assert.ok((await page.locator('[data-forecast-metal="'+metal+'"] .forecast-metal-quote>strong').innerText()).includes(expected.toLocaleString('en-IN')));checks++;
+   await text('.forecast-drivers',/USD \/ INR move/);await text('.forecast-range',/Scenario range/);await layout();
+  }
+  await click('[data-language="ta"]');await layout();await click('[data-language="en"]');
+  await click('.nr-small-details summary');await text('.nr-prediction-proof',/0 target dates/);
+  assert.doesNotMatch(await page.locator('.forecast-shell').innerText(),/50% historical|Past simulation error/);checks++;
+  await route('tools');await tool('accuracy');await text('.tool-accuracy',/Forward validation only/);
+  assert.deepEqual(page._errors,[]);checks++;await context.close();
+ }
  // A fully unavailable publication keeps learning/tools usable without fabricated values.
  context=await browser.newContext();page=await context.newPage();page._errors=[];page.on('pageerror',e=>page._errors.push(e.message));
  await page.route(endpoint+'/**',r=>r.abort());await page.route('**/data/*.json*',r=>r.abort());await page.goto(server.url);

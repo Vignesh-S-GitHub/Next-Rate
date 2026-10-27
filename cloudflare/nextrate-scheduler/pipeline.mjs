@@ -1,7 +1,8 @@
 import {IBJA,FX_URLS,CITY_URLS,CITIES,NAV_URL,NAV_PAGE,parseIBJA,parseFX,parseSpot,parseCities,parseNAV,merge,identity,isoDay,validDay,validRates,FIELDS,ageDays} from './market.mjs';
 import {publishForecast,isClosed} from './forecast.mjs';
+import {captureAnchors,adjustForecast,forecastCache} from './market-forecast.mjs';
 import {officialPDFURL,parseIBJAPDF} from './ibja-pdf.mjs';
-export const KINDS=['ibja','fx','spot-xau','spot-xag','forecasts'];
+export const KINDS=['ibja','fx','spot-xau','spot-xag','forecasts','market-anchors'];
 export async function getBinary(url,fetcher=fetch,limit=1500000){
  const res=await fetcher(url,{headers:{'User-Agent':'NextRate/2.0 (+https://github.com/Vignesh-S-GitHub/Next-Rate; market reference)','Accept':'application/json,application/pdf,text/html,text/plain;q=0.9,*/*;q=0.8','Cache-Control':'no-cache'},signal:AbortSignal.timeout(25000),redirect:'follow'});
  if(!res.ok)throw Error('Source HTTP '+res.status);
@@ -75,9 +76,11 @@ export async function collect(previous,stored,now,fetcher=fetch){
  for(const [key,path,metal,purity,multiplier]of feeds){try{const values=backfillRows(JSON.parse(await getText('https://trackliveprice.com/api/'+path,fetcher)),metal,purity,multiplier,isoDay(now));
   const rows=Object.entries(values).filter(([day])=>day<latest.india.date).map(([date,value])=>({date,session:'PM',[key]:value,source:'IBJA archive via TrackLivePrice',source_url:'https://trackliveprice.com/methodology/',source_precision:'INR 1 per 10g gold; silver converted from two-decimal INR/g'}));archives.ibja=merge('ibja',archives.ibja,rows);
  }catch(e){errors['backfill_'+key]=e.message;}}
- const india=onePerDay(archives.ibja),prediction=publishForecast(latest,india,archives.forecasts,now);archives.forecasts=prediction.issued;
+ const india=onePerDay(archives.ibja);
+ archives['market-anchors']=captureAnchors(previous['latest.json'],latest,archives['market-anchors']||[]);
+ const prediction=publishForecast(latest,india,archives.forecasts,now,{adjust:(base,issued)=>adjustForecast(base,latest,archives['market-anchors'],india,issued,now)});archives.forecasts=prediction.issued;
  docs['forecast.json']=prediction.forecast;
- docs['forecast_history.json']={schema_version:1,forecasts:archives.forecasts.slice(-90),storage:{type:'recent-cache',archive_manifest:'Cloudflare D1 permanent observations'}};
+ docs['forecast_history.json']={schema_version:1,forecasts:forecastCache(archives.forecasts,isoDay(now)),storage:{type:'recent-cache',archive_manifest:'Cloudflare D1 permanent observations'}};
  docs['history.json']={schema_version:1,india:india.slice(-120),fx:archives.fx.slice(-120),spot:{XAU:archives['spot-xau'].slice(-120),XAG:archives['spot-xag'].slice(-120)},storage:{type:'recent-cache',note:'Complete observations retained in Cloudflare D1; original migration archive retained in GitHub.'}};
  if(!validRates(latest.india)||!docs['history.json'].india.some(r=>r.date===latest.india.date&&FIELDS.every(k=>r[k]===latest.india[k])))throw Error('Snapshot/history publication mismatch');
  const target=sessionTarget(now);

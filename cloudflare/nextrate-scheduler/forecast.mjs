@@ -70,18 +70,19 @@ export function generate(latest,india,now){const today=isoDay(now),tomorrow=next
  const tested=Object.values(metals).filter(x=>x.backtest.status==='walk_forward').length;
  return {...out,status:'experimental',metals,signal_summary:structuredClone(TEMPLATE.signal_summary),validation:{status:tested===3?'walk_forward':tested?'partial_walk_forward':'not_backtested',observations:rows.length,model_version:3,tested_metals:tested,description:'Time-ordered train, validation and untouched holdout per metal. Models may still lose to last-close.'}};
 }
-export function publishForecast(latest,india,previous,now){
+export function publishForecast(latest,india,previous,now,options={}){
  const issued=structuredClone(previous),actuals=new Map(india.map(r=>[r.date,r]));
  for(const r of issued){if(r.evaluation||!prospective(r)||r.target_date>isoDay(now))continue;const obs=actuals.get(r.target_date);if(!obs||obs.session!=='PM')continue;
   const metals={};for(const [name,[key]]of Object.entries(CONFIG)){const m=r.metals?.[name],a=obs[key];if(!m||!(a>0))continue;metals[name]={actual:a,absolute_error_pct:rounded(Math.abs(m.estimate-a)/a*100,3),range_covered:m.low<=a&&a<=m.high,direction_correct:m.estimate===m.baseline?null:Math.sign(m.estimate-m.baseline)===Math.sign(a-m.baseline)};}
   if(Object.keys(metals).length)r.evaluation={evaluated_at:new Date(now).toISOString(),actual_date:r.target_date,metals};
  }
- const fresh=generate(latest,india,now);
+ const fresh=options.adjust?options.adjust(generate(latest,india,now),issued):generate(latest,india,now);
  if(fresh.status==='experimental'){
-  fresh.issuance_key=`v3:${fresh.target_date}:${fresh.based_on_date}:${fresh.based_on_session}`;
-  if(!issued.some(r=>r.issuance_key===fresh.issuance_key))issued.push({issuance_key:fresh.issuance_key,model_version:3,issued_at:new Date(now).toISOString(),target_date:fresh.target_date,based_on_date:fresh.based_on_date,based_on_session:fresh.based_on_session,metals:fresh.metals});
-  const chosen=new Map();for(const r of [...issued].sort((a,b)=>(a.based_on_date+(a.based_on_session==='PM'?'1':'0')+a.issued_at).localeCompare(b.based_on_date+(b.based_on_session==='PM'?'1':'0')+b.issued_at)))if((r.model_version||1)===3&&r.evaluation&&prospective(r))chosen.set(r.target_date,r);
-  const rows=[...chosen.values()];fresh.accuracy_tracking={evaluated_issuances:rows.length,independent_target_dates:rows.length,model_version:3,status:rows.length<10?'collecting':'available'};
+  const version=fresh.model_version||3;
+  fresh.issuance_key=version===4?`v4:${fresh.target_date}:${fresh.based_on_date}:${fresh.based_on_session}:${fresh.forecast_mode}:${latest.checked_at}`:`v3:${fresh.target_date}:${fresh.based_on_date}:${fresh.based_on_session}`;
+  if(!issued.some(r=>r.issuance_key===fresh.issuance_key))issued.push({issuance_key:fresh.issuance_key,model_version:version,issued_at:new Date(now).toISOString(),target_date:fresh.target_date,based_on_date:fresh.based_on_date,based_on_session:fresh.based_on_session,metals:fresh.metals,...(version===4?{forecast_mode:fresh.forecast_mode,market_model:fresh.market_model}:{})});
+  const chosen=new Map();for(const r of [...issued].sort((a,b)=>(a.based_on_date+(a.based_on_session==='PM'?'1':'0')+a.issued_at).localeCompare(b.based_on_date+(b.based_on_session==='PM'?'1':'0')+b.issued_at)))if((r.model_version||1)===version&&(version!==4||r.forecast_mode==='market_adjusted')&&r.evaluation&&prospective(r))chosen.set(r.target_date,r);
+  const rows=[...chosen.values()];fresh.accuracy_tracking={evaluated_issuances:rows.length,independent_target_dates:rows.length,model_version:version,status:rows.length<10?'collecting':'available'};
   if(rows.length>=10)for(const metal of Object.keys(CONFIG)){const e=rows.filter(x=>x.evaluation.metals[metal]).map(x=>x.evaluation.metals[metal].absolute_error_pct);if(e.length)fresh.accuracy_tracking[metal]={mean_absolute_percentage_error:rounded(mean(e),2),sample_size:e.length};}
  }
  return {forecast:fresh,issued:merge('forecasts',[],issued)};

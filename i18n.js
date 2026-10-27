@@ -280,6 +280,21 @@
     "Same as latest rate":"கடைசியாக வெளியிட்ட விலையே","Now":"தற்போதைய குறிப்பு",
     "AM":"காலை","PM":"மாலை","IST":"இந்திய நேரம்"
   });
+  Object.assign(TA,{
+    "Market-adjusted · Experimental":"சந்தை மாற்றத்திற்கேற்ப · சோதனை மதிப்பீடு",
+    "IBJA-history fallback":"IBJA வரலாற்றின் அடிப்படையிலான மாற்று மதிப்பீடு",
+    "Assumes current world prices, FX and local premiums hold. Not yet validated.":"தற்போதைய உலக விலை, நாணய மாற்று விலை, உள்ளூர் கூடுதல் தொகை மாறாது என்ற அனுமானம். துல்லியம் இன்னும் உறுதிப்படுத்தப்படவில்லை.",
+    "Global metal move":"உலக உலோக விலை மாற்றம்","USD / INR move":"டாலர் / ரூபாய் மாற்றம்","Net price effect":"நிகர விலை மாற்றம்",
+    "Since benchmark check":"அடிப்படை விலை சரிபார்ப்பிலிருந்து","Scenario range":"சாத்தியமான விலை வரம்பு",
+    "Scenario range uses past IBJA daily moves. It is not a calibrated probability interval.":"இந்த வரம்பு முந்தைய IBJA தினசரி மாற்றங்களைப் பயன்படுத்துகிறது. இது அளவிட்ட நிகழ்தகவு வரம்பு அல்ல.",
+    "Forward check":"வெளியிட்ட பின் சரிபார்ப்பு","target dates":"இலக்குத் தேதிகள்","Market error":"சந்தை மதிப்பீட்டின் பிழை","Latest-rate baseline":"கடைசி விலையின் அடிப்படை மதிப்பீடு",
+    "Collecting forward results · Accuracy not established":"புதிய முடிவுகள் சேகரிக்கப்படுகின்றன · துல்லியம் இன்னும் உறுதியாகவில்லை",
+    "Observed results are not a guarantee":"பதிவான முடிவுகள் எதிர்காலத்துக்கு உறுதி அல்ல",
+    "Model evidence":"மாதிரிக்கான சான்றுகள்","Forward validation only; no market backtest":"வெளியிட்ட பின் சரிபார்ப்பு மட்டும்; சந்தை மாதிரிக்கு வரலாற்றுச் சோதனை இல்லை",
+    "IBJA × global metal ratio × USD/INR ratio.":"IBJA × உலக உலோக விலை விகிதம் × டாலர்/ரூபாய் விகிதம்.",
+    "Reference market quotes come from the first verified benchmark check, not an assumed publication time. FX is a dated daily reference.":"முதல் உறுதிப்படுத்திய அடிப்படை விலை சரிபார்ப்பின்போதைய சந்தை விலைகள் பயன்படுத்தப்படுகின்றன. வெளியீட்டு நேரம் ஊகிக்கப்படவில்லை. நாணய மாற்று விலை தேதியிட்ட தினசரி குறிப்பு."
+  });
+  Object.assign(TA,{"When global metal and currency moves are zero or offset, the market-adjusted estimate can equal the benchmark. If inputs cannot be verified, the labelled IBJA-history fallback may also equal it.":"உலக உலோக மற்றும் நாணய மாற்றங்கள் இல்லாவிட்டாலோ ஒன்றையொன்று ஈடுசெய்தாலோ சந்தை மதிப்பீடு அடிப்படை விலைக்கு சமமாக இருக்கலாம். தரவை உறுதிப்படுத்த முடியாவிட்டால், குறிக்கப்பட்ட IBJA வரலாற்று மாற்று மதிப்பீடும் அதே விலையாக இருக்கலாம்."});
   const keys=Object.keys(TA).sort((a,b)=>b.length-a.length);
   const patterns=new RegExp(keys.map(k=>
     (/^[A-Za-z0-9]/.test(k)?'(?<![A-Za-z0-9])':'')+

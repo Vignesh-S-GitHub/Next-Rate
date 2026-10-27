@@ -100,7 +100,7 @@ export function parseNAV(report,now) {
   if(Object.keys(result).length<4)throw Error('Fewer than four valid selected AMFI NAVs');
   return result;
 }
-export function identity(kind,r){return kind==='ibja'?r.date+':'+r.session:kind==='forecasts'?r.issuance_key:kind==='fx'?r.date:r.as_of;}
+export function identity(kind,r){return kind==='ibja'?r.date+':'+r.session:kind==='forecasts'?r.issuance_key:kind==='fx'?r.date:kind==='market-anchors'?r.id:r.as_of;}
 function checkRow(kind,row){
   if(kind==='ibja'){
     if(!validDay(row.date)||!['AM','PM'].includes(row.session))throw Error('Invalid archive date/session');
@@ -117,6 +117,8 @@ export function merge(kind,older,incoming) {
       for(const k of ['issuance_key','issued_at','target_date','based_on_date','based_on_session','metals'])if(JSON.stringify(old[k])!==JSON.stringify(row[k]))throw Error('Attempt to rewrite issued forecast');
       if(old.evaluation&&row.evaluation&&JSON.stringify(old.evaluation)!==JSON.stringify(row.evaluation))throw Error('Conflicting forecast evaluation');
       if(!old.evaluation&&row.evaluation)map.set(id,{...old,evaluation:row.evaluation});
+    } else if(kind==='market-anchors'){
+      if(JSON.stringify(old)!==JSON.stringify(row))throw Error('Attempt to rewrite market reference');
     } else if(kind==='ibja') {
       const direct=r=>r.source_url===IBJA||r.source?.includes('association (ibja)');
       if(direct(row)&&!direct(old))map.set(id,{...row});

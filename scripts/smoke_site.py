@@ -59,11 +59,11 @@ def check(url: str):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         index = (root/"index.html").read_text(encoding="utf-8")
-        if "data-quality.js?v=20261027-audit1" not in index:
+        if "data-quality.js?v=20261027-market1" not in index:
             raise ValueError("Live HTML still points to an older NextRate build")
         if "nextrate-icon.svg?v=20261026" not in index:
             raise ValueError("Live HTML still points to the old logo")
-        if "app.js?v=20261027-audit1" not in index:
+        if "app.js?v=20261027-market1" not in index:
             raise ValueError("Live HTML still points to an older Home comparison build")
         for tab in ('data-route="home"', 'data-route="markets"',
                     'data-route="compare"', 'data-route="insights"',

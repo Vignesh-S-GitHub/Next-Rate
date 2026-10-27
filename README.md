@@ -23,6 +23,7 @@ original annual archives remain a migration backup.
 | --- | --- |
 | 13:15 | AM collection |
 | 19:15 | PM collection |
+| 22:15 | Late market update for the next IBJA publication |
 | 13:45, 14:15 and 19:45, 20:15 | Guarded recovery checks |
 
 Worker: `nextrate-scheduler`. Database: `nextrate-data`.
@@ -35,6 +36,10 @@ GitHub workflow. It tests code changes and publishes the static website without
 collecting bullion data. There is no GitHub cron trigger. Python collectors remain
 as regression references and offline migration/verification tools; production
 collection runs in `cloudflare/nextrate-scheduler/`.
+
+The [market-adjusted forecast](docs/MARKET_FORECAST.md) uses changes in same-provider
+global metal and USD/INR references since the first verified IBJA check. It states
+its parity assumptions and tracks forward errors against the latest-rate baseline.
 
 ## Market data and forecast limitations
 

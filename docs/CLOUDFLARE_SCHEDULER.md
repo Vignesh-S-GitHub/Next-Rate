@@ -20,10 +20,10 @@ not collect data or run on a cron timer. No GitHub runtime token is required.
 
 | UTC cron | IST collection times |
 | --- | --- |
-| `45 7,13 * * *` | 13:15 AM check; 19:15 PM check |
+| `45 7,13,16 * * *` | 13:15 AM check; 19:15 PM check; 22:15 market update |
 | `15,45 8,14 * * *` | 13:45, 14:15 AM recovery; 19:45, 20:15 PM recovery |
 
-Two cron expressions retain all six intended times while fitting the account's
+Two cron expressions retain all seven collection times while fitting the account's
 remaining free-plan trigger allowance. Changes can take up to 15 minutes to
 propagate. Timer execution and source availability remain best effort; the API
 reports the original quote date rather than labelling stale data as today's price.
@@ -38,15 +38,18 @@ undated current-page quotes are never used to invent an observation date.
 Collectors also retain timestamped indicative
 spot/FX data, dated Goodreturns city indications and selected AMFI NAVs. Attributed
 TrackLivePrice history can enrich gaps without replacing directly observed rates.
-The chronological model and prospective forecast scoring match the Python
-regression implementation. Forecasts pause beyond the verified holiday year.
+The legacy IBJA-history model matches the Python regression implementation. The
+version 4 market-adjusted model and its assumptions are documented in
+[MARKET_FORECAST.md](MARKET_FORECAST.md). Forecasts pause beyond the verified holiday year.
 
 A database lease serializes collectors. A transaction fence rejects an expired
 or superseded writer. Archive changes, all six browser documents and the receipt
 commit in one D1 transaction. A complete source outage keeps the previous publication. A delayed IBJA session
 retains its real quote date while independently verified references may update;
-its receipt has `session_verified=false` and the run is `waiting_source`. Recovery runs skip only after a successful, session-verified Cloudflare
-publication for that IST date/session. Original GitHub annual archives remain as
+its receipt has `session_verified=false` and the run is `waiting_source`. Each later timer rechecks the market inputs even when its IBJA session is
+already verified. Duplicate delivery of a timer already checked by version 4
+skips safely. This lets recovery slots and the 22:15 check update world prices
+without requiring a new national quote. Original GitHub annual archives remain as
 the migration backup; D1 observations have no automatic deletion policy.
 
 Requests enforce response-size and timeout limits. Source failures retain their

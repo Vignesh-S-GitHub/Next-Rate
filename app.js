@@ -308,7 +308,7 @@ function forecastMetalCard(key, title, unit, iconFile){
     '<span class="forecast-metal-quote"><small class="forecast-prediction-label">Estimate</small><strong>'+price(data.estimate)+'</strong>'+
     '<span class="forecast-direction '+dirClass+'">'+(diff===0?(forecast.based_on_session==='PM'?'● Same as last close':'● Same as latest rate'):
       (change>0?'▲ ':change<0?'▼ ':'● ')+percent+' '+delta)+'</span></span>'+
-    '<span class="forecast-range"><span>'+(data.range_profile?'Typical range · 50%':'Range')+'</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
+    '<span class="forecast-range"><span>'+(data.range_profile?'Typical range · 50%':escapeHTML(data.range_label||'Range'))+'</span><strong>'+price(data.low)+' – '+price(data.high)+'</strong></span>'+
     '<span class="forecast-quick-weights">'+quickWeights+'</span></button>';
 }
 function marketGraph(){
@@ -337,15 +337,36 @@ function marketSnapshot(){
     ['USD / INR',fx?Number(fx.inr_per_usd).toFixed(3):'—',fx?sourceDate(fx.date):'Unavailable']
   ];
   return '<div class="market-reference"><div class="market-reference-label">'+
-    '<strong>MARKET REFERENCES</strong><small>Not yet model inputs</small></div>'+
+    '<strong>MARKET REFERENCES</strong><small>'+(forecast?.forecast_mode==='market_adjusted'?'Used by the market-adjusted estimate':'Market model inactive')+'</small></div>'+
     items.map(([name,value,date])=>
       '<div class="market-reference-item"><span>'+name+'</span><strong>'+value+
       '</strong><small>'+date+'</small></div>'
     ).join('')+
     '<a class="market-reference-link" href="#markets" aria-label="View all market details">View Markets →</a></div>';
 }
+function marketForecastDetails(){
+ const model=forecast?.market_model;
+ if(!model)return '';
+ if(forecast.forecast_mode!=='market_adjusted')return '<div class="forecast-model-note"><strong>IBJA-history fallback</strong><p>'+escapeHTML(model.reason||'Market inputs unavailable')+'</p></div>';
+ const metal=forecast.metals[activeForecastMetal],d=metal.drivers;
+ const signed=n=>(n>0?'+':'')+n.toFixed(2)+'%';
+ const effect=metal.estimate-metal.baseline;
+ return '<div class="forecast-model-note"><strong>Market-adjusted · Experimental</strong>'+
+  '<p>Assumes current world prices, FX and local premiums hold. Not yet validated.</p></div>'+
+  '<div class="forecast-drivers" aria-label="Market forecast inputs">'+
+  '<div><span>Global metal move</span><strong>'+signed(d.metal_change_pct)+'</strong></div>'+
+  '<div><span>USD / INR move</span><strong>'+signed(d.fx_change_pct)+'</strong></div>'+
+  '<div><span>Net price effect</span><strong>'+(effect>0?'+':effect<0?'−':'')+price(Math.abs(effect))+'</strong></div></div>'+
+  '<p class="forecast-reference-time">Since benchmark check · '+sourceTime(model.reference_checked_at)+'</p>';
+}
 function forecastProof(){
   const metal=forecast?.metals?.[activeForecastMetal];
+  const forward=metal?.forward_evidence;
+  if(forecast?.forecast_mode==='market_adjusted'&&forward){
+    return '<span>Forward check · '+forward.independent_target_dates+' target dates</span>'+
+      (forward.independent_target_dates?'<span>Market error '+forward.market_mape_pct.toFixed(2)+'% · Latest-rate baseline '+forward.baseline_mape_pct.toFixed(2)+'%</span>':'')+
+      '<span>'+(forward.status==='collecting'?'Collecting forward results · Accuracy not established':'Observed results are not a guarantee')+'</span>';
+  }
   const evidence=metal?.backtest;
   const count=Number(metal?.history_close_rows_used??metal?.history_rows_used)||0;
   if(evidence?.status==='walk_forward'&&Number.isFinite(evidence.holdout_mape_pct)){
@@ -388,17 +409,18 @@ function forecastPanel(){
     (forecast.target_date===forecast.calendar_tomorrow||forecast.target_date===indiaTodayISO()?'':' · Next open day')+
     '<span>IBJA · '+based+' '+escapeHTML(forecast.based_on_session||'')+'</span></div>'+
     (forecast.based_on_session==='AM'?'<p class="forecast-preview-note">AM preview · Updates after PM close</p>':'')+
+    marketForecastDetails()+
     '<div class="forecast-grid" role="group" aria-label="Choose gold or silver">'+
     forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('silver','Silver','1 kg','silver-bar.webp')+'</div>'+
-    (forecast.metals?.gold24?.range_profile?'<p class="forecast-band-note">50% historical typical-move band. Wider moves are possible.</p>':'')+
+    (forecast.forecast_mode==='market_adjusted'?'<p class="forecast-band-note">Scenario range uses past IBJA daily moves. It is not a calibrated probability interval.</p>':forecast.metals?.gold24?.range_profile?'<p class="forecast-band-note">50% historical typical-move band. Wider moves are possible.</p>':'')+
     '<div class="nr-chart"><div class="home-chart-controls" role="group" aria-label="Chart history">'+
        [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
        '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
       '</div>'+marketGraph()+'</div>'+
     '<details class="nr-small-details"><summary>About this estimate</summary>'+
-     '<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>'+
+     (forecast.forecast_mode==='market_adjusted'?'<p>IBJA × global metal ratio × USD/INR ratio.</p><p>Reference market quotes come from the first verified benchmark check, not an assumed publication time. FX is a dated daily reference.</p>':'<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>')+
      '<div class="nr-prediction-proof">'+forecastProof()+
       '<span>Actual result: pending until '+date+' IBJA closing rate</span></div>'+
      '<p>History source: <a href="https://trackliveprice.com/methodology/" target="_blank" rel="noopener noreferrer">TrackLivePrice (IBJA archive)</a>. LBMA, COMEX and MCX are not yet model inputs.</p></details></section>';
@@ -752,7 +774,7 @@ function metalQuestions(){
   const questions=[
     ['Why is the shop price different?', 'IBJA is a national metal reference. A shop quote can also include local premiums, making charges, other items and taxes. Ask for an itemised bill.'],
     ['How do I compare two quotes?', 'Use the same purity and net metal weight. Gold rates here are per 10 g; silver rates are per 1 kg. Use By Weight for a gram comparison.'],
-    ['Why can tomorrow’s estimate equal today’s rate?', 'When other tested methods do not reliably beat the latest-price baseline, the model keeps that baseline. This is not a prediction that the market will stay unchanged.'],
+    ['Why can tomorrow’s estimate equal today’s rate?', 'When global metal and currency moves are zero or offset, the market-adjusted estimate can equal the benchmark. If inputs cannot be verified, the labelled IBJA-history fallback may also equal it.'],
     ['When is a forecast result final?', 'The saved estimate is checked against its target-date IBJA PM close. Morning prices are provisional. Range coverage, price error and direction are different checks.']
   ];
   return '<section class="card section metal-questions" aria-labelledby="metal-questions-title"><div class="metal-learning-heading">'+

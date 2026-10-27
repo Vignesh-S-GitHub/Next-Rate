@@ -76,3 +76,13 @@ test('Source response size is bounded before parsing',async()=>{
  const {getText}=await import('../cloudflare/nextrate-scheduler/pipeline.mjs');
  await assert.rejects(getText('https://example.test',async()=>new Response('too large'),3),/too large/);
 });
+
+test('a later recovery timer refreshes global inputs even after the IBJA session is verified',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database();
+ await refresh(controller,{DB:db},sources(),clock);
+ const event={scheduledTime:Date.parse('2026-10-26T14:15:00Z'),cron:'15,45 8,14 * * *'};
+ await refresh(event,{DB:db},sources(),()=>new Date('2026-10-26T14:20:00Z'));
+ assert.equal(sql.prepare('SELECT revision FROM publication').get().revision,2);
+ assert.equal(sql.prepare('SELECT count(*) n FROM refresh_runs').get().n,2);
+ assert.equal(JSON.parse(sql.prepare('SELECT payload FROM publication').get().payload).documents['forecast.json'].model_version,4);
+});
