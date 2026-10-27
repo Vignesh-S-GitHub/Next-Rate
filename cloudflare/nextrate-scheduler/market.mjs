@@ -25,7 +25,8 @@ export function text(html) {
 export function tableRows(html) {
   return [...html.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr\s*>/gi)].map(m=>{
     const cells=[...m[1].matchAll(/<(?:td|th)\b([^>]*)>([\s\S]*?)<\/(?:td|th)\s*>/gi)];
-    const labels=cells.flatMap(c=>[...c[1].matchAll(/\bdata-label\s*=\s*["']?\s*(AM|PM)\b/gi)].map(v=>v[1].toUpperCase()));
+    const labels=cells.flatMap(c=>[...c[1].matchAll(/\bdata-label\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi)]
+      .map(v=>(v[1]??v[2]??v[3]).trim().toUpperCase()).filter(v=>v==='AM'||v==='PM'));
     return {cells:cells.map(c=>text(c[2])),session:new Set(labels).size===1?labels[0]:null};
   });
 }

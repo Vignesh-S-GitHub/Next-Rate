@@ -23,7 +23,7 @@ export function sessionHealth(latest,archives,target){
 function backfillRows(doc,metal,purity,multiplier,today){
  if(doc.metal!==metal||doc.purity!==purity||doc.unit!=='INR per gram'||doc.source!=='IBJA'||!Array.isArray(doc.rows))throw Error('Unexpected historical source/units');
  const values={};
- for(const r of doc.rows){if(!validDay(r.date)||r.date>today||[0,6].includes(new Date(r.date).getUTCDay())||r.pm==null)continue;
+ for(const r of doc.rows){if(!validDay(r.date)||r.date<'2020-01-01'||r.date>today||[0,6].includes(new Date(r.date).getUTCDay())||r.pm==null)continue;
   const v=Math.round(Number(r.pm)*multiplier+1e-7);if(Number.isFinite(v)&&(metal==='gold'?v>10000&&v<1000000:v>5000&&v<3000000))values[r.date]=v;
  }
  if(Object.keys(values).length<20)throw Error('Insufficient valid historical PM closes');return values;

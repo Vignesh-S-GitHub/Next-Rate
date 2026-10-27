@@ -67,6 +67,7 @@ test('Public API is read-only and exposes a single consistent bundle with CORS',
 test('Undated source quotes, conflicting rows and future FX values are rejected',async()=>{
  const {parseIBJA,parseFX}=await import('../cloudflare/nextrate-scheduler/market.mjs');
  assert.throws(()=>parseIBJA('<td>Today</td><td>141710</td>',clock()));
+ assert.throws(()=>parseIBJA(ibja().replaceAll('data-label="AM"','data-label="AM extra"').replaceAll('data-label="PM"','data-label="PM-extra"'),clock()));
  assert.throws(()=>parseIBJA(ibja()+ibja('26/10/2026',142000),clock()),/Conflicting/);
  assert.throws(()=>parseFX({base:'USD',quote:'INR',rate:94,date:'2026-10-27'},clock()));
 });
