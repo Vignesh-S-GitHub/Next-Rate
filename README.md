@@ -1,72 +1,94 @@
+<div align="center">
+
+<img src="assets/nextrate-icon.svg" alt="NextRate logo" width="96" />
+
 # NextRate
 
-[Open NextRate](https://vignesh-s-github.github.io/Next-Rate/) · [GitHub Actions](https://github.com/Vignesh-S-GitHub/Next-Rate/actions)
+**Indian gold and silver rates, history, and experimental next-publication estimates.**
 
-NextRate is a static, bilingual Indian gold/silver dashboard on GitHub Pages. Existing pages show dated IBJA national rates, indicative city quotes, international spot/FX references, fund NAVs, interactive charts, gold/silver weight calculators, jewellery tools and **experimental** next-publication-day forecasts. No background phone notification service or verified jewellery checkout feed is provided.
+![JavaScript](https://img.shields.io/badge/JavaScript-B88A00?style=flat-square&logo=javascript&logoColor=white)
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-222222?style=flat-square&logo=github&logoColor=white)
+![Cloudflare D1](https://img.shields.io/badge/Cloudflare%20D1-F38020?style=flat-square&logo=cloudflare&logoColor=white)
 
-## Production application and data
+[Open NextRate](https://vignesh-s-github.github.io/Next-Rate/) · [Publication status](https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json) · [Quick start](#quick-start) · [Data refresh](#data-refresh-and-hosting)
 
-- **Web UI:** `index.html`, `app.js`, `styles.css`, `features.js`, `features-core.js`, `features.css`, `chart-ui.js`, `chart-interaction.js`, `weights.js`, `buy-options.js`, `i18n.js`, `data-quality.js`, `source-logos.js`, `data-loader.js`, `assets/`.
-- **Collectors and safety checks:** `scripts/update_rates.py`, `update_cities.py`, `update_funds.py`, `backfill_rates.py`, `forecast.py`, `forecast_models.py`, `archive_data.py`, `schedule_refresh.py`, `validate_publication.py`, `smoke_site.py`.
-- **Published data:** `data/latest.json`, `history.json`, `cities.json`, `funds.json`, `forecast.json`, `forecast_history.json`. Permanent history lives in `data/archive/`; Cloudflare D1 stores current publication receipts; `data/refresh_status.json` retains the former GitHub timer record.
-- **Tests:** `tests/` guards parsing, dates, prices, source attribution, forecast accuracy, archive integrity, retries, accessibility and existing UI functions.
+</div>
 
-## Cloudflare data refresh; GitHub Pages website
+---
 
-Cloudflare owns the timer, source collection, validation, forecasts and durable
-D1 storage. The GitHub Pages website reads all six documents from one consistent
-Cloudflare publication. No GitHub runtime token or Actions refresh workflow is
-needed. The original dated static files remain an outage fallback and the
-original annual archives remain a migration backup.
+A compact English/Tamil bullion dashboard for dated Indian benchmark rates, indicative city quotes, global spot/FX references, fund NAVs, and next-publication-day estimates. The static website runs on GitHub Pages; Cloudflare collects, validates, forecasts, and stores market publications.
 
-| India time (IST) | Purpose |
-| --- | --- |
+## ✨ Features
+
+| View | What you can inspect |
+|---|---|
+| Home | Dated IBJA gold/silver observations, Today/7D/30D/90D changes, and experimental estimates |
+| History and charts | Published observations, interactive ranges, and forecast comparisons |
+| City and market references | Indicative dated city quotes, global metal prices, and USD/INR |
+| Tools | **Sell / Exchange · Verify Hallmark · ETF Comparison** |
+| Language and layout | English/Tamil content with desktop columns and a compact mobile stack |
+
+The Home return card uses the latest actual rate on or before its calendar-day cutoff and identifies the starting date. Insufficient history is labelled. These actual-price changes are separate from tomorrow's forecast.
+
+<a id="quick-start"></a>
+
+## 🚀 Quick start
+
+The frontend is static and has no build step. Use a local HTTP server so its JSON fetches work correctly:
+
+```bash
+git clone https://github.com/Vignesh-S-GitHub/Next-Rate.git
+cd Next-Rate
+python -m http.server 8080
+```
+
+Open **http://localhost:8080**. The frontend reads the configured Cloudflare publication; committed dated JSON provides an outage fallback. Serving the repository does not start a collector or change production data.
+
+<a id="data-refresh-and-hosting"></a>
+
+## ☁️ Data refresh and hosting
+
+| Component | Responsibility |
+|---|---|
+| GitHub Pages | Static interface and fallback JSON |
+| `nextrate-scheduler` Worker | Timer, source collection, validation, forecasts, and publication API |
+| `nextrate-data` D1 | Durable publication documents and receipts |
+| [pages.yml](.github/workflows/pages.yml) | Tests and frontend deployment; **no data-refresh cron** |
+
+The website reads all six documents from one consistent Worker publication. No GitHub runtime token or Actions refresh workflow is required. Annual static archives remain migration/history backups.
+
+| India time (IST) | Scheduled purpose |
+|---|---|
 | 13:15 | AM collection |
 | 19:15 | PM collection |
 | 22:15 | Late market update for the next IBJA publication |
-| 13:45, 14:15 and 19:45, 20:15 | Guarded recovery checks |
+| 13:45, 14:15, 19:45, 20:15 | Guarded recovery checks |
 
-Worker: `nextrate-scheduler`. Database: `nextrate-data`.
-[Live timer/publication status](https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json).
-See [Cloudflare operations](docs/CLOUDFLARE_SCHEDULER.md) for source, schedules,
-transaction safeguards, retention and recovery behavior.
+These are the configured timer slots, not a guarantee of publication at an exact second. Source availability and validation determine whether a new publication is accepted. Inspect [live status](https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json) and [Cloudflare operations](docs/CLOUDFLARE_SCHEDULER.md) for receipts and recovery behavior.
 
-**[Deploy to GitHub Pages](.github/workflows/pages.yml)** is the only production
-GitHub workflow. It tests code changes and publishes the static website without
-collecting bullion data. There is no GitHub cron trigger. Python collectors remain
-as regression references and offline migration/verification tools; production
-collection runs in `cloudflare/nextrate-scheduler/`.
+## 📊 Sources and units
 
-The [market-adjusted forecast](docs/MARKET_FORECAST.md) uses changes in same-provider
-global metal and USD/INR references since the first verified IBJA check. It states
-its parity assumptions and tracks forward errors against the latest-rate baseline.
+| Source | Used for | Interpretation |
+|---|---|---|
+| [IBJA](https://www.ibjarates.com/) | National AM/PM gold and silver benchmarks | Not retail checkout prices; GST and making charges excluded |
+| [Goodreturns](https://www.goodreturns.in/gold-rates/) | Dated city quotes | Indicative, not guaranteed dealer offers |
+| [AMFI](https://www.amfiindia.com/) | Fund NAVs | Not executable ETF exchange prices |
+| [Gold API](https://gold-api.com/docs) | International metal references | Indicative spot observations |
+| [Frankfurter](https://frankfurter.dev/) | USD/INR reference | Dated FX data, not a live execution quote |
 
-The Home price card switches between Today, 7D, 30D and 90D changes. Today compares
-with the previous published date. Longer periods subtract calendar days from the
-displayed IBJA date and use the latest actual rate on or before that cutoff,
-preferring PM when available. The card shows the starting price and date alongside
-the rupee and percentage change; insufficient history is labelled rather than
-silently shortening the selected period. These are actual-price returns, separate
-from tomorrow's estimate and the forecast chart controls.
+Unit/date labels matter when comparing benchmark, city, spot, and NAV values. The hallmark tool links to the official BIS Care workflow; NextRate itself cannot verify an HUID.
 
-The interface uses continuous desktop columns and a single mobile stack. Routine
-refresh controls and repeated Home source emblems are removed; automatic refresh
-continues, with a compact warning only when data is unavailable or old. Tools now
-contains only Sell / Exchange, Verify Hallmark and ETF Comparison. Retired panels,
-handlers, calculators and backup/import controls have been deleted; existing saved
-ETF quotes migrate into the supported tool preferences.
+## 🧮 Forecast behavior
 
-## Market data and forecast limitations
+Forecasts combine historical observations and, when valid references exist, changes in same-provider global metals and USD/INR. The application records forward errors and compares against a latest-rate baseline. [Model notes](docs/MARKET_FORECAST.md) document assumptions and ranges.
 
-- [IBJA](https://www.ibjarates.com/): national AM/PM gold and silver benchmark observations, not shop checkout prices; GST and making charges excluded.
-- [Goodreturns](https://www.goodreturns.in/gold-rates/): indicative dated city prices, not guaranteed dealer offers.
-- [AMFI](https://www.amfiindia.com/): dated NAVs, not executable ETF trade prices.
-- [Gold API](https://gold-api.com/docs) and [Frankfurter](https://frankfurter.dev/): indicative global spot and dated USD/INR; licensed LBMA/COMEX/MCX data not connected.
-- Forecast estimates and model ranges are experimental. Historical backtests do not establish a guarantee of future predictive accuracy. Forecasts pause when the next publication year's holiday calendar is not verified.
+Estimates are experimental ranges, not guarantees of future accuracy or trade recommendations. No licensed LBMA/COMEX/MCX feed or verified jewellery checkout feed is connected. Forecasts pause when the next publication year's holiday calendar is not verified.
 
-## Production verification
+## 🧪 Development checks
 
-```sh
+Python and Node.js are needed for checks; CI uses **Node 24**.
+
+```bash
 python -m unittest discover -s tests -v
 node --test tests/*.test.cjs
 python scripts/archive_data.py --verify
@@ -74,9 +96,34 @@ python scripts/validate_publication.py
 npm ci
 npx playwright install --with-deps chromium
 npm run test:browser
-python scripts/smoke_site.py
 ```
 
-For the tab-by-tab data contract, repaired edge cases and browser coverage, see the [app audit](docs/APP_AUDIT.md). Pull requests run the same browser checks before deployment.
+`python scripts/smoke_site.py` checks the published site. Collector bundle validation:
 
-The pipeline retains actual publication timestamps when sources fail and refuses corrupt/mismatched data. For incident procedures see [production checks](docs/PRODUCTION_CHECKS.md) and [permanent data retention](docs/DATA_RETENTION.md). Verify source redistribution rights before commercial usage.
+```bash
+npm ci --prefix cloudflare/nextrate-scheduler
+npm run build --prefix cloudflare/nextrate-scheduler
+```
+
+Python collectors remain regression/offline migration tools; production collection runs in the Worker. [App audit](docs/APP_AUDIT.md), [production checks](docs/PRODUCTION_CHECKS.md), and [retention guide](docs/DATA_RETENTION.md) describe the checks and operational limits.
+
+## 📁 Repository guide
+
+| Path | Purpose |
+|---|---|
+| [index.html](index.html), [app.js](app.js), [styles.css](styles.css) | Main dashboard |
+| [features.js](features.js), [features-core.js](features-core.js) | The three supported tools |
+| [chart-ui.js](chart-ui.js), [chart-interaction.js](chart-interaction.js) | Charts and interaction |
+| [data-loader.js](data-loader.js), [data-quality.js](data-quality.js) | Consistent loading and freshness checks |
+| [cloudflare/nextrate-scheduler/](cloudflare/nextrate-scheduler/) | Production collection/runtime |
+| [data/](data/), [scripts/](scripts/), [tests/](tests/) | Dated data, offline tooling, and regression coverage |
+
+Provider data and branding have their own terms; review redistribution rights before commercial reuse.
+
+## 🤝 Contributing
+
+Open an issue with a reproducible example or submit a focused pull request. Keep setup instructions and documentation aligned with any behavior changes.
+
+## 📄 License
+
+No repository-level `LICENSE` file is currently included.
