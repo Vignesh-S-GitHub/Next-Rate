@@ -8,15 +8,12 @@ const model=fs.readFileSync(path.join(root,'chart-interaction.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
 
-test('Home shows tomorrow, today, weights and buy together',()=>{
- const s=app.slice(app.indexOf('function home(){'),app.indexOf('function marketCard(',app.indexOf('function home(){')));
- assert.ok(s.includes('homeTodayPanel()+forecastPanel()+homeForecastResultPanel()'));
- assert.ok(s.indexOf('homeTodayPanel()')<s.indexOf('forecastPanel()'));
- assert.ok(s.indexOf('homeForecastResultPanel()')>s.indexOf('forecastPanel()'));
- assert.ok(s.indexOf('homeTodayPanel()')<s.indexOf('homeWeightPanel()'));
- assert.ok(s.indexOf('homeWeightPanel()')<s.indexOf('homeBuyPanel()'));
- assert.match(app,/home-weight-expand/);
- assert.match(app,/home-buy-expand/);
+test('Home uses two continuous desktop columns and a compact mobile order',()=>{
+ const section=app.slice(app.indexOf('function home(){'),app.indexOf('function featuresContext(){'));
+ assert.match(section,/home-primary/);assert.match(section,/home-sidebar/);
+ for(const name of ['homeTodayPanel','forecastPanel','homeForecastResultPanel','homeWeightPanel','homeBuyPanel'])assert.ok(section.includes(name+'()'));
+ assert.doesNotMatch(section,/homeMetalLearning|feature-link/);
+ assert.match(css,/display:contents/);
 });
 test('Predictions are dated model files, not live official exchange quotes',()=>{
  assert.match(app,/getJSON\('forecast\.json'\)/);
@@ -29,8 +26,6 @@ test('Predictions are dated model files, not live official exchange quotes',()=>
  assert.match(app,/price\(data.low\)/);
  assert.match(app,/price\(data.high\)/);
  assert.match(app,/data.estimate\/data.baseline-1/);
- assert.match(app,/Range is not a guarantee/);
- assert.match(app,/LBMA, COMEX and MCX are not yet model inputs/);
 });
 test('Trend chart separates actual IBJA from dashed estimate',()=>{
  assert.match(app,/function marketGraph\(\)/);
@@ -57,16 +52,10 @@ test('Only Cloudflare builds forecasts; Pages serves committed forecasts',()=>{
   assert.ok(workflow.includes('node --test tests/*.test.cjs'));
  }
 });
-test('Chart periods and measured model error stay visible and compact',()=>{
- assert.match(app,/function forecastProof\(\)/);
- assert.match(app,/holdout_mape_pct/);
- assert.match(app,/holdout_naive_mape_pct/);
- assert.match(app,/data-chart-days/);
- assert.match(app,/chartDays = 7/);
- assert.match(css,/\.home-dashboard/);
- assert.match(css,/\.home-today-item/);
- assert.match(css,/\.home-weight-cell/);
- assert.match(css,/\.home-buy-cell/);
+test('Chart periods remain visible without a technical explanation panel',()=>{
+ assert.match(app,/data-chart-days/);assert.match(app,/chartDays = 7/);
+ assert.doesNotMatch(app,/About this estimate|function forecastProof|nr-small-details/);
+ assert.doesNotMatch(app,/Data checked|data-refresh|Actual national rate/);
 });
 
 test('Today and next-open-day forecasts cannot be mislabelled Tomorrow',()=>{
@@ -84,8 +73,7 @@ test('Markets distinguish provider fetch times from market trade times, especial
   assert.match(app,/spot timestamps show when the provider fetched/);
   assert.match(app,/Fetched /);
   assert.match(app,/Reference /);
-  assert.match(app,/Actual result: pending until/);
-});
+ });
 
 test('Actual dates and forecast range are independently inspectable on mobile',()=>{
  assert.match(app,/ui\.render\(\{/);
@@ -124,12 +112,6 @@ test('Insights teaches price drivers visually using gold/silver images',()=>{
  assert.match(css,/\.insights-metal-grid/);
  assert.match(css,/\.factor-symbol/);
 });
-test('Forecast details no longer occupy Home until expanded',()=>{
- const section=app.slice(app.indexOf('function forecastPanel()'),app.indexOf('function verifiedNav('));
- assert.doesNotMatch(section,/nr-prediction-explainer/);
- assert.ok(section.indexOf('nr-small-details')<section.indexOf('nr-prediction-proof'));
-});
-
 test('Home displays rupee/percent movement and keeps provisional forecast checks ungraded',()=>{
  const vm=require('node:vm');
  const core=require('../features-core.js');

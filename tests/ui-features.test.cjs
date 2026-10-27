@@ -1,144 +1,39 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict');
-const fs=require('node:fs'),path=require('node:path');
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-const app=fs.readFileSync(root+'/app.js','utf8');
-const index=fs.readFileSync(root+'/index.html','utf8');
-const css=fs.readFileSync(root+'/features.css','utf8');
-const feature=fs.readFileSync(root+'/features.js','utf8');
-const pages=fs.readFileSync(root+'/.github/workflows/pages.yml','utf8');
-test('Tools route is reachable on desktop and phone without losing logo and four original tabs',()=>{
- for(const route of ['home','markets','compare','insights','tools']){
-  assert.match(index,new RegExp('data-route="'+route+'"'));
+const app=fs.readFileSync(root+'/app.js','utf8'),feature=fs.readFileSync(root+'/features.js','utf8');
+const index=fs.readFileSync(root+'/index.html','utf8'),css=fs.readFileSync(root+'/features.css','utf8');
+const C=require('../features-core.js'),F=require('../features.js');
+test('Only resale, hallmark and ETF tools remain, with no retired panels or handlers',()=>{
+ assert.deepEqual(F.sections.map(x=>x[0]),['resale','hallmark','etfs']);
+ for(const fn of ['alertPanel','billPanel','accuracyPanel','shopsPanel','portfolioPanel','signalsPanel','checkAlerts','importBackup'])assert.ok(!feature.includes(fn));
+ for(const fn of ['jewelleryBill','manualShopBill','holdingValuation','alertValue','triggered','historicalAccuracy'])assert.equal(C[fn],undefined);
+ assert.doesNotMatch(feature,/data-delete-kind|data-feature-import|data-feature-action|9 tools|tool-count/);
+});
+test('Supported panels retain working forms and authoritative plain source links',()=>{
+ const context={rates:{india:{date:'2026-10-27',gold24_inr_10g:141431,gold22_inr_10g:129551}},funds:{funds:{goldbees:{name:'Nippon India ETF Gold BeES',kind:'Gold ETF',nav_inr_per_unit:116.1,nav_date:'2026-10-26'}}}};
+ for(const [id,kind]of [['resale','resale'],['hallmark','huid'],['etfs','etf']]){
+  F.select(id);const markup=F.page(context);
+  assert.ok(markup.includes('data-feature-form="'+kind+'"'));assert.ok(markup.includes('data-tool-select="'+id+'" aria-pressed="true"'));
+  assert.doesNotMatch(markup,/source-logo|tool-count/);
  }
- assert.match(index,/data-route="tools".+>Tools<\/a>/s);
- assert.match(index,/assets\/nextrate-icon\.png/);
- assert.match(css,/repeat\(5,minmax\(0,1fr\)\)/);
- assert.match(app,/NextRateFeatures\?\.page/);
- assert.match(app,/NextRateFeatures\?\.mount/);
+ F.select('hallmark');assert.match(F.page(context),/play\.google\.com\/store\/apps\/details\?id=com\.bis\.bisapp/);
+ assert.match(F.page(context),/NextRate cannot verify HUID by itself/);
+ F.select('etfs');assert.match(F.page(context),/NAV is not a trade price/);assert.match(F.page(context),/nseindia\.com/);
 });
-test('Nine features are implemented as working panels with meaningful form handlers',()=>{
- for(const key of ['alerts','jewellery','accuracy','shops','portfolio','resale','hallmark','etfs','signals']){
-  assert.match(feature,new RegExp("'"+key+"'"));
- }
- for(const kind of ['alert','jewellery','shops','holdings','resale','huid','etf']){
-  assert.match(feature,new RegExp("kind==='"+kind+"'"));
- }
- assert.match(feature,/data-tool-select/);
- assert.match(feature,/data-delete-kind/);
- assert.match(feature,/onSubmit/);
+test('Compact controls remain reachable through all five routes and keyboard pickers',()=>{
+ for(const route of ['home','markets','compare','insights','tools'])assert.ok(index.includes('data-route="'+route+'"'));
+ assert.match(css,/repeat\(5,minmax\(0,1fr\)\)/);assert.match(css,/repeat\(3,minmax\(0,1fr\)\)/);
+ assert.match(feature,/ArrowDown/);assert.match(feature,/Escape/);assert.match(feature,/aria-selected/);
+ assert.match(app,/NextRateFeatures\?\.mount/);assert.doesNotMatch(app,/data-feature-link="jewellery"|checkAlerts|About this estimate|Data checked|data-refresh/);
 });
-test('On-site target checker does not ask for browser notifications',()=>{
- assert.match(feature,/This tool does not send browser or phone notifications/);
- assert.match(feature,/checkAlerts/);
- assert.match(feature,/C[.]ageDays/);
- assert.doesNotMatch(feature,/NextRateNotifications|requestPermission|showNotification|data-feature-action="notify"/);
- assert.doesNotMatch(index,/browser-notifications[.]js/);
- assert.match(app,/getRegistrations/);
-});
-test('BIS verification is official external handoff rather than fake verification',()=>{
- assert.match(require('../source-logos.js').badge('biscare'),/www\.bis\.gov\.in\/bis-apps/);
- assert.match(feature,/cannot verify HUID by itself/);
- assert.match(feature,/Not yet verified/);
- assert.doesNotMatch(feature,/HUID verified successfully/);
-});
-test('Shop and portfolio data stay on device with backup and unverified markers',()=>{
- assert.match(feature,/localStorage/);
- assert.match(feature,/nextrate-tools-v1/);
- assert.match(feature,/No independent shop-by-shop quote feed is connected/);
- assert.match(feature,/Download my backup/);
- assert.match(feature,/Restore backup/);
- assert.match(feature,/Manual shop quote saved/);
-});
-test('Market signals never fabricate COMEX LBMA or MCX and ETFs never fake LTP',()=>{
- assert.match(feature,/Official feed not connected/);
- assert.match(feature,/Official LBMA, COMEX and MCX signals are not included/);
- assert.match(feature,/NAV is not an executable exchange quote/);
- assert.match(feature,/Expense ratios, tracking differences/);
-});
-test('The Pages deployment stages tool scripts, stylesheet and run tests',()=>{
- for(const workflow of [pages]){
-   assert.ok(workflow.includes('node --test tests/*.test.cjs'));
-   for(const script of ['features.js','features-core.js','features.css']){
-    assert.ok(workflow.includes(script),script+' staged');
-   }
-   assert.ok(!workflow.includes('tests/browser-notifications.test.cjs'));
-   assert.ok(!workflow.includes('browser-notifications.js'));
-   assert.ok(!workflow.includes('notification-sw.js'));
- }
-});
-
-test('Every tool panel renders using a dated India market snapshot',()=>{
- const module=require('../features.js');
- const context={
-  rates:{india:{date:'2026-10-23',gold24_inr_10g:141630,gold22_inr_10g:129733,
-   silver999_inr_kg:194415},
-   spot:{XAU:{usd_per_troy_ounce:3996.9,as_of:'2026-10-23T08:00:00Z'},
-         XAG:{usd_per_troy_ounce:54.05,as_of:'2026-10-23T08:00:00Z'}},
-   fx:{inr_per_usd:94.76,date:'2026-10-23'}},
-  funds:{funds:{goldbees:{name:'Nippon India ETF Gold BeES',kind:'Gold ETF',nav_inr_per_unit:116.0136,nav_date:'2026-10-23'}}},
-  cities:{cities:{Chennai:{gold22_inr_g:13070}},dates:{gold:'2026-10-23'}},
-  forecast:{metals:{gold24:{backtest:{status:'walk_forward',holdout_mape_pct:0.629,holdout_naive_mape_pct:0.629}}}},
-  forecastHistory:{forecasts:[{target_date:'2026-10-26',metals:{gold24:{estimate:141630}}}]},
-  city:'Chennai',language:'en',refresh:()=>{}
- };
- assert.equal(module.sections.length,9);
- for(const [id] of module.sections){
-   module.select(id);
-   const markup=module.page(context);
-   assert.match(markup,/class="toolspage"/);
-   assert.match(markup,new RegExp('data-tool-select="'+id+'"'));
-   assert.ok(markup.length>950,id);
- }
- module.select('alerts');
- assert.match(module.page(context),/This tool does not send browser or phone notifications/);
- module.select('hallmark');
- assert.match(module.page(context),/official BIS Care/);
- module.select('signals');
- assert.match(module.page(context),/Official feed not connected/);
-});
-
-
-test('Official source identities appear in the relevant tools without pretending endorsement',()=>{
- const provider=require('../source-logos.js');
- const coreContext={rates:{india:{date:'2026-10-23'}},
-   cities:{cities:{Chennai:{gold22_inr_g:13070}},dates:{gold:'2026-10-23'}},
-   funds:{funds:{goldbees:{name:'Gold BeES',kind:'Gold ETF',nav_inr_per_unit:116.0,nav_date:'2026-10-23'}}},
-   forecastHistory:{forecasts:[]},city:'Chennai',language:'en',refresh:()=>{}};
- const feature=require('../features.js');
- feature.select('hallmark');
- const hallmark=feature.page(coreContext);
- assert.match(hallmark,/data-tool-select="hallmark"/);
- assert.match(hallmark,/play\.google\.com\/store\/apps\/details\?id=com\.bis\.bisapp/);
- assert.match(hallmark,/apps\.apple\.com\/in\/app\/bis-care-app\/id6443724891/);
- assert.match(hallmark,/BIS Care verification opens outside NextRate/);
- assert.doesNotMatch(provider.badge('biscare'),/<img/);
- feature.select('etfs');
- const etf=feature.page(coreContext);
- assert.match(etf,/NSE ETF market information/);
- assert.match(etf,/AMFI NAV source/);
- assert.match(etf,/nsearchives\.nseindia\.com/);
- assert.doesNotMatch(provider.badge('amfi'),/<img/);
- feature.select('shops');
- assert.match(feature.page(coreContext),/images\.goodreturns\.in/);
-});
-
-test('A saved target is checked once during a visit, without push',()=>{
- const vm=require('node:vm'),core=require('../features-core.js');
- const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kolkata',
-  year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
- const part=n=>parts.find(x=>x.type===n).value;
- const today=part('year')+'-'+part('month')+'-'+part('day');
- let storage=JSON.stringify({version:1,notifications:true,preferred:'alerts',
-  alerts:[{id:'target',metal:'gold24',grams:10,op:'above',target:140000,triggeredAt:null}],
-  shops:[],holdings:[],etfQuotes:{}});
- const win={NextRateCore:core,NextRateSources:{badge:()=>''},
-  localStorage:{getItem:()=>storage,setItem:(_,text)=>{storage=text;}}};
+test('Old saved preferences cannot reopen removed tools and only ETF quotes migrate',()=>{
+ const previous=JSON.stringify({version:1,preferred:'portfolio',holdings:[{}],etfQuotes:{goldbees:{quote:120,date:'2026-10-26'}}});
+ const saved=[];const win={NextRateCore:C,localStorage:{getItem:k=>k==='nextrate-tools-v1'?previous:null,setItem:(k,v)=>saved.push([k,JSON.parse(v)])}};
  vm.runInNewContext(feature,{window:win});
- const context={rates:{india:{date:today,gold24_inr_10g:141630}},refresh:()=>{}};
- assert.equal(win.NextRateFeatures.checkAlerts(context),1);
- assert.equal(win.NextRateFeatures.checkAlerts(context),0);
- assert.equal(JSON.parse(storage).alerts[0].triggeredAt,today);
- assert.ok(!Object.hasOwn(JSON.parse(storage),'notifications'));
- assert.doesNotMatch(win.NextRateFeatures.page(context),/data-feature-action="notify"/);
+ const state=JSON.parse(JSON.stringify(win.NextRateFeatures.getState()));
+ assert.deepEqual(state,{preferred:'resale',etfQuotes:{goldbees:{quote:120,date:'2026-10-26'}}});
+ win.NextRateFeatures.select('etfs');assert.equal(saved[0][0],'nextrate-tools-v2');assert.equal(saved[0][1].version,2);
+ win.NextRateFeatures.select('portfolio');assert.equal(win.NextRateFeatures.getState().preferred,'etfs');
 });

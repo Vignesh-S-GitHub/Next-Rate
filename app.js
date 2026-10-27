@@ -346,48 +346,13 @@ function marketSnapshot(){
     '<a class="market-reference-link" href="#markets" aria-label="View all market details">View Markets →</a></div>';
 }
 function marketForecastDetails(){
- const model=forecast?.market_model;
- if(!model)return '';
- if(forecast.forecast_mode!=='market_adjusted')return '<div class="forecast-model-note"><strong>IBJA-history fallback</strong><p>'+escapeHTML(model.reason||'Market inputs unavailable')+'</p></div>';
- const metal=forecast.metals[activeForecastMetal],d=metal.drivers;
+ const model=forecast?.market_model;if(!model)return '';
+ if(forecast.forecast_mode!=='market_adjusted')return '<p class="forecast-model-note">IBJA-history fallback · '+escapeHTML(model.reason||'Market inputs unavailable')+'</p>';
+ const d=forecast.metals[activeForecastMetal].drivers;
  const signed=n=>(n>0?'+':'')+n.toFixed(2)+'%';
- const effect=metal.estimate-metal.baseline;
- return '<div class="forecast-model-note"><strong>Market-adjusted · Experimental</strong>'+
-  '<p>Assumes current world prices, FX and local premiums hold. Not yet validated.</p></div>'+
-  '<div class="forecast-drivers" aria-label="Market forecast inputs">'+
-  '<div><span>Global metal move</span><strong>'+signed(d.metal_change_pct)+'</strong></div>'+
-  '<div><span>USD / INR move</span><strong>'+signed(d.fx_change_pct)+'</strong></div>'+
-  '<div><span>Net price effect</span><strong>'+(effect>0?'+':effect<0?'−':'')+price(Math.abs(effect))+'</strong></div></div>'+
-  '<p class="forecast-reference-time">Since benchmark check · '+sourceTime(model.reference_checked_at)+'</p>';
-}
-function forecastProof(){
-  const metal=forecast?.metals?.[activeForecastMetal];
-  const forward=metal?.forward_evidence;
-  if(forecast?.forecast_mode==='market_adjusted'&&forward){
-    return '<span>Forward check · '+forward.independent_target_dates+' target dates</span>'+
-      (forward.independent_target_dates?'<span>Market error '+forward.market_mape_pct.toFixed(2)+'% · Latest-rate baseline '+forward.baseline_mape_pct.toFixed(2)+'%</span>':'')+
-      '<span>'+(forward.status==='collecting'?'Collecting forward results · Accuracy not established':'Observed results are not a guarantee')+'</span>';
-  }
-  const evidence=metal?.backtest;
-  const count=Number(metal?.history_close_rows_used??metal?.history_rows_used)||0;
-  if(evidence?.status==='walk_forward'&&Number.isFinite(evidence.holdout_mape_pct)){
-    const error=Number(evidence.holdout_mape_pct).toFixed(2);
-    const naive=Number(evidence.holdout_naive_mape_pct).toFixed(2);
-    const better=evidence.holdout_beats_naive;
-    return '<span>'+count+' historical closes</span>'+
-      '<span>Past simulation error '+error+'% · Last-close '+naive+'%</span>'+
-      '<span>'+(better?'Lower error in past test':'No proven improvement over last close')+'</span>'+forecastRangeProof(metal);
-  }
-  return '<span>'+count+' past rates · Prediction accuracy not established</span>';
-}
-
-function forecastRangeProof(metal){
-  const p=metal?.range_profile,w=metal?.wider_range;
-  if(!p||!Number.isFinite(p.holdout_covered)||!Number.isFinite(p.holdout_samples)||p.holdout_samples<=0)return '';
-  return '<span>Typical band in later historical tests: '+p.holdout_covered+'/'+p.holdout_samples+
-    ' closes ('+Number(p.holdout_coverage_pct).toFixed(0)+'%)</span>'+
-    (w&&Number.isFinite(w.low)&&Number.isFinite(w.high)?
-      '<span>Wider scenario: '+price(w.low)+' – '+price(w.high)+'</span>':'');
+ return '<div class="forecast-drivers" aria-label="Market forecast inputs">'+
+  '<span>Global metal move <strong>'+signed(d.metal_change_pct)+'</strong></span>'+
+  '<span>USD / INR move <strong>'+signed(d.fx_change_pct)+'</strong></span></div>';
 }
 
 function forecastPanel(){
@@ -415,16 +380,11 @@ function forecastPanel(){
     forecastMetalCard('gold24','24K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('gold22','22K Gold','10 g','gold-bar.webp')+
     forecastMetalCard('silver','Silver','1 kg','silver-bar.webp')+'</div>'+
-    (forecast.forecast_mode==='market_adjusted'?'<p class="forecast-band-note">Scenario range uses past IBJA daily moves. It is not a calibrated probability interval.</p>':forecast.metals?.gold24?.range_profile?'<p class="forecast-band-note">50% historical typical-move band. Wider moves are possible.</p>':'')+
     '<div class="nr-chart"><div class="home-chart-controls" role="group" aria-label="Chart history">'+
        [7,30,90].map(days=>'<button type="button" class="chart-period'+(days===chartDays?' active':'')+
        '" data-chart-days="'+days+'" aria-pressed="'+(days===chartDays)+'">'+days+'D</button>').join('')+
       '</div>'+marketGraph()+'</div>'+
-    '<details class="nr-small-details"><summary>About this estimate</summary>'+
-     (forecast.forecast_mode==='market_adjusted'?'<p>IBJA × global metal ratio × USD/INR ratio.</p><p>Reference market quotes come from the first verified benchmark check, not an assumed publication time. FX is a dated daily reference.</p>':'<p>IBJA closing prices · Experimental model · Range is not a guarantee.</p>')+
-     '<div class="nr-prediction-proof">'+forecastProof()+
-      '<span>Actual result: pending until '+date+' IBJA closing rate</span></div>'+
-     '<p>History source: <a href="https://trackliveprice.com/methodology/" target="_blank" rel="noopener noreferrer">TrackLivePrice (IBJA archive)</a>. LBMA, COMEX and MCX are not yet model inputs.</p></details></section>';
+    '</section>';
   return content;
 }
 
@@ -497,8 +457,7 @@ function buyPanel(){
     '<span>Price</span><span>Extra</span></div>'+list+'</div>'+
     '<p class="buy-foot">Bars, coins & jewellery: <b>IBJA + 3% GST only</b>. Shop charges extra. '+
     'ETF & funds: <b>AMFI NAV per unit</b>, not live buy price. Bonds: market quote.</p>'+
-    '<div class="buy-provider-note">'+sourceBadge('amfi',{label:'AMFI NAV source',compact:true})+
-      '<small>Fund NAVs are not stock-exchange buying prices.</small></div></section>';
+    '</section>';
 }
 function wireBuyPanel(){
   document.querySelectorAll('[data-buy-metal]').forEach(button=>
@@ -539,8 +498,7 @@ function homeTodayPanel(){
     periods+
     '<div class="home-today-grid">'+cells+'</div>'+homeCityPrice()+
     (priceChangeDays?'<p class="home-change-note">Calendar days before the displayed rate; non-publishing dates use the previous published rate.</p>':'')+
-    '<div class="home-source-note"><span>Actual national rate · '+escapeHTML(current?.session||'')+
-      ' publication</span>'+sourceBadge('ibja',{label:'IBJA source',compact:true})+'</div></section>';
+    '</section>';
 }
 function homeForecastResultPanel(){
   const check=window.NextRateCore?.forecastCheck(issuedForecasts?.forecasts,rates,indiaTodayISO());
@@ -620,11 +578,8 @@ function wireHomeCompact(){
   if(buy)buy.addEventListener('toggle',()=>{homeBuyExpanded=buy.open;});
 }
 function home(){
-  const items=[['alerts','Price Alerts'],['jewellery','Jewellery Bill'],['accuracy','Accuracy'],['portfolio','My Gold']];
-  const links='<section class="home-tool-links section" aria-label="NextRate tools">'+
-    items.map(([key,label])=>'<a href="#tools" data-feature-link="'+key+'">'+label+' ↗</a>').join('')+'</section>';
-  return '<div class="home-dashboard">'+homeTodayPanel()+forecastPanel()+homeForecastResultPanel()+
-    homeWeightPanel()+homeBuyPanel()+links+homeMetalLearning()+'</div>';
+ return '<div class="home-dashboard"><div class="home-primary">'+forecastPanel()+homeBuyPanel()+
+  '</div><aside class="home-sidebar">'+homeTodayPanel()+homeForecastResultPanel()+homeWeightPanel()+'</aside></div>';
 }
 function featuresContext(){
   return {rates,history,forecast,forecastHistory:issuedForecasts,cities:cityRates,funds,
@@ -646,9 +601,6 @@ function marketsPage() {
     marketCard('USD/INR',rates?.fx?Number(rates.fx.inr_per_usd).toFixed(3):'—','Daily reference · INR / USD',rates?.fx?'Reference '+sourceDate(rates.fx.date):'',rates?.fx?.source_url||'https://frankfurter.dev/')+
     marketCard('India 24K',india()?price(india().gold24_inr_10g):'—','IBJA national benchmark · ₹ / 10g',india()?sourceDate(india().date):'','https://www.ibjarates.com/')+
     '</section>'+
-    '<div class="market-source-logos">'+sourceBadge('ibja',{label:'IBJA national rates',compact:true})+
-    '<span>24K reference shown above is a dated Indian national rate.</span></div>'+
-    '<section class="card section"><h2>Other market venues</h2><p>LBMA auction benchmarks, COMEX futures and MCX futures require separate authorised feeds. They are not equivalent to international spot quotes or the IBJA physical-market benchmark.</p><div class="source-links"><a href="https://www.lbma.org.uk/prices-and-data" target="_blank" rel="noopener noreferrer">LBMA ↗</a><a href="https://www.cmegroup.com/markets/metals/precious/gold.html" target="_blank" rel="noopener noreferrer">COMEX ↗</a><a href="https://www.mcxindia.com/" target="_blank" rel="noopener noreferrer">MCX ↗</a></div></section>'+
     '<section class="card section"><h2>What affects tomorrow?</h2>'+
     [['International metal quotes','Global spot prices reflect precious-metal demand and market expectations.'],['Currency movement','The USD/INR rate changes the rupee value of globally priced metals.'],['Domestic physical-market demand','Local premiums, import policies, taxes and jewellery demand affect final retail prices.']].map(([a,b])=>'<div class="insight"><strong>'+a+'</strong><p>'+b+'</p></div>').join('')+'</section>'+note();
 }
@@ -736,13 +688,6 @@ function metalPicture(metal,size=62){
     '" src="./assets/silver-bar.webp?v=20261025-doublebars" alt="'+
     (metal==='gold'?'Two gold bars':'Two silver bars')+'" width="'+size+'" height="'+size+'" loading="lazy">';
 }
-function homeMetalLearning(){
-  return '<section class="home-brief home-metal-learning section"><header><div><span class="nr-kicker">GOLD &amp; SILVER</span>'+
-    '<h2>Know your metals</h2></div><a class="metal-guide-link" href="#insights">Explore guide →</a></header>'+
-    '<div class="metal-preview-grid">'+[['gold','Gold','Purity, weights & jewellery'],['silver','Silver','Fineness, bars & everyday buying']].map(([key,title,desc])=>
-      '<a href="#insights" class="metal-preview metal-preview-'+key+'">'+metalPicture(key,64)+
-      '<div><h3>'+title+'</h3><p>'+desc+'</p></div><span aria-hidden="true">↗</span></a>').join('')+'</div></section>';
-}
 function metalPurityGuide(){
   const cards=[
     {metal:'gold',title:'Gold',intro:'Read the gold content in a fineness mark.',
@@ -773,7 +718,7 @@ function metalBuyingGuide(){
     '<div class="metal-bill-flow" aria-label="Parts of a metal purchase bill"><span>Metal value</span><b aria-hidden="true">+</b><span>Shop charges</span>'+
       '<b aria-hidden="true">+</b><span>Taxes</span><b aria-hidden="true">=</b><strong>Invoice total</strong></div>'+
     '<div class="metal-guide-actions"><a href="#tools" data-feature-link="hallmark">Hallmark check ↗</a>'+
-      '<a href="#tools" data-feature-link="jewellery">Jewellery bill ↗</a><a href="#tools" data-feature-link="resale">Resale estimate ↗</a></div></section>';
+      '<a href="#tools" data-feature-link="resale">Resale estimate ↗</a></div></section>';
 }
 function metalQuestions(){
   const questions=[
@@ -849,8 +794,7 @@ function render() {
   } else {
     app.innerHTML=({home,markets:marketsPage,compare,insights,tools:toolsPage})[route]();
   }
-  app.insertAdjacentHTML('afterbegin',dataStatus());
-  app.querySelector('[data-refresh]')?.addEventListener('click',()=>loadData(true));
+  app.insertAdjacentHTML('afterbegin',dataWarning());
   app.querySelectorAll('[data-price-days]').forEach(button=>button.addEventListener('click',()=>{
     priceChangeDays=Number(button.dataset.priceDays);
     render();
@@ -879,17 +823,13 @@ function render() {
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }
 let publicationLoader;
-let loadingData=false,lastAttempt=0,lastGoodCheck=0,dataSource='loading',refreshFailed=false;
-function dataStatus(){
+let loadingData=false,lastAttempt=0,dataSource='loading',refreshFailed=false;
+function dataWarning(){
  const warnings=[];
  if(dataSource==='fallback')warnings.push('Live data connection unavailable. Showing the dated backup.');
  if(refreshFailed&&rates)warnings.push('Refresh failed. Keeping the last verified prices.');
  if(india()&&daysOld(india().date)>2)warnings.push('Older published rates. Check the source dates before using these values.');
- if(!rates&&loadingData)return '';
- const stamp=lastGoodCheck?sourceTime(new Date(lastGoodCheck).toISOString()):'Not checked';
- return '<div class="data-status'+(warnings.length?' status-warning':'')+'" role="status">'+
-  '<div><span>'+warnings.map(escapeHTML).join(' ')+'</span><small>Data checked · '+stamp+'</small></div>'+
-  '<button type="button" data-refresh'+(loadingData?' disabled':'')+'>'+(loadingData?'Checking…':'Refresh data')+'</button></div>';
+ return warnings.length?'<p class="data-warning" role="status">'+warnings.map(escapeHTML).join(' ')+'</p>':'';
 }
 async function getJSON(file) {
   return publicationLoader.get(file);
@@ -913,11 +853,9 @@ function restoreForm(saved){
  }
  window.NextRateI18n?.apply(form,appLanguage);
 }
-async function loadData(force=false){
- if(loadingData||!force&&lastAttempt&&Date.now()-lastAttempt<60000)return;
+async function loadData(){
+ if(loadingData||lastAttempt&&Date.now()-lastAttempt<60000)return;
  loadingData=true;lastAttempt=Date.now();
- const button=app.querySelector('[data-refresh]');
- if(button){button.disabled=true;button.textContent='Checking…';window.NextRateI18n?.apply(button,appLanguage);}
  try{
   publicationLoader=window.NextRateData.createLoader();
   const [market,historical,model,nav,city,issued]=await Promise.allSettled([
@@ -935,14 +873,13 @@ async function loadData(force=false){
    if(!rates)loadFailure=new Error('Verified market rates unavailable');
   }else{
    rates=clean;history=quality.history(historical.status==='fulfilled'?historical.value:null,clean.india);
-   loadFailure=null;refreshFailed=false;dataSource=origin;lastGoodCheck=Number.isFinite(Date.parse(clean.checked_at))?Date.parse(clean.checked_at):Date.now();
+   loadFailure=null;refreshFailed=false;dataSource=origin;
    forecast=model.status==='fulfilled'&&model.value?.schema_version===1?model.value:null;
    if(forecast?.status==='experimental'&&!quality.forecastIsConsistent(forecast,rates,indiaTodayISO()))forecast=null;
    forecastLoadFailure=!forecast;
    funds=quality.funds(nav.status==='fulfilled'?nav.value:null);navLoadFailure=!Object.keys(funds.funds).length;
    issuedForecasts=quality.forecastHistory(issued.status==='fulfilled'?issued.value:null,history);
    cityRates=quality.cities(city.status==='fulfilled'?city.value:null);
-   window.NextRateFeatures?.checkAlerts(featuresContext());
   }
  }catch{
   refreshFailed=true;if(!rates)loadFailure=new Error('Verified market rates unavailable');

@@ -42,19 +42,16 @@ test('Each logo is a real accessible official-source link with fallback for bloc
  assert.match(sources.badge('goodreturns',{href:'https://www.goodreturns.in/silver-rates/',compact:true}),/silver-rates/);
  assert.doesNotMatch(sources.badge('goodreturns',{href:'https://malicious.example/'}),/malicious\.example/);
 });
-test('Source links are at Home, Markets, Compare, Hallmark, Buy, ETF, and Shop comparison',()=>{
- assert.match(home,/sourceBadge\('ibja',\{label:'IBJA source'/);
- assert.match(home,/sourceBadge\('ibja',\{label:'IBJA national rates'/);
+test('Home is free of repeated source badges while sources remain available on relevant pages',()=>{
+ const today=home.slice(home.indexOf('function homeTodayPanel(){'),home.indexOf('function homeForecastResultPanel(){'));
+ assert.doesNotMatch(today,/sourceBadge|Actual national rate/);
  assert.match(home,/sourceBadge\('goodreturns',\{label:'City-rate source'/);
- assert.match(home,/sourceBadge\('amfi',\{label:'AMFI NAV source'/);
- assert.match(tools,/official\('biscare',\{label:'BIS Care App'/);
- assert.match(tools,/official\('nse',\{label:'NSE ETF market information'/);
- assert.match(tools,/official\('goodreturns',\{label:'City source'/);
- assert.match(tools,/official\('amfi',\{label:'AMFI NAV source'/);
+ assert.match(tools,/play\.google\.com/);assert.match(tools,/www\.amfiindia\.com/);assert.match(tools,/www\.nseindia\.com/);
+ assert.doesNotMatch(tools,/official\(/);
 });
 test('The website deployment includes source logos module and cache version is bumped',()=>{
  assert.match(html,/source-logos\.js\?v=20261025-official-sources1/);
- assert.match(html,/features\.css\?v=20261025-official-sources1/);
+ assert.match(html,/features\.css\?v=20261027-compact1/);
  for(const wf of workflows){
   assert.ok(wf.includes('source-logos.js'));
   assert.ok(wf.includes('node --test tests/*.test.cjs'));
