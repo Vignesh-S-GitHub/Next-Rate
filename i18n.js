@@ -255,27 +255,29 @@
     "Open official Goodreturns source":"அதிகாரப்பூர்வ Goodreturns மூலத்தைத் திறக்கவும்",
     "Open official IBJA source":"அதிகாரப்பூர்வ IBJA மூலத்தைத் திறக்கவும்",
     "Image hosted by India Bullion and Jewellers Association":"படம்: இந்திய தங்கம் மற்றும் நகைக்கடை சங்கம்",
+    "Image hosted by Goodreturns":"படம்: Goodreturns",
     "Switch language to English":"ஆங்கில மொழிக்கு மாற்று",
     "Switch language to Tamil":"தமிழ் மொழிக்கு மாற்று",
     "24K gold":"24K தங்கம்","22K gold":"22K தங்கம்",
     "Gold tools":"தங்கக் கருவிகள்","Important:":"முக்கியம்:",
+    "benchmark":"அடிப்படை விலை",
+    "NextRate · Dated IBJA bullion references":"NextRate · தேதியிட்ட IBJA உலோகக் குறிப்பு விலைகள்",
+    "Experimental forecasts are not investment advice. GST and retail premiums excluded.":"சோதனைக் கணிப்புகள் முதலீட்டு ஆலோசனை அல்ல. GST மற்றும் கடைக் கூடுதல் கட்டணங்கள் சேர்க்கப்படவில்லை.",
     "1 g · 8 g (Pavan) · 10 g":"1 கிராம் · 8 கிராம் (பவுன்) · 10 கிராம்",
     "The IBJA holiday calendar for the next publication year is not verified.":"அடுத்த ஆண்டிற்கான IBJA விடுமுறை நாட்கள் உறுதிப்படுத்தப்படவில்லை.",
     "Targets are checked when this page opens or regains focus. This tool does not send browser or phone notifications. No alert is triggered from rates older than 7 days.":"இந்தப் பக்கம் திறக்கப்படும்போதோ மீண்டும் கவனத்தில் வரும்போதோ இலக்குகள் சரிபார்க்கப்படும். உலாவி அல்லது கைபேசி அறிவிப்புகள் அனுப்பப்படாது. ஏழு நாட்களுக்கு மேல் பழைய விலைகளுக்கு எச்சரிக்கை வராது."
   });
   const keys=Object.keys(TA).sort((a,b)=>b.length-a.length);
-  const patterns=new RegExp(keys.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');
+  const patterns=new RegExp(keys.map(k=>
+    (/^[A-Za-z0-9]/.test(k)?'(?<![A-Za-z0-9])':'')+
+    k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+
+    (/[A-Za-z0-9]$/.test(k)?'(?![A-Za-z0-9])':'')).join('|'),'g');
   const textOriginals=new WeakMap();
   const attrOriginals=new WeakMap();
   function translate(text,language){
     if(language!=="ta") return text;
-    return String(text).replace(patterns,(match,offset,whole)=>{
-      // Never rewrite a dictionary word inside a longer Latin name or word.
-      if (/^[A-Za-z0-9]/.test(match) && offset>0 && /[A-Za-z0-9]/.test(whole[offset-1])) return match;
-      const end=offset+match.length;
-      if (/[A-Za-z0-9]$/.test(match) && end<whole.length && /[A-Za-z0-9]/.test(whole[end])) return match;
-      return TA[match];
-    });
+    const normalized=String(text).replace(/(\d+(?:\.\d+)?)\s+grams of\b/g,'$1 கிராம்');
+    return normalized.replace(patterns,match=>TA[match]);
   }
   function apply(rootElement,language){
     if(!rootElement||!rootElement.ownerDocument)return;

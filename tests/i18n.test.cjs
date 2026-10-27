@@ -6,6 +6,10 @@ test('Tamil preserves proper names and translates the audited source and city la
  assert.equal(translate('Major city prices · 1 g','ta'),'முக்கிய நகர விலைகள் · 1 கிராம்');
  assert.equal(translate('Switch language to Tamil','ta'),'தமிழ் மொழிக்கு மாற்று');
  assert.ok(translate('Image hosted by India Bullion and Jewellers Association','ta').includes('சங்கம்'));
+ for(const n of [1,8]){
+  const label=translate('Calculate '+n+' grams of 22K Gold','ta');
+  assert.doesNotMatch(label,/grams|\bof\b/);
+ }
 });
 test('Tamil navigation translates all four tabs and locale switches back to English',()=>{
  for(const label of ['Home','Markets','Compare','Insights']){
