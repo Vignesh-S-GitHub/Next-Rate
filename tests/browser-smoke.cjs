@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),endpoint='https://nextrate-scheduler.vig
 const files=['latest.json','history.json','forecast.json','funds.json','cities.json','forecast_history.json'];
 const documents=Object.fromEntries(files.map(f=>[f,JSON.parse(fs.readFileSync(path.join(root,'data',f)))]));
 const clone=x=>JSON.parse(JSON.stringify(x));
-const money=x=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:2}).format(Math.round((x+Number.EPSILON)*100)/100);
+const money=x=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',minimumFractionDigits:0,maximumFractionDigits:2}).format(Math.round((x+Number.EPSILON)*100)/100);
 let browser,server,page,checks=0;
 async function text(selector,pattern){await page.locator(selector).filter({hasText:pattern}).first().waitFor();checks++;}
 async function value(selector,expected){await page.waitForFunction(({selector,expected})=>document.querySelector(selector)?.value===expected,{selector,expected});checks++;}
@@ -41,7 +41,7 @@ async function audit(viewport){
  await tool('alerts');await page.locator('input[name="target"]').fill('999999');await submit('alert');await text('.tool-list',/Reached/);assert.equal(await page.locator('[data-delete-kind="alerts"]').count(),1);checks++;
  await tool('jewellery');await page.locator('input[name="grams"]').fill('10');await submit('jewellery');await text('#jewellery-result',new RegExp(money(indian.gold22_inr_10g*1.1*1.03).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
  await page.locator('input[name="grams"]').fill('12');await choose('metal','gold24');await click('[data-refresh]');await value('input[name="grams"]','12');await value('input[name="metal"]','gold24');await submit('jewellery');await text('#jewellery-result',/Estimated total/);
- await tool('shops');await page.locator('input[name="name"]').fill('Test jeweller');await submit('shops');await text('.tool-list',/Test jeweller/);assert.doesNotMatch(await page.locator('.tool-list').innerText(),/Lowest/);checks++;
+ await tool('shops');await choose('metal','gold24');await value('input[name="ratePerGram"]',String(documents['cities.json'].cities.Delhi.gold24_inr_g));await page.locator('input[name="ratePerGram"]').fill('15000');await choose('metal','gold22');await value('input[name="ratePerGram"]','15000');await page.locator('input[name="name"]').fill('Test jeweller');await submit('shops');await text('.tool-list',/Test jeweller/);assert.doesNotMatch(await page.locator('.tool-list').innerText(),/Lowest/);checks++;
  await tool('portfolio');await page.locator('input[name="name"]').fill('Test gold');await page.locator('input[name="qty"]').fill('0.001');await submit('holdings');await text('.tool-list',/Test gold/);await text('.tool-list-tail',/₹14\.17/);
  await tool('resale');await choose('purity','22');await submit('resale');await text('#resale-result',new RegExp(money(indian.gold22_inr_10g*.8*.98).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
  await tool('hallmark');await page.locator('input[name="code"]').fill('ABC123');await submit('huid');await text('#huid-result',/Not yet verified/);

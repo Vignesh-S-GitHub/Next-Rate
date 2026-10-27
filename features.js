@@ -99,11 +99,14 @@ function alertPanel(){
     'This tool does not send browser or phone notifications. '+
     'No alert is triggered from rates older than 7 days.');
 }
+function goldReferences(){
+ const a=validBenchmark('gold24'),b=validBenchmark('gold22');
+ return '<p class="tool-reference">IBJA · '+h(a?.date||b?.date||'not available')+
+  ' · 24K / 10g: '+(a?m(a.rate):'Unavailable')+' · 22K / 10g: '+(b?m(b.rate):'Unavailable')+'</p>';
+}
 function billPanel(){
- const r=validBenchmark('gold22');
- const reference=r?m(r.rate):'Unavailable';
  return '<div class="tool-feature-heading"><h2>Jewellery Bill</h2><p>Metal + wastage + making + GST.</p></div>'+
-  '<p class="tool-reference">22K gold / 10g · '+reference+' · IBJA '+h(r?.date||'not available')+'</p>'+
+  goldReferences()+
   '<form data-feature-form="jewellery"><div class="tool-form-grid">'+
   opt('metal',[['gold22','22K Gold'],['gold24','24K Gold']],'Gold purity')+
   field('grams','Net gold weight (g)','8','number','min="0.01" max="10000" step="any" inputmode="decimal"')+
@@ -222,9 +225,8 @@ function portfolioPanel(){
       'Metal values exclude buy/sell fees, GST and jewellery making. ETF figures are dated NAV, not execution prices.');
 }
 function resalePanel(){
- const r=validBenchmark('gold22');
  return '<div class="tool-feature-heading"><h2>Sell / Exchange Gold</h2><p>Estimate resale proceeds.</p></div>'+
-  '<p class="tool-reference">IBJA 22K / 10g: '+(r?m(r.rate):'Unavailable')+'</p>'+
+  goldReferences()+
   '<form data-feature-form="resale"><div class="tool-form-grid">'+
     opt('purity',[['24','24K'],['22','22K'],['18','18K (derived)']],'Purity')+
     field('grams','Net gold (g)','8','number','min="0.01" max="10000" step="any" inputmode="decimal"')+
@@ -362,7 +364,7 @@ function onSubmit(event){
     makingPct:v.making,makingFlat:v.flat});
    const container=form.parentElement.querySelector('#jewellery-result');
    if(container)container.innerHTML='<span>Estimated total</span><strong>'+m(estimate.total)+'</strong>'+
-   '<small>Metal '+m(estimate.metal)+' · Wastage '+m(estimate.wastage)+
+   '<small>'+h(v.metal==='gold24'?'24K':'22K')+' · IBJA '+h(b.date)+' · Metal '+m(estimate.metal)+' · Wastage '+m(estimate.wastage)+
    ' · Making '+m(estimate.making)+' · GST '+m(estimate.tax)+'</small>';
   }else if(kind==='shops'){
    if(memory.shops.length>=80)throw new Error('Maximum 80 saved quotes.');
@@ -392,7 +394,7 @@ function onSubmit(event){
      purity:v.purity,deductionPct:v.deduction,fixedFee:v.fixedFee});
    const container=form.parentElement.querySelector('#resale-result');
    if(container)container.innerHTML='<span>Estimated cash / exchange value</span>'+
-    '<strong>'+m(result.proceeds)+'</strong><small>Metal '+m(result.metal)+
+    '<strong>'+m(result.proceeds)+'</strong><small>'+h(v.purity)+'K · IBJA '+h(ctx.rates.india.date)+' · Metal '+m(result.metal)+
     ' − deduction '+m(result.deduction)+' − other '+m(result.fixedFee)+'</small>';
   }else if(kind==='huid'){
    if(!/^[a-zA-Z0-9]{6}$/.test(v.code))throw new Error('HUID must contain 6 letters/numbers.');
@@ -482,7 +484,13 @@ function onClick(event){
  if(pickerOption){
   const picker=pickerOption.closest('[data-tool-picker]');
   if(!picker)return;
-  picker.querySelector('input[type="hidden"]').value=pickerOption.dataset.value;
+  const input=picker.querySelector('input[type="hidden"]'),previous=input.value;
+  input.value=pickerOption.dataset.value;
+  const form=picker.closest('form');
+  if(form?.dataset.featureForm==='shops'&&input.name==='metal'){
+   const rate=form.querySelector('[name="ratePerGram"]');
+   if(rate&&rate.value===String(cityRef(previous)?.rate||''))rate.value=cityRef(input.value)?.rate||'';
+  }
   const current=picker.querySelector('.tool-picker-trigger>span:first-child');
   if(current){current.textContent=pickerOption.dataset.label;root.NextRateI18n?.apply(current,context().language);}
   picker.querySelectorAll('[data-tool-picker-option]').forEach(option=>{
