@@ -16,7 +16,7 @@ async function tool(name){await click('[data-tool-select="'+name+'"]');await pag
 async function choose(name,val){await click('[data-tool-picker]:has(input[name="'+name+'"]) [data-tool-picker-toggle]');await click('[data-tool-picker]:has(input[name="'+name+'"]) [data-value="'+val+'"]');}
 async function refresh(){await page.clock.fastForward(60001);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));}
 async function submit(kind){await page.locator('[data-feature-form="'+kind+'"] button[type="submit"]').click();}
-async function layout(){assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'No horizontal page overflow');assert.doesNotMatch(await page.locator('#app').innerText(),/NaN|undefined|Invalid Date|Infinity/);checks+=2;}
+async function layout(){const bounds=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width&&r.right>innerWidth+2;}).slice(0,8).map(el=>({tag:el.tagName,cls:el.className,right:Math.round(el.getBoundingClientRect().right)}))}));assert.ok(bounds.scroll<=bounds.width+2,'No horizontal page overflow: '+JSON.stringify(bounds));assert.doesNotMatch(await page.locator('#app').innerText(),/NaN|undefined|Invalid Date|Infinity/);checks+=2;}
 async function open(context,mode='ok',docs=documents,stored=null){
  page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page._errors=errors;
  await page.clock.install({time:new Date('2026-10-27T10:00:00Z')});
@@ -25,6 +25,7 @@ async function open(context,mode='ok',docs=documents,stored=null){
  await page.goto(server.url);await page.locator('.home-actual strong').first().waitFor();return page;
 }
 async function audit(viewport){
+ console.log('Audit viewport:',viewport.width);
  const context=await browser.newContext({viewport});await open(context);
  const indian=documents['latest.json'].india;
  await text('.home-actual',new RegExp(indian.gold24_inr_10g.toLocaleString('en-IN')));await layout();
