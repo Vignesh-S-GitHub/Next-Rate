@@ -3,6 +3,8 @@ name: Deploy NextRate to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: nextrate-pages
+  group: nextrate-pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -19,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
-      name: github-pages
+      name: ${{ github.event_name == 'pull_request' && 'preview-checks' || 'github-pages' }}
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
@@ -47,6 +49,22 @@ jobs:
           python scripts/archive_data.py --verify
           python scripts/validate_publication.py
 
+      - name: Install browser regression dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Exercise every tab and tool on desktop and phone
+        run: npm run test:browser
+
+      - name: Save failed browser check screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failure
+          path: test-results/
+          if-no-files-found: ignore
+
       - name: Stage committed website without recollecting rates
         run: |
           set -eu
@@ -58,11 +76,15 @@ jobs:
           python scripts/validate_publication.py --root _site --site
 
       - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           path: _site
       - name: Deploy GitHub Pages
+        if: github.event_name != 'pull_request'
         id: deploy
         uses: actions/deploy-pages@v4
       - name: Verify published website
+        if: github.event_name != 'pull_request'
         run: python scripts/smoke_site.py

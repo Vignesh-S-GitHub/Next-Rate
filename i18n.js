@@ -267,6 +267,18 @@
     "The IBJA holiday calendar for the next publication year is not verified.":"அடுத்த ஆண்டிற்கான IBJA விடுமுறை நாட்கள் உறுதிப்படுத்தப்படவில்லை.",
     "Targets are checked when this page opens or regains focus. This tool does not send browser or phone notifications. No alert is triggered from rates older than 7 days.":"இந்தப் பக்கம் திறக்கப்படும்போதோ மீண்டும் கவனத்தில் வரும்போதோ இலக்குகள் சரிபார்க்கப்படும். உலாவி அல்லது கைபேசி அறிவிப்புகள் அனுப்பப்படாது. ஏழு நாட்களுக்கு மேல் பழைய விலைகளுக்கு எச்சரிக்கை வராது."
   });
+  Object.assign(TA,{
+    "Refresh data":"விலைகளைப் புதுப்பிக்கவும்","Checking…":"சரிபார்க்கிறது…","Data checked":"தரவு சரிபார்த்த நேரம்",
+    "Not checked":"இன்னும் சரிபார்க்கப்படவில்லை",
+    "Live data connection unavailable. Showing the dated backup.":"நேரடி தரவு இணைப்பு கிடைக்கவில்லை. தேதியிட்ட காப்புத் தரவு காட்டப்படுகிறது.",
+    "Refresh failed. Keeping the last verified prices.":"புதுப்பிக்க முடியவில்லை. கடைசியாக உறுதிப்படுத்திய விலைகள் காட்டப்படுகின்றன.",
+    "Older published rates. Check the source dates before using these values.":"பழைய வெளியீட்டு விலைகள். பயன்படுத்தும் முன் மூலத் தேதிகளைப் பார்க்கவும்.",
+    "Compare the same purity and net weight. Totals are sorted by amount, not value for money.":"ஒரே தூய்மை மற்றும் நிகர எடையை ஒப்பிடுங்கள். மொத்தத் தொகை வரிசை; சிறந்த வாங்கும் மதிப்பின் வரிசை அல்ல.",
+    "Different dates — premium unavailable":"தேதிகள் வேறுபடுவதால் கூடுதல் விலை விகிதம் கிடைக்கவில்லை",
+    "Issued after target day began":"இலக்கு நாள் தொடங்கிய பிறகு வெளியிடப்பட்டது","Not scored":"மதிப்பிடப்படவில்லை",
+    "Same as latest rate":"கடைசியாக வெளியிட்ட விலையே","Now":"தற்போதைய குறிப்பு",
+    "AM":"காலை","PM":"மாலை","IST":"இந்திய நேரம்"
+  });
   const keys=Object.keys(TA).sort((a,b)=>b.length-a.length);
   const patterns=new RegExp(keys.map(k=>
     (/^[A-Za-z0-9]/.test(k)?'(?<![A-Za-z0-9])':'')+
@@ -288,10 +300,11 @@
     for(const node of nodes){
       const parent=node.parentElement;
       if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|SVG|OPTION)$/.test(parent.tagName))continue;
-      if(!textOriginals.has(node))textOriginals.set(node,node.nodeValue);
-      const original=textOriginals.get(node);
-      const next=translate(original,language);
+      let saved=textOriginals.get(node);
+      if(!saved||node.nodeValue!==saved.applied)saved={original:node.nodeValue,applied:node.nodeValue};
+      const next=translate(saved.original,language);
       if(node.nodeValue!==next)node.nodeValue=next;
+      saved.applied=next;textOriginals.set(node,saved);
     }
     const elements=[rootElement,...rootElement.querySelectorAll("[aria-label],[title],[placeholder]")];
     for(const elem of elements){
@@ -299,9 +312,11 @@
         if(!elem.hasAttribute(attr))continue;
         let saved=attrOriginals.get(elem);
         if(!saved){saved={};attrOriginals.set(elem,saved);}
-        if(!(attr in saved))saved[attr]=elem.getAttribute(attr);
-        const value=translate(saved[attr],language);
-        if(elem.getAttribute(attr)!==value)elem.setAttribute(attr,value);
+        const current=elem.getAttribute(attr);
+        if(!saved[attr]||current!==saved[attr].applied)saved[attr]={original:current,applied:current};
+        const value=translate(saved[attr].original,language);
+        if(current!==value)elem.setAttribute(attr,value);
+        saved[attr].applied=value;
       }
     }
     doc.documentElement.lang=language==="ta"?"ta-IN":"en-IN";

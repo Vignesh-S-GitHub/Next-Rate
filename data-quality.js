@@ -16,6 +16,7 @@ function todayIST(now=new Date()){
  const v=n=>parts.find(x=>x.type===n)?.value;
  return v('year')+'-'+v('month')+'-'+v('day');
 }
+function age(day,today=todayIST()){return iso(day)?(Date.parse(today)-Date.parse(day))/86400000:Infinity;}
 function validPrice(row,key){
  return typeof row?.[key]==='number'&&Number.isFinite(row[key])&&
   row[key]>bounds[key][0]&&row[key]<bounds[key][1];
@@ -41,29 +42,111 @@ function market(snapshot,today=todayIST()){
   const epoch=Date.parse(quote?.as_of||'');
   if(typeof quote?.usd_per_troy_ounce==='number'&&
      Number.isFinite(quote.usd_per_troy_ounce)&&quote.usd_per_troy_ounce>0&&
-     Number.isFinite(epoch)&&epoch<=Date.now()+600000)
+     Number.isFinite(epoch)&&/(?:Z|[+-]\d\d:\d\d)$/i.test(quote.as_of)&&
+     epoch<=Date.now()+600000&&age(todayIST(new Date(epoch)),today)<=7)
    result.spot[name]=quote;
  }
  const fx=snapshot.fx;
  if(typeof fx?.inr_per_usd==='number'&&Number.isFinite(fx.inr_per_usd)&&
-    fx.inr_per_usd>20&&fx.inr_per_usd<250&&iso(fx.date)&&fx.date<=today)
+    fx.inr_per_usd>20&&fx.inr_per_usd<250&&iso(fx.date)&&fx.date<=today&&age(fx.date,today)<=10)
   result.fx=fx;
  return result;
 }
 function history(doc,india,today=todayIST()){
  const rows=doc?.schema_version===1&&Array.isArray(doc.india)?doc.india:[];
- const valid=rows.filter(row=>validHistoryRow(row,today));
- if(india&&!valid.some(row=>row.date===india.date&&row.session===india.session)){
-  valid.push(india);
+ const byKey=new Map(),conflicts=new Set();
+ for(const row of rows){
+  if(!validHistoryRow(row,today)||india&&(row.date>india.date||
+    row.date===india.date&&india.session==='AM'&&row.session==='PM'))continue;
+  const clean={...row};for(const k of keys)if(!validPrice(clean,k))delete clean[k];
+  const key=clean.date+':'+clean.session,prior=byKey.get(key);
+  if(prior&&keys.some(k=>prior[k]!=null&&clean[k]!=null&&prior[k]!==clean[k]))conflicts.add(key);
+  byKey.set(key,{...prior,...clean});
  }
- return {...(doc?.schema_version===1?doc:{}),schema_version:1,
-  india:valid.sort((a,b)=>a.date.localeCompare(b.date))};
+ for(const k of conflicts)byKey.delete(k);
+ if(india)byKey.set(india.date+':'+india.session,{...india});
+ return {schema_version:1,india:[...byKey.values()].sort((a,b)=>
+  a.date.localeCompare(b.date)||a.session.localeCompare(b.session))};
+}
+const schemes={goldbees:140088,hdfcgold:113049,sbigold:111954,goldfund:120685,
+ silveretf:149758,hdfcsilver:150556,silverfund:152735};
+function funds(doc,today=todayIST()){
+ const result={schema_version:1,status:doc?.status||'unavailable',funds:{}};
+ if(doc?.schema_version!==1||!doc.funds||typeof doc.funds!=='object')return result;
+ for(const [key,code] of Object.entries(schemes)){
+  const row=doc.funds[key];
+  if(row?.scheme_code!==code||typeof row.name!=='string'||!row.name||
+    !['Gold ETF','Silver ETF','Gold Fund','Silver Fund'].includes(row.kind)||
+    !iso(row.nav_date)||row.nav_date>today||age(row.nav_date,today)>10||
+    typeof row.nav_inr_per_unit!=='number'||!Number.isFinite(row.nav_inr_per_unit)||
+    row.nav_inr_per_unit<=.01||row.nav_inr_per_unit>=1000000)continue;
+  result.funds[key]={...row,source_url:'https://www.amfiindia.com/net-asset-value/nav-download'};
+ }
+ return result;
+}
+function cities(doc,today=todayIST()){
+ const result={schema_version:1,dates:{},cities:{}};
+ if(doc?.schema_version!==1)return result;
+ for(const group of ['gold','silver']){
+  const day=doc.dates?.[group];
+  if(!iso(day)||day>today||age(day,today)>7)continue;
+  result.dates[group]=day;
+  for(const name of ['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad']){
+   const row=doc.cities?.[name];if(!row)continue;
+   let clean;
+   if(group==='gold'&&typeof row.gold24_inr_g==='number'&&typeof row.gold22_inr_g==='number'&&
+     row.gold24_inr_g>2500&&row.gold24_inr_g<200000&&
+     row.gold22_inr_g/row.gold24_inr_g>.875&&row.gold22_inr_g/row.gold24_inr_g<.965)
+    clean={gold24_inr_g:row.gold24_inr_g,gold22_inr_g:row.gold22_inr_g};
+   if(group==='silver'&&typeof row.silver999_inr_kg==='number'&&
+     row.silver999_inr_kg>10000&&row.silver999_inr_kg<3000000)
+    clean={silver999_inr_kg:row.silver999_inr_kg};
+   if(clean)result.cities[name]={...result.cities[name],...clean};
+  }
+ }
+ return result;
+}
+function forecastHistory(doc,historical,today=todayIST()){
+ const rows=doc?.schema_version===1&&Array.isArray(doc.forecasts)?doc.forecasts:[];
+ const fields={gold24:keys[0],gold22:keys[1],silver:keys[2]};
+ const forecasts=[];
+ for(const row of rows){
+  const issued=Date.parse(row?.issued_at);
+  if(!iso(row?.target_date)||!iso(row.based_on_date)||row.based_on_date>=row.target_date||
+   !['AM','PM'].includes(row.based_on_session)||!Number.isFinite(issued)||issued>Date.now()+600000||
+   !/(?:Z|[+-]\d\d:\d\d)$/i.test(row.issued_at)||!row.metals)continue;
+  const metals={};
+  for(const [metal,key]of Object.entries(fields)){
+   const v=row.metals[metal];
+   if(v&&['estimate','baseline','low','high'].every(k=>validPrice({[key]:v[k]},key))&&
+     v.low<=v.estimate&&v.estimate<=v.high)metals[metal]=v;
+  }
+  if(Object.keys(metals).length!==3)continue;
+  const clean={...row,metals};delete clean.evaluation;
+  const actual=(historical?.india||[]).find(r=>r.date===row.target_date&&r.session==='PM');
+  if(row.target_date<=today&&row.evaluation?.actual_date===row.target_date&&actual&&
+    issued<Date.parse(row.target_date+'T00:00:00+05:30')){
+   const scored={};
+   for(const [metal,key]of Object.entries(fields)){
+    const v=metals[metal],value=actual[key];if(!validPrice(actual,key))continue;
+    // Recompute displayed scores from the verified PM close, never trust supplied percentages.
+    scored[metal]={actual:value,absolute_error_pct:Math.abs(v.estimate-value)/value*100,
+     range_covered:value>=v.low&&value<=v.high,
+     direction_correct:v.estimate===v.baseline?null:Math.sign(v.estimate-v.baseline)===Math.sign(value-v.baseline)};
+   }
+   if(Object.keys(scored).length)clean.evaluation={actual_date:row.target_date,metals:scored};
+  }
+  forecasts.push(clean);
+ }
+ return {schema_version:1,forecasts:forecasts.sort((a,b)=>a.target_date.localeCompare(b.target_date)||
+  Date.parse(a.issued_at)-Date.parse(b.issued_at))};
 }
 function forecastIsConsistent(doc,snapshot,today=todayIST()){
  if(!doc||doc.schema_version!==1||doc.status!=='experimental'||
    !snapshot?.india||!iso(doc.target_date)||doc.target_date<today||
    !iso(doc.based_on_date)||doc.based_on_date!==snapshot.india.date||
-   doc.based_on_session!==snapshot.india.session)return false;
+   doc.based_on_session!==snapshot.india.session||doc.target_date<=doc.based_on_date||
+   age(snapshot.india.date,today)>7)return false;
  const days=(Date.parse(doc.target_date+'T00:00:00Z')-
   Date.parse(today+'T00:00:00Z'))/86400000;
  if(days>14)return false;
@@ -76,7 +159,7 @@ function forecastIsConsistent(doc,snapshot,today=todayIST()){
    Math.abs(v.estimate/v.baseline-1)<.2;
  });
 }
-const api=Object.freeze({iso,todayIST,validIndia,market,history,forecastIsConsistent});
+const api=Object.freeze({iso,todayIST,validIndia,market,history,funds,cities,forecastHistory,forecastIsConsistent});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.NextRateDataQuality=api;
 })(typeof window==='undefined'?globalThis:window);
