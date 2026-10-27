@@ -3,7 +3,7 @@ import {publishForecast,isClosed} from './forecast.mjs';
 import {officialPDFURL,parseIBJAPDF} from './ibja-pdf.mjs';
 export const KINDS=['ibja','fx','spot-xau','spot-xag','forecasts'];
 export async function getBinary(url,fetcher=fetch,limit=1500000){
- const res=await fetcher(url,{headers:{'User-Agent':'NextRate/2.0 (+https://github.com/Vignesh-S-GitHub/Next-Rate; market reference)','Accept':'application/json,text/html,text/plain;q=0.9','Cache-Control':'no-cache'},signal:AbortSignal.timeout(25000),redirect:'follow'});
+ const res=await fetcher(url,{headers:{'User-Agent':'NextRate/2.0 (+https://github.com/Vignesh-S-GitHub/Next-Rate; market reference)','Accept':'application/json,application/pdf,text/html,text/plain;q=0.9,*/*;q=0.8','Cache-Control':'no-cache'},signal:AbortSignal.timeout(25000),redirect:'follow'});
  if(!res.ok)throw Error('Source HTTP '+res.status);
  if(Number(res.headers.get('content-length'))>limit){await res.body?.cancel();throw Error('Source response too large');}
  const reader=res.body.getReader(),chunks=[];let size=0;

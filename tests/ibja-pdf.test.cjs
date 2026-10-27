@@ -43,3 +43,11 @@ test('Collector prefers the dated official PDF when HTML history trails today',a
  const result=await collect(docs,stored,now,async url=>url==='https://www.ibjarates.com/'?new Response(html):url.endsWith('/current.pdf')?new Response(pdfBytes()):new Response('unavailable',{status:503}));
  assert.equal(result.docs['latest.json'].india.date,'2026-10-27');assert.equal(result.session_complete,true);assert.equal(result.docs['forecast.json'].based_on_session,'AM');assert.equal(result.docs['history.json'].india.at(-1).gold24_inr_10g,141082);
 });
+
+test('PDF download advertises PDF and generic binary formats to the publisher',async()=>{
+ const {getBinary}=await import('../cloudflare/nextrate-scheduler/pipeline.mjs');
+ await getBinary(fixture.source_url,async(url,options)=>{
+  assert.match(options.headers.Accept,/application\/pdf/);assert.ok(options.headers.Accept.includes('*/*'));
+  return new Response('test bytes');
+ });
+});
