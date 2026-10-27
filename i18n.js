@@ -268,6 +268,7 @@
     "Targets are checked when this page opens or regains focus. This tool does not send browser or phone notifications. No alert is triggered from rates older than 7 days.":"இந்தப் பக்கம் திறக்கப்படும்போதோ மீண்டும் கவனத்தில் வரும்போதோ இலக்குகள் சரிபார்க்கப்படும். உலாவி அல்லது கைபேசி அறிவிப்புகள் அனுப்பப்படாது. ஏழு நாட்களுக்கு மேல் பழைய விலைகளுக்கு எச்சரிக்கை வராது."
   });
   Object.assign(TA,{
+    "Browser storage unavailable. Changes last only for this visit. Download a backup before closing.":"உலாவியில் சேமிக்க முடியவில்லை. மாற்றங்கள் இந்த வருகையில் மட்டுமே இருக்கும். மூடும் முன் காப்புப் பிரதியைப் பதிவிறக்கவும்.",
     "Refresh data":"விலைகளைப் புதுப்பிக்கவும்","Checking…":"சரிபார்க்கிறது…","Data checked":"தரவு சரிபார்த்த நேரம்",
     "Not checked":"இன்னும் சரிபார்க்கப்படவில்லை",
     "Live data connection unavailable. Showing the dated backup.":"நேரடி தரவு இணைப்பு கிடைக்கவில்லை. தேதியிட்ட காப்புத் தரவு காட்டப்படுகிறது.",

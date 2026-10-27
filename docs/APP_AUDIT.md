@@ -25,6 +25,7 @@
 - Shop totals are sorted by amount with an explicit instruction to compare identical purity and weight. They are not advertised as the cheapest comparable offer.
 - A manual exchange price with a different date from NAV has no displayed premium percentage.
 - Restored JSON backups and older browser storage are validated before rendering or aggregating totals. Invalid imports leave current saved entries intact.
+- Blocked/full browser storage reports that changes will only last for the current visit, with a prompt to download a backup.
 - Dynamic tool outputs and accessibility labels update correctly between English and Tamil.
 
 ## Repeatable verification

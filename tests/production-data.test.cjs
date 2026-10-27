@@ -84,3 +84,13 @@ test('malformed forecast performance evidence is never displayed as a numeric sc
  assert.equal(Q.forecastIsConsistent(bad({backtest:{status:'walk_forward',holdout_mape_pct:.5}}),{india},today),false);
  assert.equal(Q.forecastIsConsistent(bad({range_profile:{holdout_samples:10,holdout_covered:8,holdout_coverage_pct:100}}),{india},today),false);
 });
+
+
+test('blocked browser storage preserves in-memory tools and reports that data will not persist',()=>{
+ const vm=require('node:vm'),fs=require('node:fs');
+ const win={NextRateCore:C,NextRateSources:{badge:()=>''},localStorage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}};
+ vm.runInNewContext(fs.readFileSync(require.resolve('../features.js'),'utf8'),{window:win});
+ win.NextRateFeatures.select('portfolio');
+ assert.match(win.NextRateFeatures.page({rates:{india}}),/Changes last only for this visit/);
+ assert.equal(win.NextRateFeatures.getState().holdings.length,0);
+});

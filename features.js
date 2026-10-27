@@ -23,16 +23,16 @@ const SECTIONS=[
  ['signals','globe','Global Signals','World markets'],
 ];
 let memory={alerts:[],shops:[],holdings:[],etfQuotes:{},preferred:'alerts'};
-let message='',ctxCache=null;
+let message='',ctxCache=null,storageUnavailable=false;
 function read(){
  try{
   const data=JSON.parse(root.localStorage.getItem(KEY)||'null');
   if(data)memory=C.storedState(data);
- }catch{/* private browsing: retain in memory */}
+ }catch{storageUnavailable=true;/* retain this visit's entries in memory */}
 }
 function save(){
- try{root.localStorage.setItem(KEY,JSON.stringify({version:1,...memory}));return true;}
- catch{return false;}
+ try{root.localStorage.setItem(KEY,JSON.stringify({version:1,...memory}));storageUnavailable=false;return true;}
+ catch{storageUnavailable=true;return false;}
 }
 read();
 const m=x=>C.money(x),h=x=>C.esc(x);
@@ -69,7 +69,8 @@ function quantityPrice(kind,qty){
  const rate=validBenchmark(kind);
  return rate?C.bullionValue(context().rates,kind,qty):null;
 }
-function showBanner(){return message?'<p class="tool-banner" role="status">'+h(message)+'</p>':'';}
+function showBanner(){return (message?'<p class="tool-banner" role="status">'+h(message)+'</p>':'')+
+ (storageUnavailable?'<p class="tool-banner" role="status">Browser storage unavailable. Changes last only for this visit. Download a backup before closing.</p>':'');}
 function infoAlert(){
  const matched=memory.alerts.filter(a=>a.triggeredAt).length;
  return '<div class="tool-stats"><div><strong>'+memory.alerts.length+'</strong><span>Saved alerts</span></div>'+
