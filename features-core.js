@@ -142,16 +142,19 @@ function prospective(e){
  const issued=Date.parse(e.issued_at),cutoff=Date.parse(e.target_date+'T00:00:00+05:30');
  return Number.isFinite(issued)&&issued<cutoff;
 }
-function publishedChange(snapshot,history,metal){
+function publishedChange(snapshot,history,metal,days=0){
  const field={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'}[metal];
  const current=snapshot?.india,value=current?.[field];
- if(!field||!isoDay(current?.date)||!Number.isFinite(value)||value<=0)return null;
+ if(!field||!isoDay(current?.date)||!Number.isFinite(value)||value<=0||![0,7,30,90].includes(days))return null;
+ // Calendar periods end at the displayed publication, never at an unseen or
+ // estimated price. Holidays use the latest actual publication on/before cutoff.
+ const cutoff=days?new Date(Date.parse(current.date+'T00:00:00Z')-days*86400000).toISOString().slice(0,10):current.date;
  const prior=(Array.isArray(history?.india)?history.india:[])
-  .filter(r=>isoDay(r?.date)&&r.date<current.date&&Number.isFinite(r[field])&&r[field]>0)
+  .filter(r=>isoDay(r?.date)&&r.date<current.date&&r.date<=cutoff&&['AM','PM'].includes(r.session)&&Number.isFinite(r[field])&&r[field]>0)
   .sort((a,b)=>a.date.localeCompare(b.date)||(a.session==='PM'?1:0)-(b.session==='PM'?1:0)).at(-1);
  if(!prior)return null;
  const amount=value-prior[field];
- return {amount,percent:amount/prior[field]*100,previous:prior[field],
+ return {amount,percent:amount/prior[field]*100,previous:prior[field],days,cutoffDate:cutoff,
   previousDate:prior.date,previousSession:prior.session,
   direction:amount>0?'up':amount<0?'down':'steady'};
 }

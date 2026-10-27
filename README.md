@@ -41,6 +41,14 @@ The [market-adjusted forecast](docs/MARKET_FORECAST.md) uses changes in same-pro
 global metal and USD/INR references since the first verified IBJA check. It states
 its parity assumptions and tracks forward errors against the latest-rate baseline.
 
+The Home price card switches between Today, 7D, 30D and 90D changes. Today compares
+with the previous published date. Longer periods subtract calendar days from the
+displayed IBJA date and use the latest actual rate on or before that cutoff,
+preferring PM when available. The card shows the starting price and date alongside
+the rupee and percentage change; insufficient history is labelled rather than
+silently shortening the selected period. These are actual-price returns, separate
+from tomorrow's estimate and the forecast chart controls.
+
 ## Market data and forecast limitations
 
 - [IBJA](https://www.ibjarates.com/): national AM/PM gold and silver benchmark observations, not shop checkout prices; GST and making charges excluded.

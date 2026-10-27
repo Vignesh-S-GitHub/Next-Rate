@@ -773,6 +773,11 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
 /* Latest actual movement and honest issued-forecast results on Home. */
 .home-today-values{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
+.home-change-periods{display:flex;justify-content:flex-end;gap:4px;margin:0 0 4px}
+.home-change-periods button{min-height:36px;padding:7px 12px;border:1px solid #ece9e1;border-radius:9px;background:#fff;color:#78818d;font:inherit;font-size:12px;cursor:pointer}
+.home-change-periods button[aria-pressed="true"]{border-color:#caa34c;background:#fff7e1;color:#88661c}
+.home-change-periods button:focus-visible{outline:2px solid #a77a1f;outline-offset:2px}
+.home-change-note{font-size:10px;line-height:1.5;color:#7d8896;margin:8px 0 0}
 .home-today-values>strong{font-size:17px;font-variant-numeric:tabular-nums;color:#172b44}
 .home-actual-change{font-size:12px;font-weight:700;line-height:1.5}
 .home-actual-change.is-up{color:#14834e}.home-actual-change.is-down{color:#c13a3a}.home-actual-change.is-steady{color:#66768a}

@@ -51,3 +51,8 @@ test('Tamil translates Home changes and provisional forecast results without alt
  }
  assert.ok(translate('Down ₹340 · 0.24%','ta').includes('₹340 · 0.24%'));
 });
+
+test('Tamil translates price period controls and missing history without changing returns',()=>{
+ for(const label of ['Price change period','Not enough history','Calendar days before the displayed rate; non-publishing dates use the previous published rate.'])assert.notEqual(translate(label,'ta'),label);
+ assert.ok(translate('vs ₹1,00,000 · 20 Oct 2026 PM','ta').includes('₹1,00,000'));
+});
