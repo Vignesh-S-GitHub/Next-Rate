@@ -72,6 +72,10 @@ async function audit(viewport){
  context=await browser.newContext();await open(context,'ok',broken,{version:1,alerts:[null],shops:[{}],holdings:[null,{qty:-1}],preferred:'portfolio'});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('portfolio');await text('.tool-list',/No holdings saved/);await tool('accuracy');await layout();assert.deepEqual(page._errors,[]);await context.close();
  // A later failed API must not roll the app back to its committed dated backup.
  context=await browser.newContext();await open(context);const before=await page.locator('.home-actual').innerText();await page.unroute(endpoint+'/**');await page.route(endpoint+'/**',r=>r.abort());await click('[data-refresh]');await text('.data-status',/Keeping the last verified prices/);assert.equal(await page.locator('.home-actual').innerText(),before);checks++;await context.close();
+ // A fully unavailable publication keeps learning/tools usable without fabricated values.
+ context=await browser.newContext();page=await context.newPage();page._errors=[];page.on('pageerror',e=>page._errors.push(e.message));
+ await page.route(endpoint+'/**',r=>r.abort());await page.route('**/data/*.json*',r=>r.abort());await page.goto(server.url);
+ await text('#app',/Rates temporarily unavailable/);await route('insights');await text('#app',/Know your metal/);await route('tools');await tool('jewellery');await submit('jewellery');await text('#app',/Current IBJA rate unavailable/);await layout();assert.deepEqual(page._errors,[]);checks++;await context.close();
  console.log('BROWSER VERIFIED:',checks,'assertions across 3 viewports, 5 tabs, 9 tools, 2 languages and outage/malformed-data cases');
 })().catch(async error=>{
  console.error(error);if(page&&!page.isClosed()){fs.mkdirSync(path.join(root,'test-results'),{recursive:true});await page.screenshot({path:path.join(root,'test-results','browser-failure.png'),fullPage:true}).catch(()=>{});console.error('Page:',await page.locator('#app').innerText().catch(()=>''));}process.exitCode=1;
