@@ -114,6 +114,7 @@ function historicalAccuracy(entries,metal,modelVersion=null) {
  };
  for(const e of Array.isArray(entries)?entries:[]){
    if(!e?.evaluation?.metals?.[metal]||!isoDay(e.target_date))continue;
+   if(e.model_version===4&&e.forecast_mode!=='market_adjusted')continue;
    if(!prospective(e))continue;
    if(modelVersion!==null && Number(e.model_version||1)!==Number(modelVersion))continue;
    const record=e.evaluation.metals[metal];

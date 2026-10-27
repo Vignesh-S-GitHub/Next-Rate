@@ -124,23 +124,24 @@ function billPanel(){
 function accuracyPanel(){
  const contextObj=context(),records=contextObj.forecastHistory?.forecasts||[];
  const labels=[['gold24','24K Gold'],['gold22','22K Gold'],['silver','Silver']];
+ const marketMode=contextObj.forecast?.forecast_mode==='market_adjusted';
  const lines=labels.map(([key,label])=>{
   const stats=C.historicalAccuracy(records,key,contextObj.forecast?.model_version||null);
   const back=contextObj.forecast?.metals?.[key]?.backtest;
-  const backText=back?.status==='walk_forward'
+  const backText=marketMode?'Forward validation only; no market backtest':back?.status==='walk_forward'
     ? ('Holdout '+Number(back.holdout_mape_pct).toFixed(2)+'% · last-close '+Number(back.holdout_naive_mape_pct).toFixed(2)+'%')
     : 'Not enough history for a tested model';
   const live=stats.evaluated?stats.mape.toFixed(2)+'% ('+stats.evaluated+' evaluated)':'Awaiting actual closes';
   return '<div class="tool-accuracy-row"><strong>'+label+'</strong>'+
    '<div><span>Issued forecast error</span><b>'+live+'</b></div>'+
-   '<div><span>Older walk-forward test</span><b>'+backText+'</b></div></div>';
+   '<div><span>'+(marketMode?'Model evidence':'Older walk-forward test')+'</span><b>'+backText+'</b></div></div>';
  }).join('');
  const issued=records.slice(-8).reverse().map(rec=>{
    const tested=rec.evaluation?.metals?.gold24;
    const prospective=Date.parse(rec.issued_at)<Date.parse(rec.target_date+'T00:00:00+05:30');
    const value=rec.metals?.gold24?.estimate;
    return '<div class="tool-list-item"><div><strong>'+h(rec.target_date)+' · 24K / 10g</strong>'+
-    '<small>Predicted '+m(value)+(!prospective?' · Issued after target day began':tested?' · Actual '+m(tested.actual):' · Actual pending')+'</small></div>'+
+    '<small>'+(rec.forecast_mode==='market_adjusted'?'Market-adjusted · ':rec.model_version===4?'IBJA-history fallback · ':'')+'Predicted '+m(value)+(!prospective?' · Issued after target day began':tested?' · Actual '+m(tested.actual):' · Actual pending')+'</small></div>'+
     '<span class="tool-badge '+(tested?'done':'')+'">'+(!prospective?'Not scored':tested?Number(tested.absolute_error_pct).toFixed(2)+'% error':'Pending')+'</span></div>';
  }).join('');
  return '<div class="tool-feature-heading"><h2>Prediction Accuracy</h2><p>Past forecast versus actual close.</p></div>'+

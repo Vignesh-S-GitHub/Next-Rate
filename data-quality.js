@@ -141,6 +141,32 @@ function forecastHistory(doc,historical,today=todayIST()){
  return {schema_version:1,forecasts:forecasts.sort((a,b)=>a.target_date.localeCompare(b.target_date)||
   Date.parse(a.issued_at)-Date.parse(b.issued_at))};
 }
+function marketForecastMatches(doc,snapshot){
+ const m=doc.market_model,at=Date.parse(doc.generated_at),reference=Date.parse(m?.reference_checked_at),current=Date.parse(m?.current_checked_at);
+ if(doc.model_version!==4||m?.status!=='active'||m.method!=='market_parity_v1'||
+  !Number.isFinite(at)||!Number.isFinite(reference)||!Number.isFinite(current)||reference>current||current>at+60000||
+  m.current_checked_at!==snapshot.checked_at||m.fx?.current!==snapshot.fx?.inr_per_usd||
+  m.fx?.current_date!==snapshot.fx?.date||!iso(m.fx?.reference_date)||m.fx.reference_date>m.fx.current_date||
+  typeof m.fx.reference!=='number'||m.fx.reference<=20||m.fx.reference>=250)return false;
+ for(const code of ['gold24','gold22','silver']){
+  const v=doc.metals?.[code],input=m.inputs?.[code],sym=code==='silver'?'XAG':'XAU';
+  const r=Date.parse(input?.reference_as_of),c=Date.parse(input?.current_as_of);
+  if(!v||input?.symbol!==sym||v.model_name!=='market_parity'||v.range_profile!=null||
+    !Number.isFinite(r)||!Number.isFinite(c)||r>c||r>reference+60000||c>current+60000||
+    typeof input.reference_usd_oz!=='number'||input.reference_usd_oz<=0||
+    input.current_usd_oz!==snapshot.spot?.[sym]?.usd_per_troy_ounce||input.current_as_of!==snapshot.spot?.[sym]?.as_of)return false;
+  const metal=input.current_usd_oz/input.reference_usd_oz,fx=m.fx.current/m.fx.reference;
+  if(v.estimate!==Math.round(v.baseline*metal*fx))return false;
+  const d=v.drivers,checks={metal_change_pct:(metal-1)*100,fx_change_pct:(fx-1)*100,
+   metal_contribution_inr:v.baseline*(metal-1),fx_contribution_inr:v.baseline*metal*(fx-1)};
+  if(Object.entries(checks).some(([key,value])=>typeof d?.[key]!=='number'||!Number.isFinite(d[key])||Math.abs(d[key]-value)>.00001))return false;
+  const f=v.forward_evidence;
+  if(!f||!Number.isInteger(f.independent_target_dates)||f.independent_target_dates<0||
+    !['collecting','available'].includes(f.status)||
+    (f.independent_target_dates>0&&!['market_mape_pct','baseline_mape_pct'].every(k=>typeof f[k]==='number'&&Number.isFinite(f[k])&&f[k]>=0)))return false;
+ }
+ return true;
+}
 function forecastIsConsistent(doc,snapshot,today=todayIST()){
  if(!doc||doc.schema_version!==1||doc.status!=='experimental'||
    !snapshot?.india||!iso(doc.target_date)||doc.target_date<today||
@@ -150,6 +176,7 @@ function forecastIsConsistent(doc,snapshot,today=todayIST()){
  const days=(Date.parse(doc.target_date+'T00:00:00Z')-
   Date.parse(today+'T00:00:00Z'))/86400000;
  if(days>14)return false;
+ if(doc.forecast_mode==='market_adjusted'&&!marketForecastMatches(doc,snapshot))return false;
  const mapped={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'};
  return Object.entries(mapped).every(([metal,key])=>{
   const v=doc.metals?.[metal];

@@ -12,7 +12,8 @@ export async function refresh(controller,env,fetcher=fetch,clock=()=>new Date())
  if(lease?.owner!==id){console.log(JSON.stringify({event:'refresh_skipped',reason:'Another refresh is active'}));return;}
  try{
   const old=await load(env.DB),key=target.date+':'+target.session;
-  if(old.receipts?.[key]?.published&&old.receipts[key].session_verified===true){console.log(JSON.stringify({event:'refresh_skipped',session:key,reason:'Verified Cloudflare publication already exists'}));return;}
+  if(old.receipts?.[key]?.published&&old.receipts[key].session_verified===true&&
+    Date.parse(old.documents['latest.json'].checked_at)>=+scheduled&&old.documents['forecast.json'].model_version===4){console.log(JSON.stringify({event:'refresh_skipped',session:key,reason:'This timer already has a verified market publication'}));return;}
   const result=await env.DB.prepare('SELECT kind,id,payload FROM observations ORDER BY kind,id').all();
   const archives=Object.fromEntries(KINDS.map(k=>[k,[]]));const original=new Map();
   for(const row of result.results){archives[row.kind].push(JSON.parse(row.payload));original.set(row.kind+'|'+row.id,row.payload);}

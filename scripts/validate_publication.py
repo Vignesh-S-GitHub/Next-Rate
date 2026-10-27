@@ -172,6 +172,39 @@ def verify(root: Path = ROOT, now: date | None = None, site=False):
                         wide["low"]<=v["low"]<v["high"]<=wide["high"],
                         "Wider scenario is missing or narrower than typical range: "+name)
 
+        if pred.get("forecast_mode") == "market_adjusted":
+            model = pred.get("market_model", {})
+            require(pred.get("model_version") == 4 and model.get("status") == "active" and
+                    model.get("method") == "market_parity_v1", "Invalid market forecast mode")
+            require(model.get("current_checked_at") == latest.get("checked_at"),
+                    "Market model uses a different source snapshot")
+            fx = model.get("fx", {})
+            require(price(fx.get("reference"),20,250) and
+                    fx.get("current") == latest.get("fx",{}).get("inr_per_usd") and
+                    fx.get("current_date") == latest.get("fx",{}).get("date"),
+                    "Market FX input disagrees with snapshot")
+            for name, (field, _, _) in METALS.items():
+                value=pred["metals"][name]
+                inputs=model.get("inputs",{}).get(name,{})
+                symbol="XAG" if name=="silver" else "XAU"
+                quote=latest.get("spot",{}).get(symbol,{})
+                require(inputs.get("symbol")==symbol and price(inputs.get("reference_usd_oz"),0,100000) and
+                        inputs.get("current_usd_oz")==quote.get("usd_per_troy_ounce") and
+                        inputs.get("current_as_of")==quote.get("as_of"),"Market metal input mismatch: "+name)
+                metal_ratio=inputs["current_usd_oz"]/inputs["reference_usd_oz"]
+                fx_ratio=fx["current"]/fx["reference"]
+                require(value["estimate"]==math.floor(value["baseline"]*metal_ratio*fx_ratio+.5),
+                        "Market projection formula mismatch: "+name)
+                require(value.get("range_profile") is None and value.get("backtest",{}).get("status")=="forward_only",
+                        "Market projection cannot claim a legacy historical backtest")
+                drivers=value.get("drivers",{})
+                expected={"metal_change_pct":(metal_ratio-1)*100,"fx_change_pct":(fx_ratio-1)*100,
+                          "metal_contribution_inr":value["baseline"]*(metal_ratio-1),
+                          "fx_contribution_inr":value["baseline"]*metal_ratio*(fx_ratio-1)}
+                require(all(type(drivers.get(k)) in (int,float) and math.isfinite(drivers[k]) and
+                            abs(drivers[k]-v)<.00001 for k,v in expected.items()),
+                        "Market contribution mismatch: "+name)
+
     issued = read(root, "forecast_history.json")
     require(issued.get("schema_version") == 1 and isinstance(issued.get("forecasts"), list),
             "Malformed forecast issuance archive")
