@@ -134,7 +134,7 @@ test('Home displays rupee/percent movement and keeps provisional forecast checks
  const vm=require('node:vm');
  const core=require('../features-core.js');
  const snapshot={india:{date:'2026-10-26',session:'AM',gold24_inr_10g:141290,gold22_inr_10g:129422,silver999_inr_kg:195050}};
- const ctx={window:{NextRateCore:core},rates:snapshot,
+ const ctx={window:{NextRateCore:core},rates:snapshot,priceChangeDays:0,
   history:{india:[{date:'2026-10-23',session:'PM',gold24_inr_10g:141630,gold22_inr_10g:129733,silver999_inr_kg:194415}]},
   benchmark:key=>({value:core.publishedRate(snapshot,key)}),sourceDate:x=>x,
   india:()=>snapshot.india,indiaTodayISO:()=>'2026-10-26',escapeHTML:x=>String(x),

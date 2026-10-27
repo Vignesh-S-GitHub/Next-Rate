@@ -27,6 +27,29 @@ async function audit(viewport){
  const context=await browser.newContext({viewport});await open(context);
  const indian=documents['latest.json'].india;
  await text('.home-actual',new RegExp(indian.gold24_inr_10g.toLocaleString('en-IN')));await layout();
+ const core=require('../features-core.js');
+ const latestPrices=await page.locator('.home-today-values>strong').allTextContents();
+ for(const days of [7,30,90,0]){
+  await click('[data-price-days="'+days+'"]');
+  await page.locator('[data-price-days="'+days+'"][aria-pressed="true"]').waitFor();
+  assert.deepEqual(await page.locator('.home-today-values>strong').allTextContents(),latestPrices);checks++;
+  for(const [index,metal]of ['gold24','gold22','silver'].entries()){
+   const expected=core.publishedChange(documents['latest.json'],documents['history.json'],metal,days);
+   const row=page.locator('.home-today-item').nth(index);
+   if(expected){
+    assert.ok((await row.locator('.home-actual-change').innerText()).includes(Math.abs(expected.percent).toFixed(2)+'%'));
+    assert.ok((await row.locator('.home-actual-change').getAttribute('class')).includes('is-'+expected.direction));
+    if(days)assert.ok((await row.locator('.home-actual-versus').innerText()).includes(money(expected.previous)));
+   }else assert.match(await row.innerText(),/Not enough history|No earlier observation/);
+   checks++;
+  }
+  await layout();
+ }
+ await click('[data-price-days="30"]');await click('[data-chart-days="90"]');
+ await page.locator('[data-price-days="30"][aria-pressed="true"]').waitFor();checks++;
+ await click('[data-language="ta"]');await text('.home-change-periods',/இன்று/);await layout();
+ await click('[data-refresh]');await page.locator('[data-price-days="30"][aria-pressed="true"]').waitFor();checks++;
+ await click('[data-language="en"]');await click('[data-price-days="0"]');
  for(const metal of ['gold24','gold22','silver']){await click('[data-forecast-metal="'+metal+'"]');await page.locator('[data-chart-svg]').press('End');await text('[data-chart-tooltip]',/Estimate/);}
  for(const days of [7,30,90]){await click('[data-chart-days="'+days+'"]');await page.locator('[data-chart-svg]').press('Home');await text('[data-chart-tooltip]',/Actual · (AM|PM)/);}
  await click('#home-weight-expand summary');await click('[data-weight-metal="silver"]');await page.locator('#custom-weight').fill('0.5');await click('[data-unit="kg"]');await text('#weight-result',new RegExp(money(indian.silver999_inr_kg*.5).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
@@ -55,6 +78,7 @@ async function audit(viewport){
  // Every route in Tamil must still render all data without clipping or a runtime failure.
  for(const language of ['ta','en']){await click('[data-language="'+language+'"]');for(const name of ['home','markets','compare','insights','tools']){await route(name);await layout();}}
  assert.deepEqual(page._errors,[]);checks++;await context.close();
+
 }
 (async()=>{
  server=http.createServer((req,res)=>{
@@ -68,7 +92,13 @@ async function audit(viewport){
  console.log('Browser:',await browser.version());
  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:360,height:800}])await audit(viewport);
  // Outage, corrupted optional feeds and local backups must fail gracefully on every tab.
- let context=await browser.newContext({viewport:{width:390,height:844}});await open(context,'offline');await text('.data-status',/dated backup/);await route('tools');await tool('portfolio');await layout();assert.deepEqual(page._errors,[]);await context.close();
+ let context;
+ // A short archive must not masquerade as a full 90-day return.
+ const shortDocs=clone(documents);shortDocs['history.json'].india=shortDocs['history.json'].india.filter(r=>r.date>=shortDocs['latest.json'].india.date);
+ context=await browser.newContext({viewport:{width:360,height:800}});await open(context,'ok',shortDocs);
+ await click('[data-price-days="90"]');assert.equal(await page.locator('.home-actual-versus').filter({hasText:'Not enough history'}).count(),3);checks++;
+ await layout();assert.deepEqual(page._errors,[]);await context.close();
+ context=await browser.newContext({viewport:{width:390,height:844}});await open(context,'offline');await text('.data-status',/dated backup/);await route('tools');await tool('portfolio');await layout();assert.deepEqual(page._errors,[]);await context.close();
  const broken=clone(documents);broken['cities.json'].dates={gold:'2099-01-01',silver:'2026-02-31'};broken['funds.json'].funds.goldbees.nav_inr_per_unit='116';broken['forecast_history.json'].forecasts=[null,{target_date:'bad'}];
  context=await browser.newContext();await open(context,'ok',broken,{version:1,alerts:[null],shops:[{}],holdings:[null,{qty:-1}],preferred:'portfolio'});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('portfolio');await text('.tool-list',/No holdings saved/);await tool('accuracy');await layout();assert.deepEqual(page._errors,[]);await context.close();
  // A later failed API must not roll the app back to its committed dated backup.

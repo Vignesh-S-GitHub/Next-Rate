@@ -28,6 +28,7 @@ let buyGrams = 8;
 let homeBuyExpanded = false;
 let homeWeightExpanded = false;
 let chartDays = 7;
+let priceChangeDays = 0;
 let chartSelectedDate = null;
 let activeForecastMetal = 'gold24';
 let loadFailure = null;
@@ -520,20 +521,24 @@ function homeTodayPanel(){
   const cells=labels.map(([key,label,unit])=>{
     const b=benchmark(key);
     const available=typeof b.value==='number'&&Number.isFinite(b.value)&&b.value>0;
-    const change=window.NextRateCore?.publishedChange(rates,history,key);
+    const change=window.NextRateCore?.publishedChange(rates,history,key,priceChangeDays);
     const movement=change?'<span class="home-actual-change is-'+change.direction+'">'+
       (change.direction==='up'?'▲ Up':change.direction==='down'?'▼ Down':'● Unchanged')+' '+
       price(Math.abs(change.amount))+' · '+Math.abs(change.percent).toFixed(2)+'%</span>'+
-      '<small class="home-actual-versus">vs '+sourceDate(change.previousDate)+' '+escapeHTML(change.previousSession||'')+'</small>':
-      '<small class="home-actual-versus">No earlier observation</small>';
+      '<small class="home-actual-versus">vs '+(priceChangeDays?price(change.previous)+' · ':'')+sourceDate(change.previousDate)+' '+escapeHTML(change.previousSession||'')+'</small>':
+      '<small class="home-actual-versus">'+(priceChangeDays?'Not enough history':'No earlier observation')+'</small>';
     return '<div class="home-today-item"><span>'+label+' <small>'+unit+'</small></span>'+
       '<div class="home-today-values"><strong>'+(available?price(b.value):'—')+'</strong>'+movement+'</div></div>';
   }).join('');
   const current=india();
   const title=current?.date===indiaTodayISO()?'Today · IBJA':'Latest published · IBJA';
+  const periods='<div class="home-change-periods" role="group" aria-label="Price change period">'+
+    [[0,'Today'],[7,'7D'],[30,'30D'],[90,'90D']].map(([days,label])=>'<button type="button" data-price-days="'+days+'" aria-pressed="'+(priceChangeDays===days)+'">'+label+'</button>').join('')+'</div>';
   return '<section class="home-brief section home-actual" aria-label="Latest price changes"><header><h2>'+title+'</h2>'+
     '<span>'+(current?sourceDate(current.date)+' '+escapeHTML(current.session||''):'No quote')+'</span></header>'+
+    periods+
     '<div class="home-today-grid">'+cells+'</div>'+homeCityPrice()+
+    (priceChangeDays?'<p class="home-change-note">Calendar days before the displayed rate; non-publishing dates use the previous published rate.</p>':'')+
     '<div class="home-source-note"><span>Actual national rate · '+escapeHTML(current?.session||'')+
       ' publication</span>'+sourceBadge('ibja',{label:'IBJA source',compact:true})+'</div></section>';
 }
@@ -846,6 +851,11 @@ function render() {
   }
   app.insertAdjacentHTML('afterbegin',dataStatus());
   app.querySelector('[data-refresh]')?.addEventListener('click',()=>loadData(true));
+  app.querySelectorAll('[data-price-days]').forEach(button=>button.addEventListener('click',()=>{
+    priceChangeDays=Number(button.dataset.priceDays);
+    render();
+    app.querySelector('[data-price-days="'+priceChangeDays+'"]')?.focus({preventScroll:true});
+  }));
   app.querySelectorAll('[data-metal]').forEach(b=>b.addEventListener('click',()=>{
     activeMetal=b.dataset.metal;
     render();
