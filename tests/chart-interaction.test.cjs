@@ -90,7 +90,7 @@ test('Interactive SVG retains gold line, gradient, dashed estimate, chart and ra
  assert.match(html,/data-chart-tooltip role="status" aria-live="polite" aria-atomic="true" hidden/);
  assert.doesNotMatch(html,/chart-inspect-panel|data-chart-readout/);
  const actual=Model.displayPoint(Model.observations(sampleHistory(),ctx0.forecast,'gold24',7),ctx0.forecast,'gold24',6);
- assert.match(UI.insightHtml(actual,ctx0),/Actual · 23 Oct 2026/);
+ assert.match(UI.insightHtml(actual,ctx0),/Actual · PM · 23 Oct 2026/);
  assert.match(UI.insightHtml(actual,ctx0),/1,41,630/);
  assert.doesNotMatch(html,/data-chart-step|aria-label="Next date"|aria-label="Previous date"/);
  assert.match(html,/role="group"/);

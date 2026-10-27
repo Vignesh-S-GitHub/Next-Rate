@@ -13,7 +13,7 @@ function isoLabel(iso){
 }
 function insightHtml(point,ctx){
  if(!point)return '<span>Published rate unavailable.</span>';
- const status=point.kind==='prediction'?'Estimate':'Actual';
+ const status=point.kind==='prediction'?'Estimate':'Actual · '+point.session;
  const date=isoLabel(point.date)+' '+point.date.slice(0,4);
  return '<span class="chart-inspect-kind'+(point.kind==='prediction'?' is-prediction':'')+'">'+status+' · '+date+'</span>'+
   '<strong class="chart-tooltip-price">'+fmt(ctx,point.value)+' <small>/ '+point.unit+'</small></strong>';
@@ -57,7 +57,7 @@ function render(ctx){
  const hits=pts.map((p,i)=>
   '<circle class="chart-hit" data-chart-point="'+i+'" cx="'+p.x.toFixed(1)+
   '" cy="'+p.y.toFixed(1)+'" r="12" fill="transparent">'+
-  '<title>Actual · '+ctx.sourceDate(p.date)+' · '+ctx.price(p.value)+'</title></circle>').join('');
+  '<title>Actual · '+p.session+' · '+ctx.sourceDate(p.date)+' · '+ctx.price(p.value)+'</title></circle>').join('');
  const top=y(d.high),bottom=y(d.low),bandY=Math.min(top,bottom),bandH=Math.max(2,Math.abs(bottom-top));
  const predictedY=y(d.estimate);
  const direction=d.estimate>=last.value?'#12846b':'#cf5252';
@@ -68,7 +68,7 @@ function render(ctx){
   '<span>Actual → '+isoLabel(ctx.forecast.target_date)+' estimate</span></div>'+
   '<span class="market-chart-metadata">₹ / '+(ctx.metal==='silver'?'kg':'10 g')+'</span></div>'+
   '<div class="chart-plot" data-chart-plot><svg class="market-trend-svg chart-interactive" data-chart-svg viewBox="0 0 640 290" tabindex="0" role="group"'+
-  ' aria-label="'+name+' actual dated IBJA close. Arrow keys explore dates; the dashed line is an unconfirmed estimate for '+
+  ' aria-label="'+name+' dated IBJA rate (AM or PM). Arrow keys explore dates; the dashed line is an unconfirmed estimate for '+
   forecastText+'.">'+
   '<defs><linearGradient id="market-actual-fill" x1="0" y1="0" x2="0" y2="1">'+
   '<stop offset="0" stop-color="'+fillColor+'" stop-opacity=".30"/>'+

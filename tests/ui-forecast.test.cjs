@@ -28,7 +28,7 @@ test('Predictions are dated model files, not live official exchange quotes',()=>
  assert.match(app,/forecastMetalCard\('silver'/);
  assert.match(app,/price\(data.low\)/);
  assert.match(app,/price\(data.high\)/);
- assert.match(app,/expected_change_pct/);
+ assert.match(app,/data.estimate\/data.baseline-1/);
  assert.match(app,/Range is not a guarantee/);
  assert.match(app,/LBMA, COMEX and MCX are not yet model inputs/);
 });

@@ -832,3 +832,8 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #metal-purity-title,#metal-drivers-title,#metal-buying-title,#metal-questions-title{scroll-margin-top:20px}
 @media(max-width:480px){.metal-guide-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:-10px}.metal-guide-nav button{padding:8px 5px;font-size:11px}.metal-drivers-heading{font-size:20px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Publication status is shared by all five tabs. */
+.data-status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 20px;padding:10px 14px;border:1px solid var(--border,#e6e9ee);border-radius:12px;font-size:13px;background:var(--surface,#fff)}
+.data-status>div{min-width:0}.data-status span:empty{display:none}.data-status small{display:block;color:var(--muted,#7b8796);margin-top:3px}
+.data-status button{flex-shrink:0;border:1px solid #dbc28a;border-radius:8px;padding:9px 12px;background:#fffbef;color:#76591e;cursor:pointer;font:inherit}.data-status button:disabled{opacity:.6;cursor:wait}

@@ -8,23 +8,28 @@
   const endpoint='https://nextrate-scheduler.vigneshshanmugam.workers.dev';
   const files=['latest.json','history.json','forecast.json','funds.json','cities.json','forecast_history.json'];
   function createLoader(fetcher,base){
-    fetcher=fetcher||fetch;base=base||endpoint;let pending;
+    fetcher=fetcher||fetch;base=base||endpoint;let pending,metadata={source:'loading'};
     async function read(url){
-      const response=await fetcher(url,{cache:'no-store',signal:AbortSignal.timeout(12000)});
-      if(!response.ok)throw new Error('Market snapshot unavailable: '+response.status);
-      return response.json();
+      const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12000);
+      try{
+        const response=await fetcher(url,{cache:'no-store',signal:controller.signal});
+        if(!response.ok)throw new Error('Market snapshot unavailable: '+response.status);
+        return await response.json();
+      }finally{clearTimeout(timer);}
     }
     async function load(){
       try{
         const bundle=await read(base+'/bundle.json');
         if(bundle.schema_version!==1||!bundle.documents||!files.every(f=>bundle.documents[f]?.schema_version===1))throw new Error('Incomplete Cloudflare publication');
+        metadata={source:'cloudflare',revision:bundle.revision};
         return bundle.documents;
       }catch{
+        metadata={source:'fallback'};
         const result=await Promise.allSettled(files.map(f=>read('./data/'+f+'?v='+Date.now())));
         return Object.fromEntries(files.flatMap((f,i)=>result[i].status==='fulfilled'?[[f,result[i].value]]:[]));
       }
     }
-    return {get:async function(file){
+    return {status:()=>({...metadata}),get:async function(file){
       if(!files.includes(file))throw new Error('Unknown market document');
       const docs=await (pending||(pending=load()));
       if(!docs[file])throw new Error('Market snapshot unavailable');

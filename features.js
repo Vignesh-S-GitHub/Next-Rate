@@ -23,24 +23,16 @@ const SECTIONS=[
  ['signals','globe','Global Signals','World markets'],
 ];
 let memory={alerts:[],shops:[],holdings:[],etfQuotes:{},preferred:'alerts'};
-let message='',ctxCache=null;
+let message='',ctxCache=null,storageUnavailable=false;
 function read(){
  try{
   const data=JSON.parse(root.localStorage.getItem(KEY)||'null');
-  if(data&&typeof data==='object'&&data.version===1){
-    memory={
-      alerts:Array.isArray(data.alerts)?data.alerts.slice(0,40):[],
-      shops:Array.isArray(data.shops)?data.shops.slice(0,80):[],
-      holdings:Array.isArray(data.holdings)?data.holdings.slice(0,100):[],
-      etfQuotes:typeof data.etfQuotes==='object'&&data.etfQuotes&&!Array.isArray(data.etfQuotes)?data.etfQuotes:{},
-      preferred:SECTIONS.some(row=>row[0]===data.preferred)?data.preferred:'alerts'
-    };
-  }
- }catch{/* private browsing: retain in memory */}
+  if(data)memory=C.storedState(data);
+ }catch{storageUnavailable=true;/* retain this visit's entries in memory */}
 }
 function save(){
- try{root.localStorage.setItem(KEY,JSON.stringify({version:1,...memory}));return true;}
- catch{return false;}
+ try{root.localStorage.setItem(KEY,JSON.stringify({version:1,...memory}));storageUnavailable=false;return true;}
+ catch{storageUnavailable=true;return false;}
 }
 read();
 const m=x=>C.money(x),h=x=>C.esc(x);
@@ -56,7 +48,7 @@ const opt=(name,values,label)=>{
   '<span id="'+key+'-current">'+h(first[1])+'</span><span class="tool-picker-arrow" aria-hidden="true">⌄</span></button>'+
   '<div class="tool-picker-menu" id="'+key+'-options" role="listbox" aria-labelledby="'+key+'-label" hidden>'+
   values.map((v,i)=>'<button type="button" role="option" class="tool-picker-option" data-tool-picker-option'+
-    ' data-value="'+h(v[0])+'" aria-selected="'+(i===0)+'" tabindex="'+(i===0?0:-1)+'">'+h(v[1])+'</button>').join('')+
+    ' data-label="'+h(v[1])+'" data-value="'+h(v[0])+'" aria-selected="'+(i===0)+'" tabindex="'+(i===0?0:-1)+'">'+h(v[1])+'</button>').join('')+
   '</div></div></div>';
 };
 const btn=(label)=>'<button type="submit" class="tool-primary">'+h(label)+'</button>';
@@ -77,7 +69,8 @@ function quantityPrice(kind,qty){
  const rate=validBenchmark(kind);
  return rate?C.bullionValue(context().rates,kind,qty):null;
 }
-function showBanner(){return message?'<p class="tool-banner" role="status">'+h(message)+'</p>':'';}
+function showBanner(){return (message?'<p class="tool-banner" role="status">'+h(message)+'</p>':'')+
+ (storageUnavailable?'<p class="tool-banner" role="status">Browser storage unavailable. Changes last only for this visit. Download a backup before closing.</p>':'');}
 function infoAlert(){
  const matched=memory.alerts.filter(a=>a.triggeredAt).length;
  return '<div class="tool-stats"><div><strong>'+memory.alerts.length+'</strong><span>Saved alerts</span></div>'+
@@ -107,11 +100,14 @@ function alertPanel(){
     'This tool does not send browser or phone notifications. '+
     'No alert is triggered from rates older than 7 days.');
 }
+function goldReferences(){
+ const a=validBenchmark('gold24'),b=validBenchmark('gold22');
+ return '<p class="tool-reference">IBJA · '+h(a?.date||b?.date||'not available')+
+  ' · 24K / 10g: '+(a?m(a.rate):'Unavailable')+' · 22K / 10g: '+(b?m(b.rate):'Unavailable')+'</p>';
+}
 function billPanel(){
- const r=validBenchmark('gold22');
- const reference=r?m(r.rate):'Unavailable';
  return '<div class="tool-feature-heading"><h2>Jewellery Bill</h2><p>Metal + wastage + making + GST.</p></div>'+
-  '<p class="tool-reference">22K gold / 10g · '+reference+' · IBJA '+h(r?.date||'not available')+'</p>'+
+  goldReferences()+
   '<form data-feature-form="jewellery"><div class="tool-form-grid">'+
   opt('metal',[['gold22','22K Gold'],['gold24','24K Gold']],'Gold purity')+
   field('grams','Net gold weight (g)','8','number','min="0.01" max="10000" step="any" inputmode="decimal"')+
@@ -141,10 +137,11 @@ function accuracyPanel(){
  }).join('');
  const issued=records.slice(-8).reverse().map(rec=>{
    const tested=rec.evaluation?.metals?.gold24;
+   const prospective=Date.parse(rec.issued_at)<Date.parse(rec.target_date+'T00:00:00+05:30');
    const value=rec.metals?.gold24?.estimate;
    return '<div class="tool-list-item"><div><strong>'+h(rec.target_date)+' · 24K / 10g</strong>'+
-    '<small>Predicted '+m(value)+(tested?' · Actual '+m(tested.actual):' · Actual pending')+'</small></div>'+
-    '<span class="tool-badge '+(tested?'done':'')+'">'+(tested?Number(tested.absolute_error_pct).toFixed(2)+'% error':'Pending')+'</span></div>';
+    '<small>Predicted '+m(value)+(!prospective?' · Issued after target day began':tested?' · Actual '+m(tested.actual):' · Actual pending')+'</small></div>'+
+    '<span class="tool-badge '+(tested?'done':'')+'">'+(!prospective?'Not scored':tested?Number(tested.absolute_error_pct).toFixed(2)+'% error':'Pending')+'</span></div>';
  }).join('');
  return '<div class="tool-feature-heading"><h2>Prediction Accuracy</h2><p>Past forecast versus actual close.</p></div>'+
   '<div class="tool-accuracy">'+lines+'</div>'+
@@ -158,7 +155,7 @@ function cityRef(metal){
  const ctx=context(),name=ctx.city||'Chennai',record=ctx.cities?.cities?.[name];
  const key=metal==='gold22'?'gold22_inr_g':'gold24_inr_g';
  const day=ctx.cities?.dates?.gold;
- if(!record||!Number.isFinite(record[key])||C.ageDays(day)>7)return null;
+ if(!record||!Number.isFinite(record[key])||record[key]<=0||C.ageDays(day)<0||C.ageDays(day)>7)return null;
  return {rate:record[key],date:day};
 }
 function shopsPanel(){
@@ -170,7 +167,7 @@ function shopsPanel(){
  const list=ordered.map(({entry,total},i)=>
    '<div class="tool-list-item"><div><strong>'+h(entry.name)+'</strong><small>'+
    h(entry.metal==='gold22'?'22K':'24K')+' · '+h(entry.grams)+'g · '+h(entry.date)+
-   ' · '+(i===0?'Lowest entered':'User-entered')+'</small></div>'+
+   ' · User-entered'+'</small></div>'+
    '<div class="tool-list-tail"><b>'+m(total)+'</b>'+
    '<button type="button" class="tool-delete" data-delete-kind="shops" data-delete-id="'+h(entry.id)+'" aria-label="Remove shop quote">×</button></div></div>').join('');
  return '<div class="tool-feature-heading"><h2>Shop Comparison</h2>'+
@@ -186,6 +183,7 @@ function shopsPanel(){
     field('makingFlat','Flat making (₹)','0','number','min="0" max="10000000" step="any" inputmode="decimal"')+
     field('wastagePct','Wastage (%)','0','number','min="0" max="35" step="any" inputmode="decimal"')+
     '</div>'+btn('Save and compare')+'</form>'+
+    '<p class="tool-note">Compare the same purity and net weight. Totals are sorted by amount, not value for money.</p>'+
     '<h3 class="tool-subtitle">Your '+h(ct)+' quotes</h3>'+
     '<div class="tool-list">'+(list||'<p class="tool-note">Add quotes from local jewellers to compare.</p>')+'</div>'+
     note('No independent shop-by-shop quote feed is connected. These figures are entered by you, '+
@@ -197,8 +195,9 @@ function portfolioPanel(){
  const holdings=memory.holdings.map(p=>({p,v:null}));
  let totalCost=0,totalVal=0,valued=0;
  for(const entry of holdings){
+  totalCost+=Number(entry.p.paid);
   try{
-   entry.v=C.holdingValuation(entry.p,ctx);totalCost+=Number(entry.p.paid);
+   entry.v=C.holdingValuation(entry.p,ctx);
    if(entry.v.value!==null){valued++;totalVal+=entry.v.value;}
   }catch{entry.v={value:null,pnl:null,source:'',asOf:''};}
  }
@@ -209,12 +208,7 @@ function portfolioPanel(){
  (v?.asOf?' · Quote '+h(v.asOf):'')+'</small></div>'+
  '<div class="tool-list-tail"><b>'+(v?.value!==null?m(v.value):'—')+'</b>'+
  '<button type="button" class="tool-delete" data-delete-kind="holdings" data-delete-id="'+h(p.id)+'" aria-label="Remove holding">×</button></div></div>').join('');
- const products=[
- ...metalOptions,
- ['goldbees','Gold BeES ETF'],['hdfcgold','HDFC Gold ETF'],['sbigold','SBI Gold ETF'],
- ['silveretf','Nippon Silver ETF'],['hdfcsilver','HDFC Silver ETF'],
- ['goldfund','Gold fund of funds'],['silverfund','Silver fund of funds']
- ];
+ const products=[...metalOptions,...Object.entries(ctx.funds?.funds||{}).map(([id,row])=>[id,row.name])];
  return '<div class="tool-feature-heading"><h2>My Portfolio</h2><p>Private to this browser.</p></div>'+
     '<div class="tool-stats"><div><strong>'+m(totalCost)+'</strong><span>Total paid</span></div>'+
     '<div><strong>'+(valued===holdings.length?m(totalVal):'Partial '+m(totalVal))+'</strong><span>Reference value</span></div>'+
@@ -232,9 +226,8 @@ function portfolioPanel(){
       'Metal values exclude buy/sell fees, GST and jewellery making. ETF figures are dated NAV, not execution prices.');
 }
 function resalePanel(){
- const r=validBenchmark('gold22');
  return '<div class="tool-feature-heading"><h2>Sell / Exchange Gold</h2><p>Estimate resale proceeds.</p></div>'+
-  '<p class="tool-reference">IBJA 22K / 10g: '+(r?m(r.rate):'Unavailable')+'</p>'+
+  goldReferences()+
   '<form data-feature-form="resale"><div class="tool-form-grid">'+
     opt('purity',[['24','24K'],['22','22K'],['18','18K (derived)']],'Purity')+
     field('grams','Net gold (g)','8','number','min="0.01" max="10000" step="any" inputmode="decimal"')+
@@ -302,7 +295,7 @@ function signalsPanel(){
   ['USD/INR',Number.isFinite(fx)?'₹'+Number(fx).toFixed(3):'—','Daily FX reference',r.fx?.date]
  ].map(([label,value,unit,time])=>
  '<div class="tool-signal"><span>'+label+'</span><strong>'+value+'</strong><small>'+
-   h(unit)+(time?' · '+h(String(time).slice(0,16)):'')+'</small></div>').join('');
+   h(unit)+(time?' · '+h(time.includes('T')?new Date(time).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})+' IST':time):'')+'</small></div>').join('');
  const parity=(Number.isFinite(xau)&&Number.isFinite(fx))?m(xau*fx/31.1034768*10):'—';
  return '<div class="tool-feature-heading"><h2>Global Signals</h2><p>Current dated market references.</p></div>'+
   '<div class="tool-signals">'+cards+'</div>'+
@@ -372,7 +365,7 @@ function onSubmit(event){
     makingPct:v.making,makingFlat:v.flat});
    const container=form.parentElement.querySelector('#jewellery-result');
    if(container)container.innerHTML='<span>Estimated total</span><strong>'+m(estimate.total)+'</strong>'+
-   '<small>Metal '+m(estimate.metal)+' · Wastage '+m(estimate.wastage)+
+   '<small>'+h(v.metal==='gold24'?'24K':'22K')+' · IBJA '+h(b.date)+' · Metal '+m(estimate.metal)+' · Wastage '+m(estimate.wastage)+
    ' · Making '+m(estimate.making)+' · GST '+m(estimate.tax)+'</small>';
   }else if(kind==='shops'){
    if(memory.shops.length>=80)throw new Error('Maximum 80 saved quotes.');
@@ -402,7 +395,7 @@ function onSubmit(event){
      purity:v.purity,deductionPct:v.deduction,fixedFee:v.fixedFee});
    const container=form.parentElement.querySelector('#resale-result');
    if(container)container.innerHTML='<span>Estimated cash / exchange value</span>'+
-    '<strong>'+m(result.proceeds)+'</strong><small>Metal '+m(result.metal)+
+    '<strong>'+m(result.proceeds)+'</strong><small>'+h(v.purity)+'K · IBJA '+h(ctx.rates.india.date)+' · Metal '+m(result.metal)+
     ' − deduction '+m(result.deduction)+' − other '+m(result.fixedFee)+'</small>';
   }else if(kind==='huid'){
    if(!/^[a-zA-Z0-9]{6}$/.test(v.code))throw new Error('HUID must contain 6 letters/numbers.');
@@ -417,15 +410,18 @@ function onSubmit(event){
   }else if(kind==='etf'){
    const fund=ctx.funds?.funds?.[v.fund];
    if(!fund||!Number.isFinite(fund.nav_inr_per_unit))throw new Error('Select a published NAV');
-   const q=C.number(v.quote,.01,1e7),pct=C.premium(q,fund.nav_inr_per_unit);
+   const q=C.number(v.quote,.01,1e7);
+   if(C.ageDays(fund.nav_date)<0||C.ageDays(fund.nav_date)>10)throw new Error('Current NAV unavailable.');
+   const pct=date()===fund.nav_date?C.premium(q,fund.nav_inr_per_unit):null;
    const stamped=date(),out=form.parentElement.querySelector('#etf-result');
    memory.etfQuotes[v.fund]={quote:q,date:stamped};
    save();
    if(out)out.innerHTML='<span>Manually entered price vs dated NAV</span>'+
-   '<strong>'+(pct>0?'+':'')+pct.toFixed(2)+'%</strong>'+
+   '<strong>'+(pct===null?'Different dates — premium unavailable':(pct>0?'+':'')+pct.toFixed(2)+'%')+'</strong>'+
    '<small>Entered '+h(stamped)+'; NAV '+h(fund.nav_date)+
    (stamped===fund.nav_date?' (same day)':' (different dates: not a comparable trading premium)')+'</small>';
   }
+  root.NextRateI18n?.apply(form.parentElement,ctx.language);
  }catch(e){message=e.message||'Check the entered values.';refresh();}
 }
 function importBackup(file){
@@ -434,19 +430,8 @@ function importBackup(file){
  reader.onload=()=>{
   try{
    const obj=JSON.parse(reader.result);
-   if(!obj||obj.version!==1||!Array.isArray(obj.alerts)||!Array.isArray(obj.shops)||!Array.isArray(obj.holdings)){
-    throw new Error('Invalid NextRate backup.');
-   }
-   for(const arr of [obj.alerts,obj.shops,obj.holdings]){
-    if(arr.length>100||!arr.every(row=>row&&typeof row==='object'&&typeof row.id==='string')){
-     throw new Error('Invalid or oversized backup.');
-    }
-   }
-   // Only the tools' own known keys are imported; no token, HTML or executable content.
-   memory.alerts=obj.alerts.slice(0,40);
-   memory.shops=obj.shops.slice(0,80);
-   memory.holdings=obj.holdings.slice(0,100);
-   memory.etfQuotes=typeof obj.etfQuotes==='object'&&obj.etfQuotes||{};
+   const restored=C.storedState(obj,true);
+   memory=restored;
    save();updateStatus('Your local backup has been restored.');
   }catch(e){updateStatus(e.message||'Unable to restore backup.');}
  };
@@ -500,9 +485,15 @@ function onClick(event){
  if(pickerOption){
   const picker=pickerOption.closest('[data-tool-picker]');
   if(!picker)return;
-  picker.querySelector('input[type="hidden"]').value=pickerOption.dataset.value;
+  const input=picker.querySelector('input[type="hidden"]'),previous=input.value;
+  input.value=pickerOption.dataset.value;
+  const form=picker.closest('form');
+  if(form?.dataset.featureForm==='shops'&&input.name==='metal'){
+   const rate=form.querySelector('[name="ratePerGram"]');
+   if(rate&&rate.value===String(cityRef(previous)?.rate||''))rate.value=cityRef(input.value)?.rate||'';
+  }
   const current=picker.querySelector('.tool-picker-trigger>span:first-child');
-  if(current)current.textContent=pickerOption.textContent;
+  if(current){current.textContent=pickerOption.dataset.label;root.NextRateI18n?.apply(current,context().language);}
   picker.querySelectorAll('[data-tool-picker-option]').forEach(option=>{
    const active=option===pickerOption;
    option.setAttribute('aria-selected',String(active));

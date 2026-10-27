@@ -29,7 +29,7 @@ function publishedRate(snapshot,metal) {
 function bullionValue(snapshot,metal,grams) {
  const rate=publishedRate(snapshot,metal);
  if(rate===null)return null;
- return round(rate*number(grams,.01,100000)/(metal==='silver'?1000:10));
+ return round(rate*number(grams,.001,100000)/(metal==='silver'?1000:10));
 }
 function jewelleryBill({ratePer10g,grams,wastagePct=0,makingPct=0,makingFlat=0,gstPct=3}) {
  const rate=number(ratePer10g,1,1e8),weight=number(grams,.01,10000);
@@ -60,11 +60,11 @@ function holdingValuation(entry,ctx) {
  const count=number(entry.qty,.001,100000);
  let value=null,source='',asOf='';
  if(['gold24','gold22','silver'].includes(kind)){
-   value=bullionValue(ctx.rates,kind,count);
+   value=fresh(ctx.rates?.india?.date,7)?bullionValue(ctx.rates,kind,count):null;
    source='IBJA metal value; excludes selling deductions';asOf=ctx.rates?.india?.date||'';
  }else{
    const record=ctx.funds?.funds?.[kind];
-   if(record&&Number.isFinite(record.nav_inr_per_unit)&&record.nav_inr_per_unit>0){
+   if(record&&fresh(record.nav_date,10)&&Number.isFinite(record.nav_inr_per_unit)&&record.nav_inr_per_unit>0){
      value=round(record.nav_inr_per_unit*count);
      source='AMFI NAV; ETF exchange trade price differs';asOf=record.nav_date;
    }
@@ -80,6 +80,7 @@ function alertObservationDate(rule,ctx){
  return ctx?.rates?.india?.date||null;
 }
 function alertValue(rule,ctx) {
+ if(!fresh(alertObservationDate(rule,ctx),7))return null;
  const qty=number(rule.grams,.01,100000);
  if(rule?.source==='city'){
    const row=ctx?.cities?.cities?.[rule.city];
@@ -128,7 +129,12 @@ function historicalAccuracy(entries,metal,modelVersion=null) {
    directionScored:matches.filter(x=>x.direction_correct!==null).length,
    directionCorrect:matches.filter(x=>x.direction_correct===true).length};
 }
-function isoDay(value) {return typeof value==='string'&&/^\d{4}-\d\d-\d\d$/.test(value)?value:'';}
+function isoDay(value) {
+ if(typeof value!=='string'||!/^20\d{2}-\d\d-\d\d$/.test(value))return '';
+ const d=new Date(value+'T00:00:00Z');
+ return Number.isFinite(+d)&&d.toISOString().slice(0,10)===value?value:'';
+}
+function fresh(day,max){const age=ageDays(day);return age>=0&&age<=max;}
 function prospective(e){
  if(!isoDay(e?.target_date)||!isoDay(e?.based_on_date)||e.based_on_date>=e.target_date)return false;
  if(typeof e.issued_at!=='string'||!/(?:Z|[+-]\d\d:\d\d)$/i.test(e.issued_at))return false;
@@ -186,9 +192,51 @@ function ageDays(iso,now=new Date()){
  const t=Date.parse(today+'T00:00:00Z'),d=Date.parse(iso+'T00:00:00Z');
  return Number.isFinite(t)&&Number.isFinite(d)?Math.floor((t-d)/86400000):Infinity;
 }
+// Validate both restored backups and storage from older app versions before rendering it.
+function storedState(input,strict=false){
+ const empty={alerts:[],shops:[],holdings:[],etfQuotes:{},preferred:'alerts'};
+ const sections=['alerts','jewellery','accuracy','shops','portfolio','resale','hallmark','etfs','signals'];
+ if(!input||input.version!==1){if(strict)throw Error('Invalid NextRate backup.');return empty;}
+ const names=['gold24','gold22','silver','goldbees','hdfcgold','sbigold','silveretf','hdfcsilver','goldfund','silverfund'];
+ const numeric=(v,min,max)=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
+ const day=v=>!!isoDay(v)&&ageDays(v)>=0;
+ const label=v=>typeof v==='string'&&v.length>0&&v.length<=55;
+ for(const [key,max]of [['alerts',40],['shops',80],['holdings',100]]){
+  const values=input[key],ids=new Set();
+  if(!Array.isArray(values)||values.length>max){if(strict)throw Error('Invalid or oversized backup.');}
+  for(const row of Array.isArray(values)?values.slice(0,max):[]){
+   let clean=null;
+   const base=row&&typeof row==='object'&&typeof row.id==='string'&&row.id.length>0&&row.id.length<=100&&!ids.has(row.id);
+   if(base&&key==='alerts'&&names.slice(0,3).includes(row.metal)&&
+     numeric(row.grams,.01,100000)&&numeric(row.target,.01,1e9)&&['above','below'].includes(row.op)&&
+     (!row.source||row.source==='national'))
+    clean={id:row.id,metal:row.metal,grams:row.grams,op:row.op,target:row.target,
+     created:day(row.created)?row.created:'',triggeredAt:day(row.triggeredAt)?row.triggeredAt:null,
+     ...(numeric(row.triggerPrice,.01,1e12)?{triggerPrice:row.triggerPrice}:{})};
+   if(base&&key==='shops'&&label(row.name)&&['gold22','gold24'].includes(row.metal)&&
+     ['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad'].includes(row.city)&&day(row.date)&&
+     numeric(row.ratePerGram,1,1e7)&&numeric(row.grams,.01,10000)&&
+     numeric(row.makingPct,0,100)&&numeric(row.makingFlat,0,1e7)&&numeric(row.wastagePct,0,35))
+    clean={id:row.id,name:row.name,city:row.city,date:row.date,metal:row.metal,
+     ratePerGram:row.ratePerGram,grams:row.grams,makingPct:row.makingPct,makingFlat:row.makingFlat,wastagePct:row.wastagePct};
+   if(base&&key==='holdings'&&label(row.name)&&names.includes(row.kind)&&day(row.date)&&
+     numeric(row.qty,.001,100000)&&numeric(row.paid,0,1e10))
+    clean={id:row.id,name:row.name,kind:row.kind,date:row.date,qty:row.qty,paid:row.paid};
+   if(clean){ids.add(row.id);empty[key].push(clean);}
+   else if(strict)throw Error('Invalid saved '+key+' entry.');
+  }
+ }
+ for(const key of names.slice(3)){
+  const row=input.etfQuotes?.[key];
+  if(row&&numeric(row.quote,.01,1e7)&&day(row.date))empty.etfQuotes[key]={quote:row.quote,date:row.date};
+  else if(strict&&row!=null)throw Error('Invalid saved ETF quote.');
+ }
+ if(sections.includes(input.preferred))empty.preferred=input.preferred;
+ return empty;
+}
 const api=Object.freeze({money,esc,number,round,publishedRate,bullionValue,
  jewelleryBill,resaleQuote,manualShopBill,holdingValuation,premium,
- alertValue,alertObservationDate,triggered,historicalAccuracy,publishedChange,forecastCheck,ageDays});
+ alertValue,alertObservationDate,triggered,historicalAccuracy,publishedChange,forecastCheck,ageDays,storedState});
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.NextRateCore=api;
 })(typeof window==='undefined'?globalThis:window);

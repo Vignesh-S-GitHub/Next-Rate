@@ -38,12 +38,12 @@ const sourceBadge = (provider,options) => window.NextRateSources?.badge(provider
 const INR = new Intl.NumberFormat('en-IN', {style: 'currency', currency: 'INR', maximumFractionDigits: 0});
 const USD = new Intl.NumberFormat('en-US', {style: 'currency', currency: 'USD', maximumFractionDigits: 2});
 const icon = (name, cls='icon') => '<svg class="' + cls + '" aria-hidden="true"><use href="#i-' + name + '"/></svg>';
-const price = n => Number.isFinite(Number(n)) ? INR.format(Number(n)) : 'Unavailable';
-const usd = n => Number.isFinite(Number(n)) ? USD.format(Number(n)) : 'Unavailable';
+const price = n => typeof n==='number'&&Number.isFinite(n) ? INR.format(n) : 'Unavailable';
+const usd = n => typeof n==='number'&&Number.isFinite(n) ? USD.format(n) : 'Unavailable';
 const escapeHTML = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function sourceDate(iso) {
-  if (!iso || !/^\d{4}-\d\d-\d\d$/.test(iso)) return 'Date unavailable';
+  if (!iso || !window.NextRateDataQuality?.iso(iso)) return 'Date unavailable';
   return new Date(iso + 'T12:00:00+05:30').toLocaleDateString('en-IN', {timeZone:'Asia/Kolkata',day:'numeric',month:'short',year:'numeric'});
 }
 function sourceTime(iso) {
@@ -221,6 +221,7 @@ function updateCustomWeight(){
     basis.textContent='Enter a valid weight to see its value';
     error.textContent=err.message;
   }
+  window.NextRateI18n?.apply(document.querySelector('.weight-calculator'),appLanguage);
 }
 
 function wireWeightCalculator(){
@@ -290,10 +291,9 @@ function forecastMetalCard(key, title, unit, iconFile){
   );
   const selected=activeForecastMetal===key;
   if(!valid)return '<div class="forecast-metal"><strong>'+title+'</strong><span>Estimate unavailable</span></div>';
-  const direction=['Up','Down','Mostly steady'].includes(data.direction)?data.direction:'Mostly steady';
+  const direction=data.estimate>data.baseline?'Up':data.estimate<data.baseline?'Down':'Mostly steady';
   const dirClass=direction==='Up'?'is-up':direction==='Down'?'is-down':'is-steady';
-  const change=typeof data.expected_change_pct==='number'&&Number.isFinite(data.expected_change_pct)
-    ? data.expected_change_pct : (data.estimate/data.baseline-1)*100;
+  const change=(data.estimate/data.baseline-1)*100;
   const percent=(change>0?'+':'')+change.toFixed(2)+'%';
   const diff=data.estimate-data.baseline;
   const delta=(diff>0?'+':'−')+price(Math.abs(diff));
@@ -409,7 +409,7 @@ function verifiedNav(key){
   const nav=funds?.funds?.[key];
   if(!nav || typeof nav.nav_inr_per_unit!=='number' ||
     !Number.isFinite(nav.nav_inr_per_unit) || nav.nav_inr_per_unit<=0 ||
-    !/^\d{4}-\d\d-\d\d$/.test(nav.nav_date||'') || daysOld(nav.nav_date)>10)return null;
+    !window.NextRateDataQuality?.iso(nav.nav_date) || nav.nav_date>indiaTodayISO() || daysOld(nav.nav_date)>10)return null;
   return nav;
 }
 function buyingRow(name,place,amount,unit,note,href){
@@ -571,7 +571,7 @@ function homeBuyPanel(){
   const cells=[
     ['Gold bar · 8g',physical('gold24',g24),'Metal + GST'],
     ['22K jewellery · 8g',physical('gold22',g22),'Making extra'],
-    ['Gold ETF · 1 unit',etf?NextRateWeights.formatINR(etf.nav_inr_per_unit):'—','NAV, not trade']
+    ['Gold ETF · 1 unit',etf?NextRateWeights.formatINR(etf.nav_inr_per_unit):'—','NAV, not trade'+(etf?' · '+sourceDate(etf.nav_date):'')]
   ].map(([name,value,note])=>
     '<div class="home-buy-cell"><span>'+name+'</span><strong>'+value+'</strong><small>'+note+'</small></div>').join('');
   return '<section class="home-brief section"><header><h2>Buy Gold</h2>'+
@@ -608,7 +608,7 @@ function toolsPage(){
     '<section class="card"><h2>Tools unavailable</h2><p>Reload the page.</p></section>';
 }
 function marketCard(label,value,unit,date,link) {
-  return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+link+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
+  return '<article class="card"><strong>'+label+'</strong><div class="muted">'+unit+'</div><div class="price">'+value+'</div><div class="muted">'+(date||'Quote unavailable')+'</div><a class="source-link" href="'+escapeHTML(/^https:\/\//i.test(link||'')?link:'https://www.ibjarates.com/')+'" target="_blank" rel="noopener noreferrer">View source ↗</a></article>';
 }
 function marketsPage() {
   return heading('Markets','Spot quotes · FX · India benchmark')+
@@ -633,7 +633,7 @@ function cityQuote(city,metal){
   const numeric=entry?.[name];
   // City rates are retailer-reported *indicative* observations. Do not
   // substitute national IBJA or FX calculations when a city is missing.
-  const valid=Number.isFinite(numeric) && numeric>0 && /^\d{4}-\d\d-\d\d$/.test(day||'');
+  const valid=Number.isFinite(numeric) && numeric>0 && window.NextRateDataQuality?.iso(day)&&day<=indiaTodayISO();
   const age=valid?daysOld(day):Infinity;
   return {
     value:valid&&age<=7?numeric:null,
@@ -800,6 +800,10 @@ function errorScreen() {
     '<article class="card"><h2>Rates temporarily unavailable</h2><p>NextRate has no confirmed published snapshot yet. Cloudflare will publish a new snapshot after a verified source check. We do not show invented fallback prices.</p><a href="https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json" target="_blank" rel="noopener noreferrer">Check collection status ↗</a></article>';
 }
 function render() {
+  const quality=window.NextRateDataQuality;
+  if(rates)rates=quality.market(rates);
+  if(funds)funds=quality.funds(funds);
+  if(cityRates)cityRates=quality.cities(cityRates);
   let route=location.hash.slice(1);
   if(!['home','markets','compare','insights','tools'].includes(route))route='home';
   document.querySelectorAll('[data-route]').forEach(a=>{
@@ -809,6 +813,8 @@ function render() {
   });
   if (route==='tools') {
     app.innerHTML=toolsPage();
+  } else if (route==='insights') {
+    app.innerHTML=insights();
   } else if (!rates && !loadFailure) {
     app.innerHTML='<section class="card"><h2>Loading verified market data and tomorrow’s forecast…</h2></section>';
   } else if (!rates) {
@@ -816,6 +822,8 @@ function render() {
   } else {
     app.innerHTML=({home,markets:marketsPage,compare,insights,tools:toolsPage})[route]();
   }
+  app.insertAdjacentHTML('afterbegin',dataStatus());
+  app.querySelector('[data-refresh]')?.addEventListener('click',()=>loadData(true));
   app.querySelectorAll('[data-metal]').forEach(b=>b.addEventListener('click',()=>{
     activeMetal=b.dataset.metal;
     render();
@@ -839,47 +847,78 @@ function render() {
   document.title='NextRate | '+route[0].toUpperCase()+route.slice(1);
 }
 let publicationLoader;
+let loadingData=false,lastAttempt=0,lastGoodCheck=0,dataSource='loading',refreshFailed=false;
+function dataStatus(){
+ const warnings=[];
+ if(dataSource==='fallback')warnings.push('Live data connection unavailable. Showing the dated backup.');
+ if(refreshFailed&&rates)warnings.push('Refresh failed. Keeping the last verified prices.');
+ if(india()&&daysOld(india().date)>2)warnings.push('Older published rates. Check the source dates before using these values.');
+ if(!rates&&loadingData)return '';
+ const stamp=lastGoodCheck?sourceTime(new Date(lastGoodCheck).toISOString()):'Not checked';
+ return '<div class="data-status'+(warnings.length?' status-warning':'')+'" role="status">'+
+  '<div><span>'+warnings.map(escapeHTML).join(' ')+'</span><small>Data checked · '+stamp+'</small></div>'+
+  '<button type="button" data-refresh'+(loadingData?' disabled':'')+'>'+(loadingData?'Checking…':'Refresh data')+'</button></div>';
+}
 async function getJSON(file) {
   return publicationLoader.get(file);
 }
-async function loadData(){
+function savedForm(){
+ const form=app.querySelector('form[data-feature-form]');
+ return form?{kind:form.dataset.featureForm,values:[...form.querySelectorAll('input[name]')].map(i=>[i.name,i.value])}:null;
+}
+function restoreForm(saved){
+ const form=app.querySelector('form[data-feature-form]');
+ if(!saved||!form||saved.kind!==form.dataset.featureForm)return;
+ for(const [name,value]of saved.values){
+  const input=[...form.querySelectorAll('input[name]')].find(i=>i.name===name);if(!input)continue;
+  const picker=input.closest('[data-tool-picker]');
+  if(picker){
+   const options=[...picker.querySelectorAll('[data-tool-picker-option]')];
+   const selected=options.find(o=>o.dataset.value===value);if(!selected)continue;
+   input.value=value;picker.querySelector('.tool-picker-trigger>span').textContent=selected.dataset.label;
+   for(const option of options){const active=option===selected;option.setAttribute('aria-selected',String(active));option.tabIndex=active?0:-1;}
+  }else input.value=value;
+ }
+ window.NextRateI18n?.apply(form,appLanguage);
+}
+async function loadData(force=false){
+ if(loadingData||!force&&lastAttempt&&Date.now()-lastAttempt<60000)return;
+ loadingData=true;lastAttempt=Date.now();
+ const button=app.querySelector('[data-refresh]');
+ if(button){button.disabled=true;button.textContent='Checking…';window.NextRateI18n?.apply(button,appLanguage);}
+ try{
   publicationLoader=window.NextRateData.createLoader();
-  // Independent assets may fail at a CDN or cache layer. A missing history
-  // file must not blank an otherwise verified national price snapshot.
   const [market,historical,model,nav,city,issued]=await Promise.allSettled([
-    getJSON('latest.json'),
-    getJSON('history.json'),
-    getJSON('forecast.json'),
-    getJSON('funds.json'),
-    getJSON('cities.json'),
-    getJSON('forecast_history.json')
+    getJSON('latest.json'),getJSON('history.json'),getJSON('forecast.json'),
+    getJSON('funds.json'),getJSON('cities.json'),getJSON('forecast_history.json')
   ]);
   const quality=window.NextRateDataQuality;
   const clean=market.status==='fulfilled'?quality?.market(market.value):null;
-  if(clean){
-    rates=clean;
-    history=quality.history(historical.status==='fulfilled'?historical.value:null,
-      clean.india);
-    loadFailure=null;
+  const origin=publicationLoader.status().source;
+  // An offline backup or lagging CDN must never replace newer prices already on screen.
+  const regressed=rates&&clean&&(clean.india.date<rates.india.date||
+    clean.india.date===rates.india.date&&rates.india.session==='PM'&&clean.india.session==='AM');
+  if(!clean||regressed||rates&&dataSource==='cloudflare'&&origin!=='cloudflare'){
+   refreshFailed=true;
+   if(!rates)loadFailure=new Error('Verified market rates unavailable');
   }else{
-    rates=null;history=null;
-    loadFailure=new Error('Verified market rates unavailable');
+   rates=clean;history=quality.history(historical.status==='fulfilled'?historical.value:null,clean.india);
+   loadFailure=null;refreshFailed=false;dataSource=origin;lastGoodCheck=Number.isFinite(Date.parse(clean.checked_at))?Date.parse(clean.checked_at):Date.now();
+   forecast=model.status==='fulfilled'&&model.value?.schema_version===1?model.value:null;
+   if(forecast?.status==='experimental'&&!quality.forecastIsConsistent(forecast,rates,indiaTodayISO()))forecast=null;
+   forecastLoadFailure=!forecast;
+   funds=quality.funds(nav.status==='fulfilled'?nav.value:null);navLoadFailure=!Object.keys(funds.funds).length;
+   issuedForecasts=quality.forecastHistory(issued.status==='fulfilled'?issued.value:null,history);
+   cityRates=quality.cities(city.status==='fulfilled'?city.value:null);
+   window.NextRateFeatures?.checkAlerts(featuresContext());
   }
-  // Only render the model if its date, baseline and entire range match
-  // the published IBJA snapshot. Unavailable forecasts remain labelled.
-  forecast=model.status==='fulfilled'&&model.value?.schema_version===1?
-    model.value:null;
-  if(forecast?.status==='experimental'&&
-     !quality?.forecastIsConsistent(forecast,rates,indiaTodayISO()))forecast=null;
-  forecastLoadFailure=!forecast;
-  funds=nav.status==='fulfilled'&&nav.value?.schema_version===1?nav.value:null;
-  navLoadFailure=!funds;
-  issuedForecasts=issued.status==='fulfilled'&&issued.value?.schema_version===1?
-    issued.value:null;
-  cityRates=city.status==='fulfilled'&&city.value?.schema_version===1?
-    city.value:null;
-  window.NextRateFeatures?.checkAlerts(featuresContext());
-  render();
+ }catch{
+  refreshFailed=true;if(!rates)loadFailure=new Error('Verified market rates unavailable');
+ }finally{
+  loadingData=false;
+  // Keep entered tool values when a refresh updates the reference; prior results are cleared.
+  const saved=savedForm();render();restoreForm(saved);
+ }
 }
 function setCityMenu(open, focusSelection=false){
   cityMenu.hidden=!open;
@@ -943,9 +982,10 @@ function updateLanguageControl(){
 }
 function setLanguage(language){
   if(language!=='ta' && language!=='en')return;
+  const saved=savedForm();
   appLanguage=language;
   window.NextRateI18n?.persist(language);
-  render();
+  render();restoreForm(saved);
 }
 document.querySelectorAll('[data-language]').forEach(button=>{
   button.addEventListener('click',()=>setLanguage(button.dataset.language));
@@ -955,9 +995,12 @@ document.addEventListener('click',event=>{
   const link=event.target.closest('[data-feature-link]');
   if(link)window.NextRateFeatures?.select(link.dataset.featureLink);
 });
-window.addEventListener('focus',()=>{
-  if(rates&&window.NextRateFeatures?.checkAlerts(featuresContext())&&location.hash==='#tools')render();
-});
+window.addEventListener('focus',()=>{void loadData();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void loadData();});
+setInterval(()=>{
+ const editing=document.activeElement?.matches('input,textarea,[contenteditable="true"]');
+ if(!document.hidden&&!editing)void loadData();
+},300000);
 window.addEventListener('hashchange',render);
 // Unregister the retired notification-only worker installed by older releases.
 if(navigator.serviceWorker?.getRegistrations){
