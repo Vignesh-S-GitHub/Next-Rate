@@ -17,6 +17,16 @@ async function choose(name,val){await click('[data-tool-picker]:has(input[name="
 async function refresh(){await page.clock.fastForward(60001);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));}
 async function submit(kind){await page.locator('[data-feature-form="'+kind+'"] button[type="submit"]').click();}
 async function layout(){const bounds=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width&&r.right>innerWidth+2;}).slice(0,8).map(el=>({tag:el.tagName,cls:el.className,right:Math.round(el.getBoundingClientRect().right)}))}));assert.ok(bounds.scroll<=bounds.width+2,'No horizontal page overflow: '+JSON.stringify(bounds));assert.doesNotMatch(await page.locator('#app').innerText(),/NaN|undefined|Invalid Date|Infinity/);checks+=2;}
+async function alignedFields(){
+ const boxes=await page.locator('.tool-form-grid>.tool-field').evaluateAll(fields=>fields.map(field=>{
+  const c=field.querySelector('input:not([type="hidden"]),.tool-picker-trigger'),f=field.getBoundingClientRect(),r=c?.getBoundingClientRect();
+  return {row:f.y,top:r?.top,bottom:r?.bottom,width:r?.width};
+ }));
+ for(let i=0;i+1<boxes.length;i+=2){const a=boxes[i],b=boxes[i+1];if(Math.abs(a.row-b.row)<2){
+  assert.ok(Math.abs(a.top-b.top)<2,'Paired input tops align: '+JSON.stringify(boxes));
+  assert.ok(Math.abs(a.bottom-b.bottom)<2,'Paired input bottoms align');checks+=2;
+ }}
+}
 async function open(context,mode='ok',docs=documents,stored=null){
  page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page._errors=errors;
  await page.clock.install({time:new Date('2026-10-27T10:00:00Z')});
@@ -31,6 +41,12 @@ async function audit(viewport){
  await text('.home-actual',new RegExp(indian.gold24_inr_10g.toLocaleString('en-IN')));await layout();
  assert.equal(await page.locator('[data-refresh],.data-status,.home-source-note,.nr-small-details').count(),0);checks++;
  assert.equal(await page.locator('.home-actual .source-logo-link').count(),0);checks++;
+ const periods=await page.locator('.home-change-periods').evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,buttons:[...el.children].map(b=>{const p=b.getBoundingClientRect();return {left:p.left,right:p.right,width:p.width};})};});
+ assert.ok(Math.abs(periods.buttons[0].left-periods.left)<1&&Math.abs(periods.buttons[3].right-periods.right)<1,'Period buttons fill the row');
+ assert.ok(periods.buttons.every(b=>Math.abs(b.width-periods.buttons[0].width)<1),'Period buttons have equal widths');checks+=2;
+ const quoteAlignment=await page.locator('.home-today-item').evaluateAll(rows=>rows.map(row=>{const a=row.querySelector(':scope>span').getBoundingClientRect(),b=row.querySelector('.home-today-values>strong').getBoundingClientRect();return Math.abs(a.top-b.top);}));
+ assert.ok(quoteAlignment.every(d=>d<9),'Metal labels align with price line');checks++;
+
  const actualBox=await page.locator('.home-actual').boundingBox(),forecastBox=await page.locator('.forecast-shell').boundingBox();
  if(viewport.width<=900)assert.ok(actualBox.y+actualBox.height<=forecastBox.y,'Today precedes forecast on small screens');
  else assert.ok(Math.abs(actualBox.y-forecastBox.y)<2,'Both desktop columns begin together');checks++;
@@ -70,12 +86,17 @@ async function audit(viewport){
  await route('tools');
  assert.equal(await page.locator('[data-tool-select]').count(),3);checks++;
  for(const removed of ['alerts','jewellery','accuracy','shops','portfolio','signals']){assert.equal(await page.locator('[data-tool-select="'+removed+'"]').count(),0);checks++;}
- await tool('resale');await choose('purity','22');await submit('resale');await text('#resale-result',new RegExp(money(indian.gold22_inr_10g*.8*.98).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+ assert.equal(await page.locator('.tool-menu-item svg').count(),0);checks++;
+ const tabs=await page.locator('.tool-menu-item').evaluateAll(items=>items.map(el=>el.getBoundingClientRect().height));assert.ok(Math.max(...tabs)-Math.min(...tabs)<1&&Math.max(...tabs)<=55,'Tool tabs are compact and equal height');checks++;
+ await tool('resale');await alignedFields();await choose('purity','22');await submit('resale');await text('#resale-result',new RegExp(money(indian.gold22_inr_10g*.8*.98).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
  await page.locator('input[name="grams"]').fill('12');await choose('purity','18');await refresh();await value('input[name="grams"]','12');await value('input[name="purity"]','18');await submit('resale');await text('#resale-result',/Estimated cash/);
  await tool('hallmark');await page.locator('input[name="code"]').fill('ABC123');await submit('huid');await text('#huid-result',/Not yet verified/);
- await tool('etfs');await page.locator('input[name="quote"]').fill('120');await submit('etf');await text('#etf-result',/Different dates — premium unavailable/);await layout();
+ await tool('etfs');await alignedFields();
+ const etfRows=await page.locator('.tool-etf-row').evaluateAll(rows=>rows.map(row=>({columns:row.children.length,top:Math.abs(row.querySelector('strong').getBoundingClientRect().top-row.querySelector('b').getBoundingClientRect().top)})));
+ assert.ok(etfRows.every(r=>r.columns===2&&r.top<2),'Fund names and NAV values share two aligned columns');checks++;
+ await page.locator('input[name="quote"]').fill('120');await submit('etf');await text('#etf-result',/Different dates — premium unavailable/);await layout();
  await tool('resale');await page.locator('input[name="grams"]').fill('15');await choose('purity','22');
- await click('[data-language="ta"]');await value('input[name="grams"]','15');await value('input[name="purity"]','22');await layout();
+ await click('[data-language="ta"]');await alignedFields();await value('input[name="grams"]','15');await value('input[name="purity"]','22');await layout();
  await click('[data-language="en"]');await value('input[name="grams"]','15');
  // Every route in Tamil must still render all data without clipping or a runtime failure.
  for(const language of ['ta','en']){await click('[data-language="'+language+'"]');for(const name of ['home','markets','compare','insights','tools']){await route(name);await layout();}}
@@ -102,7 +123,7 @@ async function audit(viewport){
  await layout();assert.deepEqual(page._errors,[]);await context.close();
  context=await browser.newContext({viewport:{width:390,height:844}});await open(context,'offline');await text('.data-warning',/dated backup/);await route('tools');await tool('resale');await layout();assert.deepEqual(page._errors,[]);await context.close();
  const broken=clone(documents);broken['cities.json'].dates={gold:'2099-01-01',silver:'2026-02-31'};broken['funds.json'].funds.goldbees.nav_inr_per_unit='116';broken['forecast_history.json'].forecasts=[null,{target_date:'bad'}];
- context=await browser.newContext();await open(context,'ok',broken,{version:2,preferred:'removed',etfQuotes:{goldbees:{quote:-1,date:'bad'}}});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('etfs');await text('.tool-etf-list',/Manual premium/);await layout();assert.deepEqual(page._errors,[]);await context.close();
+ context=await browser.newContext();await open(context,'ok',broken,{version:2,preferred:'removed',etfQuotes:{goldbees:{quote:-1,date:'bad'}}});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('etfs');await text('.tool-etf-list',/NAV \/ unit/);await layout();assert.deepEqual(page._errors,[]);await context.close();
  // A later failed API must not roll the app back to its committed dated backup.
  context=await browser.newContext();await open(context);const before=await page.locator('.home-actual').innerText();await page.unroute(endpoint+'/**');await page.route(endpoint+'/**',r=>r.abort());await refresh();await text('.data-warning',/Keeping the last verified prices/);assert.equal(await page.locator('.home-actual').innerText(),before);checks++;await context.close();
  // Exercise the market-adjusted publication, rather than only legacy fallback fixtures.

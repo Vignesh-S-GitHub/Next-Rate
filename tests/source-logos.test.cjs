@@ -51,7 +51,7 @@ test('Home is free of repeated source badges while sources remain available on r
 });
 test('The website deployment includes source logos module and cache version is bumped',()=>{
  assert.match(html,/source-logos\.js\?v=20261025-official-sources1/);
- assert.match(html,/features\.css\?v=20261027-compact1/);
+ assert.match(html,/features\.css\?v=20261027-align1/);
  for(const wf of workflows){
   assert.ok(wf.includes('source-logos.js'));
   assert.ok(wf.includes('node --test tests/*.test.cjs'));

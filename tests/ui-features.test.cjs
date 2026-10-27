@@ -16,7 +16,7 @@ test('Supported panels retain working forms and authoritative plain source links
  for(const [id,kind]of [['resale','resale'],['hallmark','huid'],['etfs','etf']]){
   F.select(id);const markup=F.page(context);
   assert.ok(markup.includes('data-feature-form="'+kind+'"'));assert.ok(markup.includes('data-tool-select="'+id+'" aria-pressed="true"'));
-  assert.doesNotMatch(markup,/source-logo|tool-count/);
+  assert.doesNotMatch(markup,/source-logo|tool-count|<svg/);
  }
  F.select('hallmark');assert.match(F.page(context),/play\.google\.com\/store\/apps\/details\?id=com\.bis\.bisapp/);
  assert.match(F.page(context),/NextRate cannot verify HUID by itself/);
