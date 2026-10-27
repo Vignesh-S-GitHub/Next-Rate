@@ -64,7 +64,8 @@ async function audit(viewport){
   if(!fs.existsSync(file)){res.writeHead(404).end();return;}res.writeHead(200,{'Content-Type':mime||'application/octet-stream'});fs.createReadStream(file).pipe(res);
  });
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));server.url='http://127.0.0.1:'+server.address().port+'/';
- browser=await chromium.launch();
+ browser=await chromium.launch(process.env.BROWSER_CHANNEL?{channel:process.env.BROWSER_CHANNEL}:{});
+ console.log('Browser:',await browser.version());
  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:360,height:800}])await audit(viewport);
  // Outage, corrupted optional feeds and local backups must fail gracefully on every tab.
  let context=await browser.newContext({viewport:{width:390,height:844}});await open(context,'offline');await text('.data-status',/dated backup/);await route('tools');await tool('portfolio');await layout();assert.deepEqual(page._errors,[]);await context.close();

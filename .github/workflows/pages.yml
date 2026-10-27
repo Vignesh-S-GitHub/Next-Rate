@@ -53,9 +53,10 @@ jobs:
         timeout-minutes: 5
         run: |
           npm ci
-          npx playwright install --with-deps chromium
 
       - name: Exercise every tab and tool on desktop and phone
+        env:
+          BROWSER_CHANNEL: chrome
         run: npm run test:browser
 
       - name: Save failed browser check screenshot

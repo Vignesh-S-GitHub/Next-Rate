@@ -43,7 +43,7 @@ npm run test:browser
 python scripts/smoke_site.py
 ```
 
-Browser checks run against isolated deterministic publications at 1440, 390 and 360 pixel widths. They exercise five routes, all nine tools, both languages, chart periods/selection, calculator outputs, purity changes, local entries, offline fallback, malformed optional feeds and corrupted saved data. Live HTTP and cross-document checks run separately after Pages deployment. Failed browser checks retain a screenshot as a GitHub Actions artifact.
+CI uses the GitHub runner's preinstalled Chrome; local runs can install Playwright Chromium with the command above. Browser checks run against isolated deterministic publications at 1440, 390 and 360 pixel widths. They exercise five routes, all nine tools, both languages, chart periods/selection, calculator outputs, purity changes, local entries, offline fallback, malformed optional feeds and corrupted saved data. Live HTTP and cross-document checks run separately after Pages deployment. Failed browser checks retain a screenshot as a GitHub Actions artifact.
 
 ## Operating limits
 
