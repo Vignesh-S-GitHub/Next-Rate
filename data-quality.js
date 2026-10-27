@@ -63,7 +63,7 @@ function history(doc,india,today=todayIST()){
   if(prior&&keys.some(k=>prior[k]!=null&&clean[k]!=null&&prior[k]!==clean[k]))conflicts.add(key);
   byKey.set(key,{...prior,...clean});
  }
- for(const k of conflicts)byKey.delete(k);
+ for(const [key,row] of byKey)if(conflicts.has(key)||!validHistoryRow(row,today))byKey.delete(key);
  if(india)byKey.set(india.date+':'+india.session,{...india});
  return {schema_version:1,india:[...byKey.values()].sort((a,b)=>
   a.date.localeCompare(b.date)||a.session.localeCompare(b.session))};
@@ -153,6 +153,14 @@ function forecastIsConsistent(doc,snapshot,today=todayIST()){
  const mapped={gold24:'gold24_inr_10g',gold22:'gold22_inr_10g',silver:'silver999_inr_kg'};
  return Object.entries(mapped).every(([metal,key])=>{
   const v=doc.metals?.[metal];
+  if(v?.backtest?.status==='walk_forward'&&(!['holdout_mape_pct','holdout_naive_mape_pct'].every(k=>
+    typeof v.backtest[k]==='number'&&Number.isFinite(v.backtest[k])&&v.backtest[k]>=0)||
+    typeof v.backtest.holdout_beats_naive!=='boolean'))return false;
+  const p=v?.range_profile;
+  if(p&&(!Number.isInteger(p.holdout_samples)||p.holdout_samples<=0||
+    !Number.isInteger(p.holdout_covered)||p.holdout_covered<0||p.holdout_covered>p.holdout_samples||
+    typeof p.holdout_coverage_pct!=='number'||!Number.isFinite(p.holdout_coverage_pct)||
+    Math.abs(p.holdout_coverage_pct-p.holdout_covered/p.holdout_samples*100)>.11))return false;
   return v&&['estimate','baseline','low','high'].every(k=>
    typeof v[k]==='number'&&Number.isFinite(v[k])&&v[k]>0)&&
    v.baseline===snapshot.india[key]&&v.low<v.estimate&&v.estimate<v.high&&

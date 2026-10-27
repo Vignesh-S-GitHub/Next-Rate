@@ -73,3 +73,14 @@ test('invalid backup entries cannot crash tools or contaminate aggregate totals'
  assert.throws(()=>C.storedState({...valid,holdings:[good,good]},true),/Invalid/);
  assert.doesNotThrow(()=>C.storedState({version:1,holdings:[null]}));
 });
+
+
+test('malformed forecast performance evidence is never displayed as a numeric score',()=>{
+ const v={baseline:141082,estimate:141082,low:140000,high:143000};
+ const forecast={schema_version:1,status:'experimental',target_date:shift(1),based_on_date:today,based_on_session:'AM',
+  metals:{gold24:v,gold22:{...v,baseline:129231,estimate:129231,low:128000,high:130000},silver:{...v,baseline:192037,estimate:192037,low:190000,high:194000}}};
+ assert.equal(Q.forecastIsConsistent(forecast,{india},today),true);
+ const bad=clone=>({...forecast,metals:{...forecast.metals,gold24:{...v,...clone}}});
+ assert.equal(Q.forecastIsConsistent(bad({backtest:{status:'walk_forward',holdout_mape_pct:.5}}),{india},today),false);
+ assert.equal(Q.forecastIsConsistent(bad({range_profile:{holdout_samples:10,holdout_covered:8,holdout_coverage_pct:100}}),{india},today),false);
+});

@@ -51,7 +51,12 @@ python -m unittest discover -s tests -v
 node --test tests/*.test.cjs
 python scripts/archive_data.py --verify
 python scripts/validate_publication.py
+npm ci
+npx playwright install --with-deps chromium
+npm run test:browser
 python scripts/smoke_site.py
 ```
+
+For the tab-by-tab data contract, repaired edge cases and browser coverage, see the [app audit](docs/APP_AUDIT.md). Pull requests run the same browser checks before deployment.
 
 The pipeline retains actual publication timestamps when sources fail and refuses corrupt/mismatched data. For incident procedures see [production checks](docs/PRODUCTION_CHECKS.md) and [permanent data retention](docs/DATA_RETENTION.md). Verify source redistribution rights before commercial usage.

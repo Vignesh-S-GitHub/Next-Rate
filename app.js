@@ -291,10 +291,9 @@ function forecastMetalCard(key, title, unit, iconFile){
   );
   const selected=activeForecastMetal===key;
   if(!valid)return '<div class="forecast-metal"><strong>'+title+'</strong><span>Estimate unavailable</span></div>';
-  const direction=['Up','Down','Mostly steady'].includes(data.direction)?data.direction:'Mostly steady';
+  const direction=data.estimate>data.baseline?'Up':data.estimate<data.baseline?'Down':'Mostly steady';
   const dirClass=direction==='Up'?'is-up':direction==='Down'?'is-down':'is-steady';
-  const change=typeof data.expected_change_pct==='number'&&Number.isFinite(data.expected_change_pct)
-    ? data.expected_change_pct : (data.estimate/data.baseline-1)*100;
+  const change=(data.estimate/data.baseline-1)*100;
   const percent=(change>0?'+':'')+change.toFixed(2)+'%';
   const diff=data.estimate-data.baseline;
   const delta=(diff>0?'+':'−')+price(Math.abs(diff));
@@ -801,6 +800,10 @@ function errorScreen() {
     '<article class="card"><h2>Rates temporarily unavailable</h2><p>NextRate has no confirmed published snapshot yet. Cloudflare will publish a new snapshot after a verified source check. We do not show invented fallback prices.</p><a href="https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json" target="_blank" rel="noopener noreferrer">Check collection status ↗</a></article>';
 }
 function render() {
+  const quality=window.NextRateDataQuality;
+  if(rates)rates=quality.market(rates);
+  if(funds)funds=quality.funds(funds);
+  if(cityRates)cityRates=quality.cities(cityRates);
   let route=location.hash.slice(1);
   if(!['home','markets','compare','insights','tools'].includes(route))route='home';
   document.querySelectorAll('[data-route]').forEach(a=>{
@@ -994,7 +997,10 @@ document.addEventListener('click',event=>{
 });
 window.addEventListener('focus',()=>{void loadData();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)void loadData();});
-setInterval(()=>{if(!document.hidden&&!app.contains(document.activeElement))void loadData();},300000);
+setInterval(()=>{
+ const editing=document.activeElement?.matches('input,textarea,[contenteditable="true"]');
+ if(!document.hidden&&!editing)void loadData();
+},300000);
 window.addEventListener('hashchange',render);
 // Unregister the retired notification-only worker installed by older releases.
 if(navigator.serviceWorker?.getRegistrations){
