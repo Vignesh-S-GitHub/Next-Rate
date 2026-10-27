@@ -49,6 +49,13 @@ the rupee and percentage change; insufficient history is labelled rather than
 silently shortening the selected period. These are actual-price returns, separate
 from tomorrow's estimate and the forecast chart controls.
 
+The interface uses continuous desktop columns and a single mobile stack. Routine
+refresh controls and repeated Home source emblems are removed; automatic refresh
+continues, with a compact warning only when data is unavailable or old. Tools now
+contains only Sell / Exchange, Verify Hallmark and ETF Comparison. Retired panels,
+handlers, calculators and backup/import controls have been deleted; existing saved
+ETF quotes migrate into the supported tool preferences.
+
 ## Market data and forecast limitations
 
 - [IBJA](https://www.ibjarates.com/): national AM/PM gold and silver benchmark observations, not shop checkout prices; GST and making charges excluded.

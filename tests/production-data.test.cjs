@@ -51,30 +51,6 @@ test('accuracy is recomputed from verified PM prices, never an arbitrary supplie
  const am=Q.forecastHistory({schema_version:1,forecasts:[record]},{india:[{...historical.india[0],session:'AM'}]},today);
  assert.equal(am.forecasts[0].evaluation,undefined);
 });
-test('stale references do not generate portfolio profits or reached-target alerts',()=>{
- const rates={india:{...india,date:shift(-8)}};
- const row={kind:'gold22',qty:8,paid:100000};
- assert.equal(C.holdingValuation(row,{rates}).value,null);
- assert.equal(C.alertValue({metal:'gold22',grams:8},{rates}),null);
- const fund={nav_date:shift(1),nav_inr_per_unit:116.1182};
- assert.equal(C.holdingValuation({...row,kind:'goldbees'},{funds:{funds:{goldbees:fund}}}).value,null);
- assert.equal(C.holdingValuation({...row,qty:.001},{rates:{india}}).value,12.92);
- assert.equal(C.ageDays('2026-02-31'),Infinity);
-});
-test('invalid backup entries cannot crash tools or contaminate aggregate totals',()=>{
- const good={id:'a',name:'Gold',kind:'gold22',qty:8,paid:100000,date:today};
- const state={version:1,alerts:[null,{id:'x'}],shops:[null],holdings:[null,good,{...good,id:'b',qty:-1},{...good,id:'c',paid:'100'}],etfQuotes:{goldbees:{quote:-1,date:today}}};
- const clean=C.storedState(state);
- assert.deepEqual(clean.holdings,[good]);assert.deepEqual(clean.alerts,[]);assert.deepEqual(clean.shops,[]);
- assert.deepEqual(clean.etfQuotes,{});
- assert.throws(()=>C.storedState(state,true),/Invalid/);
- const valid={version:1,alerts:[],shops:[],holdings:[good],etfQuotes:{},preferred:'portfolio'};
- assert.deepEqual(C.storedState(valid,true).holdings,[good]);
- assert.throws(()=>C.storedState({...valid,holdings:[good,good]},true),/Invalid/);
- assert.doesNotThrow(()=>C.storedState({version:1,holdings:[null]}));
-});
-
-
 test('malformed forecast performance evidence is never displayed as a numeric score',()=>{
  const v={baseline:141082,estimate:141082,low:140000,high:143000};
  const forecast={schema_version:1,status:'experimental',target_date:shift(1),based_on_date:today,based_on_session:'AM',
@@ -90,7 +66,14 @@ test('blocked browser storage preserves in-memory tools and reports that data wi
  const vm=require('node:vm'),fs=require('node:fs');
  const win={NextRateCore:C,NextRateSources:{badge:()=>''},localStorage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}};
  vm.runInNewContext(fs.readFileSync(require.resolve('../features.js'),'utf8'),{window:win});
- win.NextRateFeatures.select('portfolio');
+ win.NextRateFeatures.select('resale');
  assert.match(win.NextRateFeatures.page({rates:{india}}),/Changes last only for this visit/);
- assert.equal(win.NextRateFeatures.getState().holdings.length,0);
+ assert.equal(win.NextRateFeatures.getState().preferred,'resale');
+});
+
+test('tool preferences migrate only supported ETF quotes and reject invalid saved values',()=>{
+ const clean=C.storedState({version:1,preferred:'removed',legacy:[null],etfQuotes:{goldbees:{quote:120,date:today},hdfcgold:{quote:-1,date:today},sbigold:{quote:'120',date:today},silveretf:{quote:1,date:shift(1)}}});
+ assert.deepEqual(clean,{preferred:'resale',etfQuotes:{goldbees:{quote:120,date:today}}});
+ assert.equal(C.storedState({version:2,preferred:'etfs'}).preferred,'etfs');
+ assert.equal(C.storedState({version:99,preferred:'hallmark'}).preferred,'resale');
 });

@@ -20,7 +20,7 @@ Updated 26 October 2026. **No new end-user features**: these are reliability gat
 ## Release acceptance
 
 - **Collector correctness:** `python -m unittest discover -s tests -v` covers IBJA parsing, fallback FX, international spot, Goodreturns city values, AMFI NAVs, backfill, archive immutability, holiday calendar, forecasting, and corrupt/mismatched snapshot scenarios.
-- **UI regressions:** `node --test tests/*.test.cjs` covers all five tabs, nine existing tools, 7D/30D/90D chart, tooltip behaviour, responsive CSS structure, calculations, locale switching, and source/price labelling.
+- **UI regressions:** `node --test tests/*.test.cjs` covers all five tabs, the three supported tools, 7D/30D/90D chart, tooltip behaviour, responsive CSS structure, calculations, locale switching, and source/price labelling.
 - **Pre-publication gate:** `python scripts/validate_publication.py` rejects mismatched latest/history, dates in the future, bad purity ratios, impossible prices, mismatched model baselines, malformed ranges, duplicate forecast issue identifiers, invalid NAVs/city quotes.
 - **Staged-artifact gate:** `python scripts/validate_publication.py --root _site --site` validates the actual deployable folder, not just source files.
 - **Live-site verification:** both workflows fetch the published URL, essential assets, the six market JSON feeds, and every local script and stylesheet referenced by the HTML through `scripts/smoke_site.py`. Invalid HTTP responses, missing assets, old HTML, or inconsistent live market data fail the workflow.
@@ -78,7 +78,7 @@ The automated smoke validates HTTP availability and internal data integrity of t
 
 - Latest actual movement uses the previous available published date (not the previous calendar day) and retains AM/PM labels.
 - Model v3 changes interval presentation, not the point-model selection policy. Earlier median absolute relative forecast errors set the typical 50% historical band; the subsequent holdout only reports realised coverage. AM observations do not become validation closes.
-- The wider heuristic scenario remains available in About this estimate. Neither range is a guaranteed future probability; a tighter interval alone is not higher accuracy.
+- Forecast data retains its scenario metadata. The compact interface shows the scenario range without a technical explanation panel; it is not a guaranteed future probability.
 - Forecast check requires an issuance before the target day, preserves the issued estimate, and marks matching AM prices provisional. PM results show error, range coverage and direction separately. Earlier model versions remain in the audit archive.
 
 ### Scheduled-trigger investigation and recovery — 26 October 2026

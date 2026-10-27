@@ -18,7 +18,7 @@
 - Forecast accuracy is recalculated from verified target-date PM observations. AM comparisons remain provisional; forecasts issued after their target day began are not scored as prospective predictions.
 - History cannot override the current snapshot, introduce a later session, or retain conflicting/invalid observations. Chart actual points identify their AM/PM session.
 - Forecast direction/percentage are derived from the estimate and baseline. Malformed performance evidence is withheld.
-- A return to the page checks for updates (at most once a minute); an idle visible page checks every five minutes. Refresh data is available on every tab. Data checked displays the source publication check time.
+- A return to the page checks for updates (at most once a minute); an idle visible page checks every five minutes. Routine refresh controls are removed. Automatic refresh continues; only failed connections, backup data and old rates show a compact warning.
 - A source/API outage preserves the last verified in-page publication. Initial committed fallback data is visibly labelled. A fallback cannot replace a newer live publication.
 - Tool fields and purity selections survive a refresh or language change. Prior calculated results clear when references are refreshed, so an older calculation is not presented with a new source date.
 - Calculator reference labels include both published gold purities. Suggested shop rates change with purity; manually edited shop prices are retained.
@@ -43,7 +43,7 @@ npm run test:browser
 python scripts/smoke_site.py
 ```
 
-CI uses the GitHub runner's preinstalled Chrome; local runs can install Playwright Chromium with the command above. Browser checks run against isolated deterministic publications at 1440, 390 and 360 pixel widths. They exercise five routes, all nine tools, both languages, chart periods/selection, calculator outputs, purity changes, local entries, offline fallback, malformed optional feeds and corrupted saved data. Live HTTP and cross-document checks run separately after Pages deployment. Failed browser checks retain a screenshot as a GitHub Actions artifact.
+CI uses the GitHub runner's preinstalled Chrome; local runs can install Playwright Chromium with the command above. Browser checks run against isolated deterministic publications at 1440, 1024, 768, 390 and 360 pixel widths. They exercise five routes, the three supported tools (Sell / Exchange, Verify Hallmark and ETF Comparison), both languages, chart periods/selection, calculator outputs, purity changes, saved ETF quotes, offline fallback, malformed optional feeds and corrupted saved data. Live HTTP and cross-document checks run separately after Pages deployment. Failed browser checks retain a screenshot as a GitHub Actions artifact.
 
 ## Operating limits
 

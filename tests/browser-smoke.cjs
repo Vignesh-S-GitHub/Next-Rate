@@ -14,19 +14,26 @@ async function click(selector){await page.locator(selector).click();}
 async function route(name){await page.locator('[data-route="'+name+'"]:visible').click();await page.waitForFunction(n=>document.title==='NextRate | '+n[0].toUpperCase()+n.slice(1),name);}
 async function tool(name){await click('[data-tool-select="'+name+'"]');await page.locator('[data-tool-select="'+name+'"][aria-pressed="true"]').waitFor();}
 async function choose(name,val){await click('[data-tool-picker]:has(input[name="'+name+'"]) [data-tool-picker-toggle]');await click('[data-tool-picker]:has(input[name="'+name+'"]) [data-value="'+val+'"]');}
+async function refresh(){await page.clock.fastForward(60001);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));}
 async function submit(kind){await page.locator('[data-feature-form="'+kind+'"] button[type="submit"]').click();}
-async function layout(){assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'No horizontal page overflow');assert.doesNotMatch(await page.locator('#app').innerText(),/NaN|undefined|Invalid Date|Infinity/);checks+=2;}
+async function layout(){const bounds=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.width&&r.right>innerWidth+2;}).slice(0,8).map(el=>({tag:el.tagName,cls:el.className,right:Math.round(el.getBoundingClientRect().right)}))}));assert.ok(bounds.scroll<=bounds.width+2,'No horizontal page overflow: '+JSON.stringify(bounds));assert.doesNotMatch(await page.locator('#app').innerText(),/NaN|undefined|Invalid Date|Infinity/);checks+=2;}
 async function open(context,mode='ok',docs=documents,stored=null){
  page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));page._errors=errors;
  await page.clock.install({time:new Date('2026-10-27T10:00:00Z')});
- if(stored)await page.addInitScript(s=>localStorage.setItem('nextrate-tools-v1',JSON.stringify(s)),stored);
+ if(stored)await page.addInitScript(s=>localStorage.setItem('nextrate-tools-v2',JSON.stringify(s)),stored);
  await page.route(endpoint+'/**',r=>mode==='offline'?r.abort():r.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'*'},body:JSON.stringify({schema_version:1,revision:1,documents:docs})}));
  await page.goto(server.url);await page.locator('.home-actual strong').first().waitFor();return page;
 }
 async function audit(viewport){
+ console.log('Audit viewport:',viewport.width);
  const context=await browser.newContext({viewport});await open(context);
  const indian=documents['latest.json'].india;
  await text('.home-actual',new RegExp(indian.gold24_inr_10g.toLocaleString('en-IN')));await layout();
+ assert.equal(await page.locator('[data-refresh],.data-status,.home-source-note,.nr-small-details').count(),0);checks++;
+ assert.equal(await page.locator('.home-actual .source-logo-link').count(),0);checks++;
+ const actualBox=await page.locator('.home-actual').boundingBox(),forecastBox=await page.locator('.forecast-shell').boundingBox();
+ if(viewport.width<=900)assert.ok(actualBox.y+actualBox.height<=forecastBox.y,'Today precedes forecast on small screens');
+ else assert.ok(Math.abs(actualBox.y-forecastBox.y)<2,'Both desktop columns begin together');checks++;
  const core=require('../features-core.js');
  const latestPrices=await page.locator('.home-today-values>strong').allTextContents();
  for(const days of [7,30,90,0]){
@@ -48,7 +55,7 @@ async function audit(viewport){
  await click('[data-price-days="30"]');await click('[data-chart-days="90"]');
  await page.locator('[data-price-days="30"][aria-pressed="true"]').waitFor();checks++;
  await click('[data-language="ta"]');await text('.home-change-periods',/இன்று/);await layout();
- await click('[data-refresh]');await page.locator('[data-price-days="30"][aria-pressed="true"]').waitFor();checks++;
+ await refresh();await page.locator('[data-price-days="30"][aria-pressed="true"]').waitFor();checks++;
  await click('[data-language="en"]');await click('[data-price-days="0"]');
  for(const metal of ['gold24','gold22','silver']){await click('[data-forecast-metal="'+metal+'"]');await page.locator('[data-chart-svg]').press('End');await text('[data-chart-tooltip]',/Estimate/);}
  for(const days of [7,30,90]){await click('[data-chart-days="'+days+'"]');await page.locator('[data-chart-svg]').press('Home');await text('[data-chart-tooltip]',/Actual · (AM|PM)/);}
@@ -61,20 +68,15 @@ async function audit(viewport){
  await click('#city-trigger');await click('[data-city="Delhi"]');await text('#selected-city',/Delhi/);await layout();
  await route('insights');for(const id of ['metal-purity-title','metal-drivers-title','metal-buying-title','metal-questions-title']){await click('[data-insight-jump="'+id+'"]');await page.locator('#'+id).waitFor();checks++;}await layout();
  await route('tools');
- await tool('alerts');await page.locator('input[name="target"]').fill('999999');await submit('alert');await text('.tool-list',/Reached/);assert.equal(await page.locator('[data-delete-kind="alerts"]').count(),1);checks++;
- await tool('jewellery');await page.locator('input[name="grams"]').fill('10');await submit('jewellery');await text('#jewellery-result',new RegExp(money(indian.gold22_inr_10g*1.1*1.03).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
- await page.locator('input[name="grams"]').fill('12');await choose('metal','gold24');await click('[data-refresh]');await value('input[name="grams"]','12');await value('input[name="metal"]','gold24');await submit('jewellery');await text('#jewellery-result',/Estimated total/);
- await tool('shops');await choose('metal','gold24');await value('input[name="ratePerGram"]',String(documents['cities.json'].cities.Delhi.gold24_inr_g));await page.locator('input[name="ratePerGram"]').fill('15000');await choose('metal','gold22');await value('input[name="ratePerGram"]','15000');await page.locator('input[name="name"]').fill('Test jeweller');await submit('shops');await text('.tool-list',/Test jeweller/);assert.doesNotMatch(await page.locator('.tool-list').innerText(),/Lowest/);checks++;
- await tool('portfolio');await page.locator('input[name="name"]').fill('Test gold');await page.locator('input[name="qty"]').fill('0.001');await submit('holdings');await text('.tool-list',/Test gold/);await text('.tool-list-tail',/₹14\.17/);
+ assert.equal(await page.locator('[data-tool-select]').count(),3);checks++;
+ for(const removed of ['alerts','jewellery','accuracy','shops','portfolio','signals']){assert.equal(await page.locator('[data-tool-select="'+removed+'"]').count(),0);checks++;}
  await tool('resale');await choose('purity','22');await submit('resale');await text('#resale-result',new RegExp(money(indian.gold22_inr_10g*.8*.98).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+ await page.locator('input[name="grams"]').fill('12');await choose('purity','18');await refresh();await value('input[name="grams"]','12');await value('input[name="purity"]','18');await submit('resale');await text('#resale-result',/Estimated cash/);
  await tool('hallmark');await page.locator('input[name="code"]').fill('ABC123');await submit('huid');await text('#huid-result',/Not yet verified/);
- await tool('etfs');await page.locator('input[name="quote"]').fill('120');await submit('etf');await text('#etf-result',/Different dates — premium unavailable/);
- await tool('accuracy');await text('.tool-accuracy',/Issued forecast error/);
- await tool('signals');await text('.tool-signals',/IST/);await layout();
- // Inputs and custom selections survive both language changes and data refresh.
- await tool('jewellery');await page.locator('input[name="grams"]').fill('15');await choose('metal','gold24');
- await click('[data-language="ta"]');await value('input[name="grams"]','15');await value('input[name="metal"]','gold24');await layout();
- await click('[data-language="en"]');await value('input[name="grams"]','15');await text('.tool-picker-trigger',/24K Gold/);
+ await tool('etfs');await page.locator('input[name="quote"]').fill('120');await submit('etf');await text('#etf-result',/Different dates — premium unavailable/);await layout();
+ await tool('resale');await page.locator('input[name="grams"]').fill('15');await choose('purity','22');
+ await click('[data-language="ta"]');await value('input[name="grams"]','15');await value('input[name="purity"]','22');await layout();
+ await click('[data-language="en"]');await value('input[name="grams"]','15');
  // Every route in Tamil must still render all data without clipping or a runtime failure.
  for(const language of ['ta','en']){await click('[data-language="'+language+'"]');for(const name of ['home','markets','compare','insights','tools']){await route(name);await layout();}}
  assert.deepEqual(page._errors,[]);checks++;await context.close();
@@ -90,7 +92,7 @@ async function audit(viewport){
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));server.url='http://127.0.0.1:'+server.address().port+'/';
  browser=await chromium.launch(process.env.BROWSER_CHANNEL?{channel:process.env.BROWSER_CHANNEL}:{});
  console.log('Browser:',await browser.version());
- for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:360,height:800}])await audit(viewport);
+ for(const viewport of [{width:1440,height:1000},{width:1024,height:900},{width:768,height:1024},{width:390,height:844},{width:360,height:800}])await audit(viewport);
  // Outage, corrupted optional feeds and local backups must fail gracefully on every tab.
  let context;
  // A short archive must not masquerade as a full 90-day return.
@@ -98,11 +100,11 @@ async function audit(viewport){
  context=await browser.newContext({viewport:{width:360,height:800}});await open(context,'ok',shortDocs);
  await click('[data-price-days="90"]');assert.equal(await page.locator('.home-actual-versus').filter({hasText:'Not enough history'}).count(),3);checks++;
  await layout();assert.deepEqual(page._errors,[]);await context.close();
- context=await browser.newContext({viewport:{width:390,height:844}});await open(context,'offline');await text('.data-status',/dated backup/);await route('tools');await tool('portfolio');await layout();assert.deepEqual(page._errors,[]);await context.close();
+ context=await browser.newContext({viewport:{width:390,height:844}});await open(context,'offline');await text('.data-warning',/dated backup/);await route('tools');await tool('resale');await layout();assert.deepEqual(page._errors,[]);await context.close();
  const broken=clone(documents);broken['cities.json'].dates={gold:'2099-01-01',silver:'2026-02-31'};broken['funds.json'].funds.goldbees.nav_inr_per_unit='116';broken['forecast_history.json'].forecasts=[null,{target_date:'bad'}];
- context=await browser.newContext();await open(context,'ok',broken,{version:1,alerts:[null],shops:[{}],holdings:[null,{qty:-1}],preferred:'portfolio'});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('portfolio');await text('.tool-list',/No holdings saved/);await tool('accuracy');await layout();assert.deepEqual(page._errors,[]);await context.close();
+ context=await browser.newContext();await open(context,'ok',broken,{version:2,preferred:'removed',etfQuotes:{goldbees:{quote:-1,date:'bad'}}});await route('compare');await text('.city-rate-list',/No published city rate/);await route('tools');await tool('etfs');await text('.tool-etf-list',/Manual premium/);await layout();assert.deepEqual(page._errors,[]);await context.close();
  // A later failed API must not roll the app back to its committed dated backup.
- context=await browser.newContext();await open(context);const before=await page.locator('.home-actual').innerText();await page.unroute(endpoint+'/**');await page.route(endpoint+'/**',r=>r.abort());await click('[data-refresh]');await text('.data-status',/Keeping the last verified prices/);assert.equal(await page.locator('.home-actual').innerText(),before);checks++;await context.close();
+ context=await browser.newContext();await open(context);const before=await page.locator('.home-actual').innerText();await page.unroute(endpoint+'/**');await page.route(endpoint+'/**',r=>r.abort());await refresh();await text('.data-warning',/Keeping the last verified prices/);assert.equal(await page.locator('.home-actual').innerText(),before);checks++;await context.close();
  // Exercise the market-adjusted publication, rather than only legacy fallback fixtures.
  const {generate}=await import('../cloudflare/nextrate-scheduler/forecast.mjs');
  const {captureAnchors,adjustForecast}=await import('../cloudflare/nextrate-scheduler/market-forecast.mjs');
@@ -118,7 +120,7 @@ async function audit(viewport){
  marketDocs['forecast.json']=adjustForecast(generate(current,marketDocs['history.json'].india,current.checked_at),current,captureAnchors(reference,current),marketDocs['history.json'].india,[],current.checked_at);
  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:360,height:800}]){
   context=await browser.newContext({viewport});await open(context,'ok',marketDocs);
-  await text('.forecast-model-note',/Market-adjusted/);await text('.forecast-reference-time',/27 Oct/);
+  await text('.forecast-drivers',/Global metal move/);
   for(const metal of ['gold24','gold22','silver']){
    await click('[data-forecast-metal="'+metal+'"]');
    const expected=marketDocs['forecast.json'].metals[metal].estimate;
@@ -126,16 +128,14 @@ async function audit(viewport){
    await text('.forecast-drivers',/USD \/ INR move/);await text('.forecast-range',/Scenario range/);await layout();
   }
   await click('[data-language="ta"]');await layout();await click('[data-language="en"]');
-  await click('.nr-small-details summary');await text('.nr-prediction-proof',/0 target dates/);
-  assert.doesNotMatch(await page.locator('.forecast-shell').innerText(),/50% historical|Past simulation error/);checks++;
-  await route('tools');await tool('accuracy');await text('.tool-accuracy',/Forward validation only/);
+  assert.equal(await page.locator('.nr-small-details,.nr-prediction-proof').count(),0);checks++;
   assert.deepEqual(page._errors,[]);checks++;await context.close();
  }
  // A fully unavailable publication keeps learning/tools usable without fabricated values.
  context=await browser.newContext();page=await context.newPage();page._errors=[];page.on('pageerror',e=>page._errors.push(e.message));
  await page.route(endpoint+'/**',r=>r.abort());await page.route('**/data/*.json*',r=>r.abort());await page.goto(server.url);
- await text('#app',/Rates temporarily unavailable/);await route('insights');await text('#app',/Know your metal/);await route('tools');await tool('jewellery');await submit('jewellery');await text('#app',/Current IBJA rate unavailable/);await layout();assert.deepEqual(page._errors,[]);checks++;await context.close();
- console.log('BROWSER VERIFIED:',checks,'assertions across 3 viewports, 5 tabs, 9 tools, 2 languages and outage/malformed-data cases');
+ await text('#app',/Rates temporarily unavailable/);await route('insights');await text('#app',/Know your metal/);await route('tools');await tool('resale');await submit('resale');await text('#app',/IBJA reference unavailable/);await layout();assert.deepEqual(page._errors,[]);checks++;await context.close();
+ console.log('BROWSER VERIFIED:',checks,'assertions across 5 viewports, 5 tabs, 3 tools, 2 languages and outage/malformed-data cases');
 })().catch(async error=>{
  console.error(error);if(page&&!page.isClosed()){fs.mkdirSync(path.join(root,'test-results'),{recursive:true});await page.screenshot({path:path.join(root,'test-results','browser-failure.png'),fullPage:true}).catch(()=>{});console.error('Page:',await page.locator('#app').innerText().catch(()=>''));}process.exitCode=1;
 }).finally(async()=>{await browser?.close();server?.close();});

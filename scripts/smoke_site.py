@@ -63,7 +63,7 @@ def check(url: str):
             raise ValueError("Live HTML still points to an older NextRate build")
         if "nextrate-icon.svg?v=20261026" not in index:
             raise ValueError("Live HTML still points to the old logo")
-        if "app.js?v=20261027-period1" not in index:
+        if "app.js?v=20261027-compact1" not in index:
             raise ValueError("Live HTML still points to an older Home comparison build")
         for tab in ('data-route="home"', 'data-route="markets"',
                     'data-route="compare"', 'data-route="insights"',
