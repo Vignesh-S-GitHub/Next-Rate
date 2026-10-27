@@ -4,9 +4,9 @@
 const C=root.NextRateCore || (typeof module!=='undefined'?require('./features-core.js'):null);
 const KEY='nextrate-tools-v2';
 const SECTIONS=[
- ['resale','arrows','Sell / Exchange'],
- ['hallmark','shield','Verify Hallmark'],
- ['etfs','market','ETF Comparison']
+ ['resale','Sell / Exchange'],
+ ['hallmark','Verify Hallmark'],
+ ['etfs','ETF Comparison']
 ];
 let memory={etfQuotes:{},preferred:'resale'},message='',ctxCache=null,storageUnavailable=false;
 try{
@@ -88,9 +88,8 @@ function etfPanel(){
   try{premiumValue=manual&&manual.date===row.nav_date?C.premium(manual.quote,nav):null;}catch{}
   return '<div class="tool-etf-row"><div><strong>'+h(row.name)+'</strong><small>'+h(row.kind)+
    ' · '+h(row.nav_date||'Unknown date')+'</small></div>'+
-   '<div><b>'+m(nav)+'</b><small>NAV / unit</small></div>'+
-   '<div><b>'+(premiumValue===null?'—':(premiumValue>0?'+':'')+premiumValue.toFixed(2)+'%')+
-   '</b><small>Manual premium</small></div></div>';
+   '<div><b>'+m(nav)+'</b><small>NAV / unit</small>'+
+   (premiumValue===null?'':'<small class="tool-etf-premium">'+(premiumValue>0?'+':'')+premiumValue.toFixed(2)+'% · Manual premium</small>')+'</div></div>';
  }).join('');
  const products=all.map(([id,row])=>[id,row.name]);
  return '<div class="tool-feature-heading"><h2>ETF Comparison</h2><p>Published AMFI NAV. Trade price may differ.</p></div>'+
@@ -108,10 +107,10 @@ function etfPanel(){
 const panels={resale:resalePanel,hallmark:hallmarkPanel,etfs:etfPanel};
 function page(ctx){
  ctxCache=ctx||ctxCache||{};
- const links=SECTIONS.map(([id,ic,label])=>
+ const links=SECTIONS.map(([id,label])=>
   '<button type="button" class="tool-menu-item'+(memory.preferred===id?' active':'')+
   '" data-tool-select="'+id+'" aria-pressed="'+(memory.preferred===id)+'">'+
-   '<svg class="icon" aria-hidden="true"><use href="#i-'+ic+'"/></svg><strong>'+label+'</strong></button>').join('');
+   '<strong>'+label+'</strong></button>').join('');
  return '<div class="toolspage"><div class="tools-header"><h1>Gold Tools</h1></div>'+
   '<div class="tools-layout"><nav class="tools-menu" aria-label="Gold tools">'+links+'</nav>'+
   '<section class="tools-panel" aria-live="polite">'+showBanner()+
