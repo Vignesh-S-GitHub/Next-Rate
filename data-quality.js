@@ -162,6 +162,7 @@ function marketForecastMatches(doc,snapshot){
   m.fx.current_quote_as_of!==fxInput.quote_as_of||m.fx.source_url!==fxInput.source_url||
   !Number.isFinite(Date.parse(m.fx.reference_quote_as_of))||Date.parse(m.fx.reference_quote_as_of)>Date.parse(m.fx.current_quote_as_of)))return false;
  const at=Date.parse(doc.generated_at),reference=Date.parse(m?.reference_checked_at),current=Date.parse(m?.current_checked_at);
+ if(converted){const r=Date.parse(m.fx.reference_quote_as_of);if(r>reference+60000||reference-r>5400000||m.fx.reference_date!==todayIST(new Date(r)))return false;}
  if(doc.model_version!==4||m?.status!=='active'||m.method!=='market_parity_v1'||
   !Number.isFinite(at)||!Number.isFinite(reference)||!Number.isFinite(current)||reference>current||current>at+60000||
   m.current_checked_at!==snapshot.checked_at||m.fx?.current!==fxInput?.inr_per_usd||

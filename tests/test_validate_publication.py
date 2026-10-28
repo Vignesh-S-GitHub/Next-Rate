@@ -75,7 +75,7 @@ class PublicationTests(unittest.TestCase):
             pred.update(model_version=4,forecast_mode="market_adjusted")
             pred["market_model"]={"status":"active","method":"market_parity_v1","current_checked_at":latest["checked_at"],
                 "fx":{"reference":95,"current":96,"current_date":"2026-10-25","kind":"indicative_conversion",
-                      "current_quote_as_of":latest["checked_at"],"fx_tick_timestamp_verified":False},"inputs":{}}
+                      "current_quote_as_of":latest["checked_at"],"fx_tick_timestamp_verified":False,"source_url":"https://gold-api.com/docs"},"inputs":{}}
             for name,value in pred["metals"].items():
                 symbol="XAG" if name=="silver" else "XAU"
                 amount=latest["spot"][symbol]["usd_per_troy_ounce"]

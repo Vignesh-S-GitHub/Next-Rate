@@ -33,7 +33,7 @@ function selectFX(latest,anchor,now){
    current_date:latest.fx.date,source_url:latest.fx.source_url,kind:'daily_reference'};
  return null;
 }
-function validInputs(latest,at,fresh=false){
+export function validInputs(latest,at,fresh=false){
  const stamp=Date.parse(at),checked=Date.parse(latest?.checked_at);
  if(!Number.isFinite(stamp)||!zoned(latest?.checked_at)||checked>stamp+60000||stamp-checked>90*60000)return false;
  if(!validRates(latest.india)||!validDay(latest.india.date)||latest.india.date>isoDay(at)||

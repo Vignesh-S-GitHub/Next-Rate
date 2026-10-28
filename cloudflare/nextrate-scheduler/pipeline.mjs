@@ -1,6 +1,6 @@
 import {IBJA,FX_URLS,CITY_URLS,CITIES,NAV_URL,NAV_PAGE,parseIBJA,parseFX,parseConversion,parseSpot,parseCities,parseNAV,merge,identity,isoDay,validDay,validRates,FIELDS,ageDays} from './market.mjs';
 import {publishForecast,isClosed} from './forecast.mjs';
-import {captureAnchors,adjustForecast,forecastCache} from './market-forecast.mjs';
+import {captureAnchors,adjustForecast,forecastCache,validInputs} from './market-forecast.mjs';
 import {officialPDFURL,parseIBJAPDF} from './ibja-pdf.mjs';
 export const KINDS=['ibja','fx','spot-xau','spot-xag','forecasts','market-anchors','conversion-fx'];
 export async function getBinary(url,fetcher=fetch,limit=1500000){
@@ -15,8 +15,7 @@ export async function getBinary(url,fetcher=fetch,limit=1500000){
 export async function getText(url,fetcher=fetch,limit=1500000){return new TextDecoder().decode(await getBinary(url,fetcher,limit));}
 export function sessionTarget(stamp){const d=new Date(+new Date(stamp)+19800000),minutes=d.getUTCHours()*60+d.getUTCMinutes();return {date:isoDay(stamp),session:minutes>=1155?'PM':minutes>=795?'AM':'MARKET'};}
 export function sessionHealth(latest,archives,target){
- if(target.session==='MARKET')return ['xau','xag'].every(k=>latest.sources_checked?.[k]==='ok')&&
-  (latest.sources_checked?.conversion==='ok'||latest.sources_checked?.usd_inr==='ok');
+ if(target.session==='MARKET')return validInputs(latest,latest.checked_at,true);
  if(!target.session)return false;
  if(latest.sources_checked?.ibja!=='ok'||!validRates(latest.india)||latest.india.date>target.date)return false;
  const due=Date.parse(target.date+'T'+(target.session==='AM'?'13:15':'19:15')+':00+05:30');

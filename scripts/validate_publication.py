@@ -186,7 +186,8 @@ def verify(root: Path = ROOT, now: date | None = None, site=False):
                 require(fx_input.get("rate_timing")=="conversion_quote_not_fx_tick" and
                         fx_input.get("source_url")=="https://gold-api.com/docs" and
                         fx.get("fx_tick_timestamp_verified") is False and
-                        fx.get("current_quote_as_of")==fx_input.get("quote_as_of"),"Incorrect conversion provenance")
+                        fx.get("current_quote_as_of")==fx_input.get("quote_as_of") and
+                        fx.get("source_url")==fx_input.get("source_url"),"Incorrect conversion provenance")
                 require(price(fx_input.get("inr_per_troy_ounce"),0,100000000) and
                         price(fx_input.get("usd_per_troy_ounce"),0,100000) and
                         price(fx_input.get("inr_per_usd"),20,250),"Invalid conversion values")
