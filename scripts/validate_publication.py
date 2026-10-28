@@ -179,9 +179,29 @@ def verify(root: Path = ROOT, now: date | None = None, site=False):
             require(model.get("current_checked_at") == latest.get("checked_at"),
                     "Market model uses a different source snapshot")
             fx = model.get("fx", {})
+            converted=fx.get("kind")=="indicative_conversion"
+            fx_input=latest.get("forecast_fx",{}) if converted else latest.get("fx",{})
+            require(fx.get("kind", "daily_reference") in ("indicative_conversion","daily_reference"),"Unknown currency reference")
+            if converted:
+                require(fx_input.get("rate_timing")=="conversion_quote_not_fx_tick" and
+                        fx_input.get("source_url")=="https://gold-api.com/docs" and
+                        fx.get("fx_tick_timestamp_verified") is False and
+                        fx.get("current_quote_as_of")==fx_input.get("quote_as_of"),"Incorrect conversion provenance")
+                require(price(fx_input.get("inr_per_troy_ounce"),0,100000000) and
+                        price(fx_input.get("usd_per_troy_ounce"),0,100000) and
+                        price(fx_input.get("inr_per_usd"),20,250),"Invalid conversion values")
+                require(abs(fx_input["inr_per_troy_ounce"]/fx_input["inr_per_usd"]/fx_input["usd_per_troy_ounce"]-1)<1e-8,
+                        "Conversion units disagree")
+                asof=datetime.fromisoformat(fx_input["quote_as_of"].replace("Z","+00:00"))
+                checked=datetime.fromisoformat(latest["checked_at"].replace("Z","+00:00"))
+                gold_time=datetime.fromisoformat(latest["spot"]["XAU"]["as_of"].replace("Z","+00:00"))
+                require(-60<=(checked-asof).total_seconds()<=5400 and abs((asof-gold_time).total_seconds())<=60,
+                        "Conversion timestamp is unpaired or stale")
+                require(abs(fx_input["usd_per_troy_ounce"]/latest["spot"]["XAU"]["usd_per_troy_ounce"]-1)<=.0025,
+                        "Converted and USD gold quotes disagree")
             require(price(fx.get("reference"),20,250) and
-                    fx.get("current") == latest.get("fx",{}).get("inr_per_usd") and
-                    fx.get("current_date") == latest.get("fx",{}).get("date"),
+                    fx.get("current") == fx_input.get("inr_per_usd") and
+                    fx.get("current_date") == fx_input.get("date"),
                     "Market FX input disagrees with snapshot")
             for name, (field, _, _) in METALS.items():
                 value=pred["metals"][name]

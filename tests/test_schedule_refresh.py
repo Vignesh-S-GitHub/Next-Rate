@@ -100,7 +100,7 @@ class SchedulerTests(unittest.TestCase):
         self.assertNotIn("python scripts/forecast.py", pages)
         self.assertIn("python scripts/validate_publication.py", pages)
         worker = json.loads((root / "cloudflare/nextrate-scheduler/wrangler.jsonc").read_text())
-        self.assertEqual(worker['triggers']['crons'], ["45 7,13,16 * * *", "15,45 8,14 * * *"])
+        self.assertEqual(worker['triggers']['crons'], ["45 2,7,13,16,17 * * *", "15,45 8,14 * * *"])
         self.assertEqual(worker['d1_databases'][0]['binding'], "DB")
         self.assertIn("data-loader.js", pages)
 

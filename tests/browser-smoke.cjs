@@ -137,6 +137,11 @@ async function audit(viewport){
  const current=clone(reference);current.checked_at='2026-10-27T10:00:00Z';current.fx.inr_per_usd=95.05;
  current.spot.XAU={...current.spot.XAU,usd_per_troy_ounce:4040,as_of:current.checked_at};
  current.spot.XAG={...current.spot.XAG,usd_per_troy_ounce:49,as_of:current.checked_at};
+ for(const [snapshot,rate] of [[reference,95],[current,95.2]]){
+  snapshot.sources_checked.conversion='ok';snapshot.forecast_fx={inr_per_usd:rate,
+   usd_per_troy_ounce:snapshot.spot.XAU.usd_per_troy_ounce,inr_per_troy_ounce:snapshot.spot.XAU.usd_per_troy_ounce*rate,
+   date:'2026-10-27',quote_as_of:snapshot.checked_at,source_url:'https://gold-api.com/docs',rate_timing:'conversion_quote_not_fx_tick'};
+ }
  marketDocs['latest.json']=current;marketDocs['history.json'].india.push(current.india);
  marketDocs['forecast.json']=adjustForecast(generate(current,marketDocs['history.json'].india,current.checked_at),current,captureAnchors(reference,current),marketDocs['history.json'].india,[],current.checked_at);
  for(const viewport of [{width:1440,height:1000},{width:390,height:844},{width:360,height:800}]){
@@ -146,10 +151,11 @@ async function audit(viewport){
    await click('[data-forecast-metal="'+metal+'"]');
    const expected=marketDocs['forecast.json'].metals[metal].estimate;
    assert.ok((await page.locator('[data-forecast-metal="'+metal+'"] .forecast-metal-quote>strong').innerText()).includes(expected.toLocaleString('en-IN')));checks++;
-   await text('.forecast-drivers',/USD \/ INR move/);await text('.forecast-range',/Scenario range/);await layout();
+   await text('.forecast-drivers',/Currency conversion/);await text('.forecast-range',/Scenario range/);await layout();
   }
   await click('[data-language="ta"]');await layout();await click('[data-language="en"]');
   assert.equal(await page.locator('.nr-small-details,.nr-prediction-proof').count(),0);checks++;
+  await route('markets');await text('.market-grid',/Indicative conversion/);await text('.market-grid',/95\.200/);await layout();
   assert.deepEqual(page._errors,[]);checks++;await context.close();
  }
  // A fully unavailable publication keeps learning/tools usable without fabricated values.

@@ -67,6 +67,18 @@ export function parseFX(item,now) {
   if(!Number.isFinite(value)||value<=20||value>=250||!validDay(day)||ageDays(isoDay(now),day)<0||ageDays(isoDay(now),day)>10)throw Error('Invalid FX value or publication date');
   return {inr_per_usd:Math.round(value*100000)/100000,date:day,retrieved_at:new Date(now).toISOString(),source,source_url};
 }
+export function parseConversion(item,spot,now){
+ const at=Date.parse(item?.updatedAt),checked=Date.parse(now),rate=item?.exchangeRate,amount=item?.price;
+ if(item?.symbol!=='XAU'||item.currency!=='INR'||typeof rate!=='number'||!Number.isFinite(rate)||rate<=20||rate>=250||
+  typeof amount!=='number'||!Number.isFinite(amount)||amount<=0||!Number.isFinite(at)||!/(?:Z|[+-]\d\d:\d\d)$/i.test(item.updatedAt)||
+  at>checked+60000||checked-at>90*60000||Math.abs(at-Date.parse(spot?.as_of))>60000||
+  !Number.isFinite(spot?.usd_per_troy_ounce)||Math.abs(amount/rate/spot.usd_per_troy_ounce-1)>.0025)
+  throw Error('Invalid or unpaired INR gold conversion quote');
+ return {inr_per_usd:rate,inr_per_troy_ounce:amount,usd_per_troy_ounce:amount/rate,
+  quote_as_of:new Date(at).toISOString(),date:isoDay(item.updatedAt),retrieved_at:new Date(now).toISOString(),
+  source:'Gold API indicative currency conversion',source_url:'https://gold-api.com/docs',
+  rate_timing:'conversion_quote_not_fx_tick'};
+}
 const MONTHS=['january','february','march','april','may','june','july','august','september','october','november','december'];
 export function parseCities(html,metal,now) {
   const match=text(html).match(/\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})\b/i);
@@ -100,7 +112,7 @@ export function parseNAV(report,now) {
   if(Object.keys(result).length<4)throw Error('Fewer than four valid selected AMFI NAVs');
   return result;
 }
-export function identity(kind,r){return kind==='ibja'?r.date+':'+r.session:kind==='forecasts'?r.issuance_key:kind==='fx'?r.date:kind==='market-anchors'?r.id:r.as_of;}
+export function identity(kind,r){return kind==='ibja'?r.date+':'+r.session:kind==='forecasts'?r.issuance_key:kind==='fx'?r.date:kind==='market-anchors'?r.id:kind==='conversion-fx'?r.quote_as_of:r.as_of;}
 function checkRow(kind,row){
   if(kind==='ibja'){
     if(!validDay(row.date)||!['AM','PM'].includes(row.session))throw Error('Invalid archive date/session');

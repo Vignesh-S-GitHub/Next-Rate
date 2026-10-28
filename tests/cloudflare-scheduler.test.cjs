@@ -86,3 +86,25 @@ test('a later recovery timer refreshes global inputs even after the IBJA session
  assert.equal(sql.prepare('SELECT count(*) n FROM refresh_runs').get().n,2);
  assert.equal(JSON.parse(sql.prepare('SELECT payload FROM publication').get().payload).documents['forecast.json'].model_version,4);
 });
+
+test('morning market timer refreshes overnight prices without claiming an IBJA AM publication',async()=>{
+ const {refresh}=await import('../cloudflare/nextrate-scheduler/runtime.mjs'),{sql,db}=database();
+ const time='2026-10-28T02:45:00Z';
+ const fetcher=async url=>{
+  if(url==='https://www.ibjarates.com/')return new Response(ibja());
+  if(url==='https://api.gold-api.com/price/XAU/INR')return Response.json({symbol:'XAU',currency:'INR',price:4000*96,exchangeRate:96,updatedAt:time});
+  if(url==='https://api.gold-api.com/price/XAU')return Response.json({symbol:'XAU',price:4000,updatedAt:time});
+  if(url==='https://api.gold-api.com/price/XAG')return Response.json({symbol:'XAG',price:50,updatedAt:time});
+  return new Response('unavailable',{status:503});
+ };
+ await refresh({scheduledTime:Date.parse(time),cron:'45 2,7,13,16,17 * * *'},{DB:db},fetcher,()=>new Date(time));
+ const value=JSON.parse(sql.prepare('SELECT payload FROM publication').get().payload);
+ assert.equal(value.receipts['2026-10-28:MARKET'].session_verified,true);
+ assert.equal(value.documents['latest.json'].india.date,'2026-10-26');
+ assert.equal(value.documents['latest.json'].forecast_fx.inr_per_usd,96);
+ assert.equal(value.documents['forecast.json'].target_date,'2026-10-28');
+ assert.equal(sql.prepare("SELECT count(*) n FROM observations WHERE kind='conversion-fx'").get().n,1);
+ const before=sql.prepare('SELECT revision FROM publication').get().revision;
+ await refresh({scheduledTime:Date.parse(time),cron:'45 2,7,13,16,17 * * *'},{DB:db},async()=>{throw Error('duplicate');},()=>new Date(time));
+ assert.equal(sql.prepare('SELECT revision FROM publication').get().revision,before);
+});

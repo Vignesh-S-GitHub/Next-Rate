@@ -34,9 +34,21 @@ function validHistoryRow(row,today){
    (row.gold22_inr_10g/row.gold24_inr_10g>.87&&
     row.gold22_inr_10g/row.gold24_inr_10g<.97));
 }
+function conversionFX(row,spot,checked){
+ const time=Date.parse(row?.quote_as_of),at=Date.parse(checked),gold=spot?.XAU;
+ const positive=n=>typeof n==='number'&&Number.isFinite(n)&&n>0;
+ return row?.rate_timing==='conversion_quote_not_fx_tick'&&row.source_url==='https://gold-api.com/docs'&&
+  positive(row.inr_per_usd)&&row.inr_per_usd>20&&row.inr_per_usd<250&&
+  positive(row.inr_per_troy_ounce)&&positive(row.usd_per_troy_ounce)&&
+  Math.abs(row.inr_per_troy_ounce/row.inr_per_usd/row.usd_per_troy_ounce-1)<1e-8&&
+  Number.isFinite(time)&&Number.isFinite(at)&&time<=at+60000&&at-time<=5400000&&
+  /(?:Z|[+-]\d\d:\d\d)$/i.test(row.quote_as_of)&&row.date===todayIST(new Date(time))&&
+  Math.abs(time-Date.parse(gold?.as_of))<=60000&&positive(gold?.usd_per_troy_ounce)&&
+  Math.abs(row.usd_per_troy_ounce/gold.usd_per_troy_ounce-1)<=.0025;
+}
 function market(snapshot,today=todayIST()){
  if(snapshot?.schema_version!==1||!validIndia(snapshot.india,today))return null;
- const result={...snapshot,spot:{},fx:null};
+ const result={...snapshot,spot:{},fx:null,forecast_fx:null};
  for(const name of ['XAU','XAG']){
   const quote=snapshot.spot?.[name];
   const epoch=Date.parse(quote?.as_of||'');
@@ -50,6 +62,7 @@ function market(snapshot,today=todayIST()){
  if(typeof fx?.inr_per_usd==='number'&&Number.isFinite(fx.inr_per_usd)&&
     fx.inr_per_usd>20&&fx.inr_per_usd<250&&iso(fx.date)&&fx.date<=today&&age(fx.date,today)<=10)
   result.fx=fx;
+ if(conversionFX(snapshot.forecast_fx,result.spot,snapshot.checked_at))result.forecast_fx=snapshot.forecast_fx;
  return result;
 }
 function history(doc,india,today=todayIST()){
@@ -142,11 +155,17 @@ function forecastHistory(doc,historical,today=todayIST()){
   Date.parse(a.issued_at)-Date.parse(b.issued_at))};
 }
 function marketForecastMatches(doc,snapshot){
- const m=doc.market_model,at=Date.parse(doc.generated_at),reference=Date.parse(m?.reference_checked_at),current=Date.parse(m?.current_checked_at);
+ const m=doc.market_model;
+ if(m?.fx?.kind&&!['daily_reference','indicative_conversion'].includes(m.fx.kind))return false;
+ const converted=m?.fx?.kind==='indicative_conversion',fxInput=converted?snapshot.forecast_fx:snapshot.fx;
+ if(converted&&(!conversionFX(fxInput,snapshot.spot,snapshot.checked_at)||m.fx.fx_tick_timestamp_verified!==false||
+  m.fx.current_quote_as_of!==fxInput.quote_as_of||m.fx.source_url!==fxInput.source_url||
+  !Number.isFinite(Date.parse(m.fx.reference_quote_as_of))||Date.parse(m.fx.reference_quote_as_of)>Date.parse(m.fx.current_quote_as_of)))return false;
+ const at=Date.parse(doc.generated_at),reference=Date.parse(m?.reference_checked_at),current=Date.parse(m?.current_checked_at);
  if(doc.model_version!==4||m?.status!=='active'||m.method!=='market_parity_v1'||
   !Number.isFinite(at)||!Number.isFinite(reference)||!Number.isFinite(current)||reference>current||current>at+60000||
-  m.current_checked_at!==snapshot.checked_at||m.fx?.current!==snapshot.fx?.inr_per_usd||
-  m.fx?.current_date!==snapshot.fx?.date||!iso(m.fx?.reference_date)||m.fx.reference_date>m.fx.current_date||
+  m.current_checked_at!==snapshot.checked_at||m.fx?.current!==fxInput?.inr_per_usd||
+  m.fx?.current_date!==fxInput?.date||!iso(m.fx?.reference_date)||m.fx.reference_date>m.fx.current_date||
   typeof m.fx.reference!=='number'||m.fx.reference<=20||m.fx.reference>=250)return false;
  for(const code of ['gold24','gold22','silver']){
   const v=doc.metals?.[code],input=m.inputs?.[code],sym=code==='silver'?'XAG':'XAU';
