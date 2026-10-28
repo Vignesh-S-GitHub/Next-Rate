@@ -1,8 +1,8 @@
-import {IBJA,FX_URLS,CITY_URLS,CITIES,NAV_URL,NAV_PAGE,parseIBJA,parseFX,parseSpot,parseCities,parseNAV,merge,identity,isoDay,validDay,validRates,FIELDS,ageDays} from './market.mjs';
+import {IBJA,FX_URLS,CITY_URLS,CITIES,NAV_URL,NAV_PAGE,parseIBJA,parseFX,parseConversion,parseSpot,parseCities,parseNAV,merge,identity,isoDay,validDay,validRates,FIELDS,ageDays} from './market.mjs';
 import {publishForecast,isClosed} from './forecast.mjs';
-import {captureAnchors,adjustForecast,forecastCache} from './market-forecast.mjs';
+import {captureAnchors,adjustForecast,forecastCache,validInputs} from './market-forecast.mjs';
 import {officialPDFURL,parseIBJAPDF} from './ibja-pdf.mjs';
-export const KINDS=['ibja','fx','spot-xau','spot-xag','forecasts','market-anchors'];
+export const KINDS=['ibja','fx','spot-xau','spot-xag','forecasts','market-anchors','conversion-fx'];
 export async function getBinary(url,fetcher=fetch,limit=1500000){
  const res=await fetcher(url,{headers:{'User-Agent':'NextRate/2.0 (+https://github.com/Vignesh-S-GitHub/Next-Rate; market reference)','Accept':'application/json,application/pdf,text/html,text/plain;q=0.9,*/*;q=0.8','Cache-Control':'no-cache'},signal:AbortSignal.timeout(25000),redirect:'follow'});
  if(!res.ok)throw Error('Source HTTP '+res.status);
@@ -13,8 +13,9 @@ export async function getBinary(url,fetcher=fetch,limit=1500000){
  finally{await reader.cancel();}
 }
 export async function getText(url,fetcher=fetch,limit=1500000){return new TextDecoder().decode(await getBinary(url,fetcher,limit));}
-export function sessionTarget(stamp){const d=new Date(+new Date(stamp)+19800000),minutes=d.getUTCHours()*60+d.getUTCMinutes();return {date:isoDay(stamp),session:minutes>=1155?'PM':minutes>=795?'AM':null};}
+export function sessionTarget(stamp){const d=new Date(+new Date(stamp)+19800000),minutes=d.getUTCHours()*60+d.getUTCMinutes();return {date:isoDay(stamp),session:minutes>=1155?'PM':minutes>=795?'AM':'MARKET'};}
 export function sessionHealth(latest,archives,target){
+ if(target.session==='MARKET')return validInputs(latest,latest.checked_at,true);
  if(!target.session)return false;
  if(latest.sources_checked?.ibja!=='ok'||!validRates(latest.india)||latest.india.date>target.date)return false;
  const due=Date.parse(target.date+'T'+(target.session==='AM'?'13:15':'19:15')+':00+05:30');
@@ -70,6 +71,14 @@ export async function collect(previous,stored,now,fetcher=fetch){
   }catch(e){docs['funds.json']={...old,checked_at:new Date(now).toISOString(),status:'unavailable'};throw e;}}],
  ];
  await Promise.all(tasks.map(async([key,fn])=>{try{await fn();latest.sources_checked[key]='ok';}catch(e){latest.sources_checked[key]='unavailable';errors[key]=e.message;}}));
+ // This quote has a gold observation timestamp, not a verified FX tick time.
+ // Pair it with the USD gold quote; never infer an exchange rate by mixing times.
+ try{
+  if(latest.sources_checked.xau!=='ok')throw Error('Fresh USD gold quote unavailable');
+  const row=parseConversion(JSON.parse(await getText('https://api.gold-api.com/price/XAU/INR',fetcher)),latest.spot.XAU,now);
+  if(latest.forecast_fx&&row.quote_as_of<latest.forecast_fx.quote_as_of)throw Error('Conversion source regressed');
+  latest.forecast_fx=row;archives['conversion-fx']=merge('conversion-fx',archives['conversion-fx']||[],[row]);latest.sources_checked.conversion='ok';
+ }catch(e){latest.sources_checked.conversion='unavailable';errors.conversion=e.message;}
  if(!['ibja','xau','xag','usd_inr'].some(k=>latest.sources_checked[k]==='ok'))throw Error('All primary sources unavailable; previous publication retained');
  // Attributed secondary history enriches gaps; it never replaces direct rates.
  const feeds=[['gold24_inr_10g','gold/999.json','gold','999',10],['gold22_inr_10g','gold/916.json','gold','916',10],['silver999_inr_kg','silver.json','silver','999',1000]];

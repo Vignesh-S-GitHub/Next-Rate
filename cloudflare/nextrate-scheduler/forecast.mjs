@@ -82,8 +82,8 @@ export function publishForecast(latest,india,previous,now,options={}){
   fresh.issuance_key=version===4?`v4:${fresh.target_date}:${fresh.based_on_date}:${fresh.based_on_session}:${fresh.forecast_mode}:${latest.checked_at}`:`v3:${fresh.target_date}:${fresh.based_on_date}:${fresh.based_on_session}`;
   if(!issued.some(r=>r.issuance_key===fresh.issuance_key))issued.push({issuance_key:fresh.issuance_key,model_version:version,issued_at:new Date(now).toISOString(),target_date:fresh.target_date,based_on_date:fresh.based_on_date,based_on_session:fresh.based_on_session,metals:fresh.metals,...(version===4?{forecast_mode:fresh.forecast_mode,market_model:fresh.market_model}:{})});
   const chosen=new Map();for(const r of [...issued].sort((a,b)=>(a.based_on_date+(a.based_on_session==='PM'?'1':'0')+a.issued_at).localeCompare(b.based_on_date+(b.based_on_session==='PM'?'1':'0')+b.issued_at)))if((r.model_version||1)===version&&(version!==4||r.forecast_mode==='market_adjusted')&&r.evaluation&&prospective(r))chosen.set(r.target_date,r);
-  const rows=[...chosen.values()];fresh.accuracy_tracking={evaluated_issuances:rows.length,independent_target_dates:rows.length,model_version:version,status:rows.length<10?'collecting':'available'};
-  if(rows.length>=10)for(const metal of Object.keys(CONFIG)){const e=rows.filter(x=>x.evaluation.metals[metal]).map(x=>x.evaluation.metals[metal].absolute_error_pct);if(e.length)fresh.accuracy_tracking[metal]={mean_absolute_percentage_error:rounded(mean(e),2),sample_size:e.length};}
+  const rows=[...chosen.values()],minimum=version===4?20:10;fresh.accuracy_tracking={evaluated_issuances:rows.length,independent_target_dates:rows.length,model_version:version,status:rows.length<minimum?'collecting':'available'};
+  if(rows.length>=minimum)for(const metal of Object.keys(CONFIG)){const e=rows.filter(x=>x.evaluation.metals[metal]).map(x=>x.evaluation.metals[metal].absolute_error_pct);if(e.length)fresh.accuracy_tracking[metal]={mean_absolute_percentage_error:rounded(mean(e),2),sample_size:e.length};}
  }
  return {forecast:fresh,issued:merge('forecasts',[],issued)};
 }

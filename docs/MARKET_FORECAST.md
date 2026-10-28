@@ -69,9 +69,9 @@ target-day evidence plus recent editions; all editions and anchors remain in D1.
 
 ## Refresh times
 
-Cloudflare runs at 13:15, 13:45, 14:15, 19:15, 19:45, 20:15 and 22:15 IST. Later
+Cloudflare runs at 08:15, 13:15, 13:45, 14:15, 19:15, 19:45, 20:15, 22:15 and 23:15 IST. Later
 checks update market inputs even if IBJA has already published the day's quote.
-The two cron expressions are `45 7,13,16 * * *` and `15,45 8,14 * * *` (UTC).
+The two cron expressions are `45 2,7,13,16,17 * * *` and `15,45 8,14 * * *` (UTC).
 GitHub Actions continues to deploy UI source changes only.
 
 ## Sources and limits
@@ -86,3 +86,47 @@ required. LBMA, COMEX, MCX, retail shop premiums and intraday FX are not connect
 Their values or predictive effects are not invented. A genuinely fitted predictive
 model can be added once sufficiently long, correctly timed input/outcome history
 is available; this release does not claim that improvement has already been proven.
+
+## Input policy 2 — paired currency conversion
+
+The article's useful observation is that world bullion and the currency conversion
+both affect Indian prices. It does not establish a deterministic next-day retail
+price or a proven weighting for COMEX, LBMA and MCX. The forecast target remains
+IBJA, excluding GST and making charges; retail checkout charges are not added to
+this benchmark. The existing IBJA anchor carries the domestic pricing basis, so
+import duty is not added again.
+
+The collector also fetches Gold API's XAU/INR quote. It validates the INR currency,
+troy-ounce amount, conversion rate, USD gold reconciliation (within 0.25%), and
+quote timestamps (within 60 seconds of each other and 90 minutes of the check).
+The provider's timestamp belongs to its gold quote, **not an independently
+verified FX trade**. This input is labelled `indicative_conversion`, never live FX.
+The daily Frankfurter reference remains separately attributed.
+
+When both the immutable benchmark anchor and current snapshot contain valid
+conversion quotes, the parity calculation uses their conversion-rate ratio.
+If either side is missing, it retains the comparable daily-reference ratio.
+Existing anchors are never reconstructed or overwritten: the new path activates
+only after the next newly verified IBJA session supplies its first paired quote.
+An unavailable conversion request does not suppress a valid daily-reference model.
+Conversion observations are archived in D1 as `conversion-fx`.
+
+The extra 23:15 update captures later observed evening movement. The 08:15 update
+captures overnight movement for today's still-unpublished IBJA target. That is a
+same-day outlook, not a forecast issued before the target date; it is excluded
+from prospective next-day accuracy. These changes improve input coverage without
+claiming a measured accuracy gain before actual outcomes exist. The 20-outcome
+reporting threshold is now consistent in both evidence metadata fields.
+
+Sources checked on 28 October 2026:
+- https://www.adityabirlacapital.com/abc-of-money/how-gold-price-is-determined-in-india
+- https://www.ibjarates.com/ (rates exclude GST and making charges)
+- https://gold-api.com/llms.txt (INR quote, units, conversion rate and timestamp semantics)
+- https://www.lbma.org.uk/prices-and-data/lbma-precious-metal-prices (auction timing and licensing)
+- https://www.cmegroup.com/market-data/real-time-futures-and-options-data-api.html
+- https://www.mcxindia.com/faq/technology-services (feed access and redistribution agreements)
+
+Licensed COMEX, LBMA and MCX feeds are still not connected. They should be tested
+against this baseline with correctly timed history and contract definitions before
+receiving predictive weights. The model has no unverified news, tax-rate or futures
+premium coefficients.

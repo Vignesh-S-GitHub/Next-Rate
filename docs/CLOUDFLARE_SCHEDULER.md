@@ -20,10 +20,10 @@ not collect data or run on a cron timer. No GitHub runtime token is required.
 
 | UTC cron | IST collection times |
 | --- | --- |
-| `45 7,13,16 * * *` | 13:15 AM check; 19:15 PM check; 22:15 market update |
+| `45 2,7,13,16,17 * * *` | 08:15 overnight update; 13:15 AM check; 19:15 PM check; 22:15 and 23:15 market updates |
 | `15,45 8,14 * * *` | 13:45, 14:15 AM recovery; 19:45, 20:15 PM recovery |
 
-Two cron expressions retain all seven collection times while fitting the account's
+Two cron expressions retain all nine collection times while fitting the account's
 remaining free-plan trigger allowance. Changes can take up to 15 minutes to
 propagate. Timer execution and source availability remain best effort; the API
 reports the original quote date rather than labelling stale data as today's price.
@@ -48,7 +48,7 @@ commit in one D1 transaction. A complete source outage keeps the previous public
 retains its real quote date while independently verified references may update;
 its receipt has `session_verified=false` and the run is `waiting_source`. Each later timer rechecks the market inputs even when its IBJA session is
 already verified. Duplicate delivery of a timer already checked by version 4
-skips safely. This lets recovery slots and the 22:15 check update world prices
+skips safely. This lets recovery slots and the late-evening checks update world prices
 without requiring a new national quote. Original GitHub annual archives remain as
 the migration backup; D1 observations have no automatic deletion policy.
 
@@ -118,3 +118,6 @@ Build the deployable bundle with `npm ci --prefix cloudflare/nextrate-scheduler`
 and `npm run build --prefix cloudflare/nextrate-scheduler`. Pages CI builds and
 tests the collector without collecting live prices. Daily collection still runs
 entirely on Cloudflare. No GitHub runtime credential is used.
+
+Before the AM collection cutoff, scheduled runs use the separate `MARKET` receipt.
+A successful overnight market refresh does not certify an unpublished IBJA AM rate.

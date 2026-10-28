@@ -5,7 +5,35 @@ const CODES={gold24:[FIELDS[0],'XAU',100],gold22:[FIELDS[1],'XAU',100],silver:[F
 const zoned=s=>typeof s==='string'&&/(?:Z|[+-]\d\d:\d\d)$/i.test(s)&&Number.isFinite(Date.parse(s));
 const positive=v=>typeof v==='number'&&Number.isFinite(v)&&v>0;
 function sourceURL(value){try{return new URL(value).origin;}catch{return null;}}
-function validInputs(latest,at,fresh=false){
+function validDailyFX(row,at){
+ return positive(row?.inr_per_usd)&&row.inr_per_usd>20&&row.inr_per_usd<250&&validDay(row.date)&&
+  row.date<=isoDay(at)&&ageDays(isoDay(at),row.date)<=5&&!!sourceURL(row.source_url);
+}
+export function validConversion(row,snapshot,at){
+ const t=Date.parse(row?.quote_as_of),checked=Date.parse(at),gold=snapshot?.spot?.XAU;
+ return positive(row?.inr_per_usd)&&row.inr_per_usd>20&&row.inr_per_usd<250&&
+  positive(row.inr_per_troy_ounce)&&positive(row.usd_per_troy_ounce)&&
+  Math.abs(row.inr_per_troy_ounce/row.inr_per_usd/row.usd_per_troy_ounce-1)<1e-8&&
+  zoned(row.quote_as_of)&&t<=checked+60000&&checked-t<=90*60000&&
+  Math.abs(t-Date.parse(gold?.as_of))<=60000&&positive(gold?.usd_per_troy_ounce)&&
+  Math.abs(row.usd_per_troy_ounce/gold.usd_per_troy_ounce-1)<=.0025&&
+  row.date===isoDay(row.quote_as_of)&&sourceURL(row.source_url)==='https://gold-api.com'&&
+  row.rate_timing==='conversion_quote_not_fx_tick';
+}
+function selectFX(latest,anchor,now){
+ const current=latest.forecast_fx,reference=anchor.forecast_fx;
+ if(latest.sources_checked?.conversion==='ok'&&validConversion(current,latest,now)&&
+  validConversion(reference,anchor,anchor.available_at)&&current.quote_as_of>=reference.quote_as_of)
+  return {reference:reference.inr_per_usd,current:current.inr_per_usd,kind:'indicative_conversion',
+   reference_date:reference.date,current_date:current.date,source_url:current.source_url,
+   reference_quote_as_of:reference.quote_as_of,current_quote_as_of:current.quote_as_of,fx_tick_timestamp_verified:false};
+ if(latest.sources_checked?.usd_inr==='ok'&&validDailyFX(latest.fx,now)&&validDailyFX(anchor.fx,anchor.available_at)&&
+  sourceURL(latest.fx.source_url)===sourceURL(anchor.fx.source_url)&&latest.fx.date>=anchor.fx.date)
+  return {reference:anchor.fx.inr_per_usd,current:latest.fx.inr_per_usd,reference_date:anchor.fx.date,
+   current_date:latest.fx.date,source_url:latest.fx.source_url,kind:'daily_reference'};
+ return null;
+}
+export function validInputs(latest,at,fresh=false){
  const stamp=Date.parse(at),checked=Date.parse(latest?.checked_at);
  if(!Number.isFinite(stamp)||!zoned(latest?.checked_at)||checked>stamp+60000||stamp-checked>90*60000)return false;
  if(!validRates(latest.india)||!validDay(latest.india.date)||latest.india.date>isoDay(at)||
@@ -15,10 +43,10 @@ function validInputs(latest,at,fresh=false){
   if(!positive(quote?.usd_per_troy_ounce)||!zoned(quote?.as_of)||asof>checked+60000||
     checked-asof>90*60000||!sourceURL(quote.source_url))return false;
  }
- const fx=latest.fx;
- if(!positive(fx?.inr_per_usd)||fx.inr_per_usd<=20||fx.inr_per_usd>=250||!validDay(fx.date)||fx.date>isoDay(at)||
-   ageDays(isoDay(at),fx.date)>5||!sourceURL(fx.source_url))return false;
- return !fresh||['xau','xag','usd_inr'].every(k=>latest.sources_checked?.[k]==='ok');
+ const daily=validDailyFX(latest.fx,at),conversion=validConversion(latest.forecast_fx,latest,at);
+ if(!daily&&!conversion)return false;
+ return !fresh||['xau','xag'].every(k=>latest.sources_checked?.[k]==='ok')&&
+  (daily&&latest.sources_checked?.usd_inr==='ok'||conversion&&latest.sources_checked?.conversion==='ok');
 }
 export function anchorKey(india){return india?.date+':'+india?.session;}
 export function validAnchor(row){
@@ -33,7 +61,8 @@ export function captureAnchors(previous,latest,existing=[]){
   if(snapshot?.sources_checked?.ibja!=='ok'||!validInputs(snapshot,snapshot.checked_at,true)||snapshot.india.source_url!==IBJA)continue;
   const id=anchorKey(snapshot.india);if(byKey.has(id))continue;
   byKey.set(id,{schema_version:1,id,available_at:snapshot.checked_at,
-   india:structuredClone(snapshot.india),spot:structuredClone(snapshot.spot),fx:structuredClone(snapshot.fx)});
+   india:structuredClone(snapshot.india),spot:structuredClone(snapshot.spot),fx:structuredClone(snapshot.fx),
+   ...(snapshot.sources_checked?.conversion==='ok'&&validConversion(snapshot.forecast_fx,snapshot,snapshot.checked_at)?{forecast_fx:structuredClone(snapshot.forecast_fx)}:{})});
  }
  return [...byKey.values()].sort((a,b)=>a.id.localeCompare(b.id));
 }
@@ -73,12 +102,11 @@ export function adjustForecast(base,latest,anchors,history,issued,now){
  if(!validInputs(latest,now,true))return fallback('Fresh gold, silver or USD/INR source checks are unavailable. Showing the IBJA-history fallback.');
  const anchor=anchors.find(r=>r.id===anchorKey(latest.india)&&validAnchor(r));
  if(!anchor||Date.parse(anchor.available_at)>Date.parse(latest.checked_at)||FIELDS.some(k=>anchor.india[k]!==latest.india[k]))return fallback('A comparable market snapshot for this IBJA publication is not available yet.');
- const spot=latest.spot,fx=latest.fx,reference=anchor.spot;
+ const spot=latest.spot,fx=selectFX(latest,anchor,now),reference=anchor.spot;
  if(['XAU','XAG'].some(s=>sourceURL(spot[s].source_url)!==sourceURL(reference[s].source_url)||
-   Date.parse(spot[s].as_of)<Date.parse(reference[s].as_of))||
-   sourceURL(fx.source_url)!==sourceURL(anchor.fx.source_url)||fx.date<anchor.fx.date)
+   Date.parse(spot[s].as_of)<Date.parse(reference[s].as_of))||!fx)
   return fallback('Market sources or observation times changed; an incompatible comparison was withheld.');
- const fxRatio=fx.inr_per_usd/anchor.fx.inr_per_usd,metals={};
+ const fxRatio=fx.current/fx.reference,metals={};
  const inputs={};
  for(const [code,[key,symbol,step]]of Object.entries(CODES)){
   const metalRatio=spot[symbol].usd_per_troy_ounce/reference[symbol].usd_per_troy_ounce;
@@ -89,7 +117,7 @@ export function adjustForecast(base,latest,anchors,history,issued,now){
   const evidence=forwardEvidence(issued,code,now),difference=point-latest.india[key];
   metals[code]={...base.metals[code],baseline:latest.india[key],estimate:point,low:band.low,high:band.high,
    expected_change_pct:Number((difference/latest.india[key]*100).toFixed(2)),direction:difference>0?'Up':difference<0?'Down':'Mostly steady',
-   model_name:'market_parity',model_version:4,
+   model_name:'market_parity',model_version:4,history_returns_used:band.sample_size,scenario_width_pct:Number((band.half_width*100).toFixed(2)),
    description:'Last verified IBJA rate adjusted by observed same-provider global metal and USD/INR ratios since its first paired source check.',
    backtest:{status:'forward_only'},range_profile:null,range_label:'Scenario range',interval_calibrated:false,
    wider_range:{low:band.low,high:band.high,method:band.method},scenario_basis:band,forward_evidence:evidence,
@@ -98,13 +126,14 @@ export function adjustForecast(base,latest,anchors,history,issued,now){
   inputs[code]={symbol,reference_usd_oz:reference[symbol].usd_per_troy_ounce,current_usd_oz:spot[symbol].usd_per_troy_ounce,
    reference_as_of:reference[symbol].as_of,current_as_of:spot[symbol].as_of,source_url:spot[symbol].source_url};
  }
- return {...base,model_version:4,forecast_mode:'market_adjusted',metals,
+ return {...base,model_version:4,input_policy_version:2,forecast_mode:'market_adjusted',metals,
+  method:'Verified IBJA rate × observed global metal ratio × paired currency-reference ratio.',
+  validity:'Conditional market-implied estimate. Scenario range describes historical moves and is not a calibrated probability.',
   market_model:{status:'active',method:'market_parity_v1',reference_checked_at:anchor.available_at,
-   current_checked_at:latest.checked_at,inputs,fx:{reference:anchor.fx.inr_per_usd,current:fx.inr_per_usd,
-    reference_date:anchor.fx.date,current_date:fx.date,source_url:fx.source_url},
+   current_checked_at:latest.checked_at,inputs,fx,
    assumptions:['Global metal and FX levels hold until the next IBJA publication.','Domestic taxes and the local market premium remain unchanged.',
     'Reference market quotes were captured at the first verified benchmark check, not at an assumed IBJA publication time.'],
-   limitations:['This is an experimental market-implied projection, not a fitted or proven predictive model.','MCX, COMEX and LBMA feeds are not connected.','The FX feed is a dated daily reference, not an intraday trade quote.']},
+   limitations:['This is an experimental market-implied projection, not a fitted or proven predictive model.','MCX, COMEX and LBMA feeds are not connected.',fx.kind==='indicative_conversion'?'The provider conversion accompanies a gold quote; an independent FX tick timestamp is not available.':'The FX feed is a dated daily reference, not an intraday trade quote.']},
   validation:{status:'forward_collecting',model_version:4,description:'Market-implied parity assumption; forward errors are measured against actual target-date PM closes.'},
   signal_summary:[{factor:'Global metal movement',used:true},{factor:'USD/INR movement',used:true},{factor:'IBJA benchmark and historical moves',used:true}]};
 }

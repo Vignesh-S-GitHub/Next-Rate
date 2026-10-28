@@ -62,6 +62,33 @@ class PublicationTests(unittest.TestCase):
                 (data/name).write_text(json.dumps(body), encoding="utf-8")
             return verify(Path(folder), now=DAY)
 
+    def test_paired_conversion_is_checked_independently_of_daily_fx(self):
+        def change(docs):
+            latest=docs["latest.json"]
+            latest["checked_at"]="2026-10-25T12:00:00Z"
+            latest["spot"]={symbol:{"usd_per_troy_ounce":amount,"as_of":latest["checked_at"]}
+                            for symbol,amount in [("XAU",4000),("XAG",50)]}
+            latest["forecast_fx"]={"inr_per_usd":96,"inr_per_troy_ounce":384000,"usd_per_troy_ounce":4000,
+                "quote_as_of":latest["checked_at"],"date":"2026-10-25","source_url":"https://gold-api.com/docs",
+                "rate_timing":"conversion_quote_not_fx_tick"}
+            pred=docs["forecast.json"]
+            pred.update(model_version=4,forecast_mode="market_adjusted")
+            pred["market_model"]={"status":"active","method":"market_parity_v1","current_checked_at":latest["checked_at"],
+                "fx":{"reference":95,"current":96,"current_date":"2026-10-25","kind":"indicative_conversion",
+                      "current_quote_as_of":latest["checked_at"],"fx_tick_timestamp_verified":False,"source_url":"https://gold-api.com/docs"},"inputs":{}}
+            for name,value in pred["metals"].items():
+                symbol="XAG" if name=="silver" else "XAU"
+                amount=latest["spot"][symbol]["usd_per_troy_ounce"]
+                pred["market_model"]["inputs"][name]={"symbol":symbol,"reference_usd_oz":amount,"current_usd_oz":amount,"current_as_of":latest["checked_at"]}
+                value.update(estimate=int(value["baseline"]*96/95+.5),range_profile=None,backtest={"status":"forward_only"},
+                    drivers={"metal_change_pct":0,"fx_change_pct":(96/95-1)*100,"metal_contribution_inr":0,"fx_contribution_inr":value["baseline"]*(96/95-1)})
+        self.validate(change)
+        def bad(docs):
+            change(docs)
+            docs["latest.json"]["forecast_fx"]["inr_per_troy_ounce"]*=10
+        with self.assertRaisesRegex(ValueError,"Conversion units"):
+            self.validate(bad)
+
     def test_valid_publication_with_optional_provider_outages(self):
         self.assertEqual(self.validate()["forecast"], "experimental")
 

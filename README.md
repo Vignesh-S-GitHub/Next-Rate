@@ -59,9 +59,10 @@ The website reads all six documents from one consistent Worker publication. No G
 
 | India time (IST) | Scheduled purpose |
 |---|---|
+| 08:15 | Overnight market update for today’s unpublished target |
 | 13:15 | AM collection |
 | 19:15 | PM collection |
-| 22:15 | Late market update for the next IBJA publication |
+| 22:15, 23:15 | Evening market updates for the next IBJA publication |
 | 13:45, 14:15, 19:45, 20:15 | Guarded recovery checks |
 
 These are the configured timer slots, not a guarantee of publication at an exact second. Source availability and validation determine whether a new publication is accepted. Inspect [live status](https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json) and [Cloudflare operations](docs/CLOUDFLARE_SCHEDULER.md) for receipts and recovery behavior.
@@ -127,3 +128,5 @@ Open an issue with a reproducible example or submit a focused pull request. Keep
 ## 📄 License
 
 No repository-level `LICENSE` file is currently included.
+
+Currency input policy: paired provider conversion quotes are preferred only when both the immutable benchmark reference and current snapshot are verified. The separately attributed daily FX reference remains a fallback. A conversion quote is not labelled as a verified FX tick. See [model timing and input rules](docs/MARKET_FORECAST.md).

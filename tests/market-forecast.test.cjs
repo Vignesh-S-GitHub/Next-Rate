@@ -98,3 +98,45 @@ test('many intraday forecast editions do not evict independent daily evidence fr
  const cache=model.forecastCache(rows,'2026-10-27');assert.equal(cache.filter(x=>x.issuance_key.startsWith('day')).length,25);
  assert.equal(cache.filter(x=>x.issuance_key.startsWith('edition')).length,12);
 });
+
+function withConversion(s,rate=95){
+ s.sources_checked.conversion='ok';s.forecast_fx={inr_per_usd:rate,inr_per_troy_ounce:s.spot.XAU.usd_per_troy_ounce*rate,
+  usd_per_troy_ounce:s.spot.XAU.usd_per_troy_ounce,quote_as_of:s.spot.XAU.as_of,date:s.fx?.date||'2026-10-26',
+  source_url:'https://gold-api.com/docs',rate_timing:'conversion_quote_not_fx_tick'};return s;
+}
+test('paired provider conversion changes the estimate while the daily FX reference stays flat',()=>{
+ const reference=withConversion(structuredClone(previous),95),latest=withConversion(snapshot(now,4080),96);
+ const anchors=model.captureAnchors(reference,latest),f=adjust(latest,anchors);
+ assert.equal(f.market_model.fx.kind,'indicative_conversion');assert.equal(f.market_model.fx.fx_tick_timestamp_verified,false);
+ assert.equal(f.metals.gold24.estimate,Math.round(100000*1.02*96/95));
+ assert.equal(f.metals.gold22.estimate,Math.round(91600*1.02*96/95));
+ assert.equal(f.metals.gold24.history_returns_used,f.metals.gold24.scenario_basis.sample_size);
+ assert.doesNotMatch(f.validity,/50%/);
+ const Q=require('../data-quality.js');assert.equal(Q.forecastIsConsistent(f,latest,'2026-10-26'),true);
+ const broken=structuredClone(latest);broken.forecast_fx.inr_per_troy_ounce*=10;
+ assert.equal(Q.forecastIsConsistent(f,broken,'2026-10-26'),false);
+ const tampered=structuredClone(f);tampered.market_model.fx.current_quote_as_of='2026-10-26T12:00:00Z';
+ assert.equal(Q.forecastIsConsistent(tampered,latest,'2026-10-26'),false);
+});
+test('old anchors never acquire a reconstructed conversion rate; missing conversion falls back to daily FX',()=>{
+ const latest=withConversion(snapshot(now,4080),96),old=model.captureAnchors(previous,null);
+ const f=adjust(latest,old);assert.equal(f.market_model.fx.kind,'daily_reference');assert.equal(f.metals.gold24.estimate,102000);
+ assert.equal(old[0].forecast_fx,undefined);
+ const reference=withConversion(structuredClone(previous),95),anchors=model.captureAnchors(reference,null);
+ latest.sources_checked.conversion='unavailable';
+ assert.equal(adjust(latest,anchors).market_model.fx.kind,'daily_reference');
+});
+test('fresh paired conversion can operate during a daily FX outage, but stale conversion cannot',()=>{
+ const reference=withConversion(structuredClone(previous),95),latest=withConversion(snapshot(now,4080),96);
+ reference.fx=null;latest.fx=null;reference.sources_checked.usd_inr='unavailable';latest.sources_checked.usd_inr='unavailable';
+ const anchors=model.captureAnchors(reference,latest),f=adjust(latest,anchors);
+ assert.equal(f.forecast_mode,'market_adjusted');assert.equal(f.market_model.fx.kind,'indicative_conversion');
+ latest.forecast_fx.quote_as_of='2026-10-26T12:00:00Z';assert.equal(adjust(latest,anchors).forecast_mode,'baseline');
+});
+test('conversion parser rejects wrong currency, units, time, types and mismatched USD observations',()=>{
+ const spot=previous.spot.XAU,raw={symbol:'XAU',currency:'INR',price:4000*95,exchangeRate:95,updatedAt:previous.checked_at};
+ const parsed=market.parseConversion(raw,spot,previous.checked_at);assert.equal(parsed.inr_per_usd,95);
+ for(const patch of [{currency:'USD'},{symbol:'XAG'},{exchangeRate:'95'},{exchangeRate:0},{price:4000},{updatedAt:now},{updatedAt:'2026-10-26T10:00:00Z'}])
+  assert.throws(()=>market.parseConversion({...raw,...patch},spot,previous.checked_at));
+ assert.equal(model.validConversion(parsed,previous,previous.checked_at),true);
+});

@@ -7,7 +7,7 @@ async function load(db){const row=await db.prepare('SELECT revision,payload FROM
 export async function refresh(controller,env,fetcher=fetch,clock=()=>new Date()){
  const now=clock(),scheduled=new Date(controller.scheduledTime),id=crypto.randomUUID();
  if(!Number.isFinite(+scheduled)||+scheduled>+now+60000||+now-+scheduled>3*3600000)throw Error('Invalid or stale Cloudflare timer');
- const target=sessionTarget(scheduled);if(!target.session)throw Error('Before AM collection cutoff');
+ const target=sessionTarget(scheduled);
  const lease=await env.DB.prepare('INSERT INTO refresh_lease(id,owner,expires_at) VALUES(1,?,?) ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,expires_at=excluded.expires_at WHERE refresh_lease.expires_at<? RETURNING owner').bind(id,+now+300000,+now).first();
  if(lease?.owner!==id){console.log(JSON.stringify({event:'refresh_skipped',reason:'Another refresh is active'}));return;}
  try{
