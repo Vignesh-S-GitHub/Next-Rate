@@ -6,6 +6,6 @@
   "workers_dev": true,
   "preview_urls": false,
   "observability": {"enabled": true, "head_sampling_rate": 1},
-  "d1_databases": [{"binding": "DB", "database_name": "nextrate-data", "database_id": "9bbbac81-d301-42fc-8686-6ef910b9cb59"}],
-  "triggers": {"crons": ["45 2,7,13,16,17 * * *", "15,45 8,14 * * *"]}
+  "d1_databases": [],
+  "triggers": {"crons": []}
 }

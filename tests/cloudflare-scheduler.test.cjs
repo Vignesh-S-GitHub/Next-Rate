@@ -5,9 +5,9 @@ const {DatabaseSync}=require('node:sqlite');
 const root=require('node:path').resolve(__dirname,'..');
 function database(){
  const sql=new DatabaseSync(':memory:');sql.exec(fs.readFileSync(root+'/cloudflare/nextrate-scheduler/schema.sql','utf8'));
- const documents=Object.fromEntries(['latest','history','forecast','forecast_history','cities','funds'].map(n=>[n+'.json',JSON.parse(fs.readFileSync(root+'/data/'+n+'.json'))]));
+ const documents=Object.fromEntries(['latest','history','forecast','forecast_history','cities','funds'].map(n=>[n+'.json',JSON.parse(fs.readFileSync(root+'/tests/fixtures/legacy-publication/'+n+'.json'))]));
  sql.prepare('INSERT INTO publication VALUES(1,0,?)').run(JSON.stringify({documents,receipts:{}}));
- for(const kind of ['ibja','fx','spot-xau','spot-xag','forecasts'])for(const row of JSON.parse(fs.readFileSync(root+'/data/archive/'+kind+'/2026.json')).records){const id=kind==='ibja'?row.date+':'+row.session:kind==='forecasts'?row.issuance_key:kind==='fx'?row.date:row.as_of;sql.prepare('INSERT INTO observations VALUES(?,?,?)').run(kind,id,JSON.stringify(row));}
+ for(const kind of ['ibja','fx','spot-xau','spot-xag','forecasts'])for(const row of JSON.parse(fs.readFileSync(root+'/tests/fixtures/legacy-publication/archive/'+kind+'/2026.json')).records){const id=kind==='ibja'?row.date+':'+row.session:kind==='forecasts'?row.issuance_key:kind==='fx'?row.date:row.as_of;sql.prepare('INSERT INTO observations VALUES(?,?,?)').run(kind,id,JSON.stringify(row));}
  const prepare=text=>{let args=[];const stmt=sql.prepare(text);return {bind(...a){args=a;return this;},async first(){return stmt.get(...args)||null;},async all(){return {results:stmt.all(...args)};},async run(){return stmt.run(...args);},execute(){return stmt.all(...args);}};};
  const db={prepare,async batch(stmts){sql.exec('BEGIN');try{const out=stmts.map(s=>s.execute());sql.exec('COMMIT');return out;}catch(e){sql.exec('ROLLBACK');throw e;}}};
  return {sql,db,documents};

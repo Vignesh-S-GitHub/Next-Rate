@@ -1,3 +1,5 @@
+> **Historical reference:** NextRate was retired on 30 October 2026. No hosting or schedules are active from this source. See [retirement record](RETIREMENT.md).
+
 # Current storage
 
 Since 27 October 2026, the Cloudflare `nextrate-data` D1 database owns new market

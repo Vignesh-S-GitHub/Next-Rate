@@ -5,7 +5,9 @@
   if(root)root.NextRateData=api;
 })(typeof window!=='undefined'?window:null,function(){
   'use strict';
-  const endpoint='https://nextrate-scheduler.vigneshshanmugam.workers.dev';
+  // Retired 30 October 2026: local dated documents are the default.
+  // An explicit base remains available for offline regression/source reuse.
+  const endpoint=null;
   const files=['latest.json','history.json','forecast.json','funds.json','cities.json','forecast_history.json'];
   function createLoader(fetcher,base){
     fetcher=fetcher||fetch;base=base||endpoint;let pending,metadata={source:'loading'};
@@ -18,6 +20,11 @@
       }finally{clearTimeout(timer);}
     }
     async function load(){
+      if(!base){
+        metadata={source:'archive'};
+        const result=await Promise.allSettled(files.map(f=>read('./data/'+f)));
+        return Object.fromEntries(files.flatMap((f,i)=>result[i].status==='fulfilled'?[[f,result[i].value]]:[]));
+      }
       try{
         const bundle=await read(base+'/bundle.json');
         if(bundle.schema_version!==1||!bundle.documents||!files.every(f=>bundle.documents[f]?.schema_version===1))throw new Error('Incomplete Cloudflare publication');

@@ -1,3 +1,5 @@
+> **Historical reference:** NextRate was retired on 30 October 2026. No hosting or schedules are active from this source. See [retirement record](RETIREMENT.md).
+
 # Cloudflare-owned data refresh
 
 NextRate uses Cloudflare for scheduling, market collection, validation, forecast

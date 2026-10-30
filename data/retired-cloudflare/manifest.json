@@ -1,0 +1,13 @@
+{
+  "retired_on": "2026-10-30",
+  "revision": 49,
+  "tables": {
+    "publication": 1,
+    "observations": 363,
+    "refresh_runs": 52
+  },
+  "sql_sha256": "c50f1cf582166d0aef767e9627a8f6c38fa909e47a0376b5706e01932e400e40",
+  "checked_at": "2026-10-30T08:15:31.538Z",
+  "source": "Final NextRate D1 export before deletion",
+  "snapshot_kind": "archived, no scheduled refresh"
+}

@@ -1,0 +1,1538 @@
+{
+  "backfill": {
+    "conflicting_dates_skipped": 0,
+    "historical_closes": 99,
+    "imported_new_dates": 0,
+    "last_checked_at": "2026-10-26T17:15:55+00:00",
+    "note": "Backfilled PM rates, not live streaming; independent IBJA latest quote takes priority.",
+    "series_available": [
+      "gold22_inr_10g",
+      "gold24_inr_10g",
+      "silver999_inr_kg"
+    ],
+    "source": "TrackLivePrice archive of IBJA rates",
+    "source_url": "https://trackliveprice.com/methodology/"
+  },
+  "fx": [
+    {
+      "date": "2026-10-23",
+      "inr_per_usd": 94.94,
+      "retrieved_at": "2026-10-24T18:22:18+00:00",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    },
+    {
+      "date": "2026-10-25",
+      "inr_per_usd": 94.78,
+      "retrieved_at": "2026-10-25T07:23:41+00:00",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    },
+    {
+      "date": "2026-10-26",
+      "inr_per_usd": 94.9,
+      "retrieved_at": "2026-10-26T12:08:04+00:00",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    }
+  ],
+  "india": [
+    {
+      "date": "2026-06-04",
+      "gold22_inr_10g": 142975,
+      "gold24_inr_10g": 156086,
+      "session": "PM",
+      "silver999_inr_kg": 261090,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-05",
+      "gold22_inr_10g": 141282,
+      "gold24_inr_10g": 154238,
+      "session": "PM",
+      "silver999_inr_kg": 256910,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-08",
+      "gold22_inr_10g": 138764,
+      "gold24_inr_10g": 151489,
+      "session": "PM",
+      "silver999_inr_kg": 244300,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-09",
+      "gold22_inr_10g": 139707,
+      "gold24_inr_10g": 152519,
+      "session": "PM",
+      "silver999_inr_kg": 245940,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-10",
+      "gold22_inr_10g": 134786,
+      "gold24_inr_10g": 147146,
+      "session": "PM",
+      "silver999_inr_kg": 233280,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-11",
+      "gold22_inr_10g": 132620,
+      "gold24_inr_10g": 144782,
+      "session": "PM",
+      "silver999_inr_kg": 232590,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-12",
+      "gold22_inr_10g": 135385,
+      "gold24_inr_10g": 147800,
+      "session": "PM",
+      "silver999_inr_kg": 242580,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-15",
+      "gold22_inr_10g": 137992,
+      "gold24_inr_10g": 150646,
+      "session": "PM",
+      "silver999_inr_kg": 251490,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-16",
+      "gold22_inr_10g": 138007,
+      "gold24_inr_10g": 150663,
+      "session": "PM",
+      "silver999_inr_kg": 249180,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-17",
+      "gold22_inr_10g": 137536,
+      "gold24_inr_10g": 150148,
+      "session": "PM",
+      "silver999_inr_kg": 247690,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-18",
+      "gold22_inr_10g": 135653,
+      "gold24_inr_10g": 148093,
+      "session": "PM",
+      "silver999_inr_kg": 240190,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-19",
+      "gold22_inr_10g": 132793,
+      "gold24_inr_10g": 144970,
+      "session": "PM",
+      "silver999_inr_kg": 231970,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-22",
+      "gold22_inr_10g": 134936,
+      "gold24_inr_10g": 147310,
+      "session": "PM",
+      "silver999_inr_kg": 237800,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-23",
+      "gold22_inr_10g": 132815,
+      "gold24_inr_10g": 144995,
+      "session": "PM",
+      "silver999_inr_kg": 227480,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-24",
+      "gold22_inr_10g": 130235,
+      "gold24_inr_10g": 142178,
+      "session": "PM",
+      "silver999_inr_kg": 222030,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-25",
+      "gold22_inr_10g": 128124,
+      "gold24_inr_10g": 139873,
+      "session": "PM",
+      "silver999_inr_kg": 216540,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-29",
+      "gold22_inr_10g": 129542,
+      "gold24_inr_10g": 141421,
+      "session": "PM",
+      "silver999_inr_kg": 219980,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-06-30",
+      "gold22_inr_10g": 129418,
+      "gold24_inr_10g": 141286,
+      "session": "PM",
+      "silver999_inr_kg": 225430,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-01",
+      "gold22_inr_10g": 129735,
+      "gold24_inr_10g": 141632,
+      "session": "PM",
+      "silver999_inr_kg": 225430,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-02",
+      "gold22_inr_10g": 130990,
+      "gold24_inr_10g": 143003,
+      "session": "PM",
+      "silver999_inr_kg": 228850,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-03",
+      "gold22_inr_10g": 134051,
+      "gold24_inr_10g": 146344,
+      "session": "PM",
+      "silver999_inr_kg": 233860,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-06",
+      "gold22_inr_10g": 133354,
+      "gold24_inr_10g": 145583,
+      "session": "PM",
+      "silver999_inr_kg": 233160,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-07",
+      "gold22_inr_10g": 131980,
+      "gold24_inr_10g": 144083,
+      "session": "PM",
+      "silver999_inr_kg": 227200,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-08",
+      "gold22_inr_10g": 130393,
+      "gold24_inr_10g": 142350,
+      "session": "PM",
+      "silver999_inr_kg": 221550,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-09",
+      "gold22_inr_10g": 131589,
+      "gold24_inr_10g": 143656,
+      "session": "PM",
+      "silver999_inr_kg": 223790,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-10",
+      "gold22_inr_10g": 131325,
+      "gold24_inr_10g": 143368,
+      "session": "PM",
+      "silver999_inr_kg": 220390,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-13",
+      "gold22_inr_10g": 130244,
+      "gold24_inr_10g": 142188,
+      "session": "PM",
+      "silver999_inr_kg": 218720,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-14",
+      "gold22_inr_10g": 129964,
+      "gold24_inr_10g": 141882,
+      "session": "PM",
+      "silver999_inr_kg": 219970,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-15",
+      "gold22_inr_10g": 129988,
+      "gold24_inr_10g": 141908,
+      "session": "PM",
+      "silver999_inr_kg": 219710,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-16",
+      "gold22_inr_10g": 129778,
+      "gold24_inr_10g": 141679,
+      "session": "PM",
+      "silver999_inr_kg": 217430,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-17",
+      "gold22_inr_10g": 129302,
+      "gold24_inr_10g": 141159,
+      "session": "PM",
+      "silver999_inr_kg": 215470,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-20",
+      "gold22_inr_10g": 130305,
+      "gold24_inr_10g": 142254,
+      "session": "PM",
+      "silver999_inr_kg": 219570,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-21",
+      "gold22_inr_10g": 131113,
+      "gold24_inr_10g": 143137,
+      "session": "PM",
+      "silver999_inr_kg": 223200,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-22",
+      "gold22_inr_10g": 133079,
+      "gold24_inr_10g": 145283,
+      "session": "PM",
+      "silver999_inr_kg": 225460,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-23",
+      "gold22_inr_10g": 132458,
+      "gold24_inr_10g": 144605,
+      "session": "PM",
+      "silver999_inr_kg": 222480,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-24",
+      "gold22_inr_10g": 131703,
+      "gold24_inr_10g": 143781,
+      "session": "PM",
+      "silver999_inr_kg": 222720,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-27",
+      "gold22_inr_10g": 132331,
+      "gold24_inr_10g": 144466,
+      "session": "PM",
+      "silver999_inr_kg": 224450,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-28",
+      "gold22_inr_10g": 130339,
+      "gold24_inr_10g": 142291,
+      "session": "PM",
+      "silver999_inr_kg": 217350,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-29",
+      "gold22_inr_10g": 130277,
+      "gold24_inr_10g": 142224,
+      "session": "PM",
+      "silver999_inr_kg": 217350,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-30",
+      "gold22_inr_10g": 131340,
+      "gold24_inr_10g": 143384,
+      "session": "PM",
+      "silver999_inr_kg": 218660,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-07-31",
+      "gold22_inr_10g": 130860,
+      "gold24_inr_10g": 142860,
+      "session": "PM",
+      "silver999_inr_kg": 218290,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-03",
+      "gold22_inr_10g": 130582,
+      "gold24_inr_10g": 142557,
+      "session": "PM",
+      "silver999_inr_kg": 217290,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-04",
+      "gold22_inr_10g": 130865,
+      "gold24_inr_10g": 142866,
+      "session": "PM",
+      "silver999_inr_kg": 218630,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-05",
+      "gold22_inr_10g": 133393,
+      "gold24_inr_10g": 145626,
+      "session": "PM",
+      "silver999_inr_kg": 224560,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-06",
+      "gold22_inr_10g": 135971,
+      "gold24_inr_10g": 148440,
+      "session": "PM",
+      "silver999_inr_kg": 225670,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-07",
+      "gold22_inr_10g": 137053,
+      "gold24_inr_10g": 149621,
+      "session": "PM",
+      "silver999_inr_kg": 231380,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-10",
+      "gold22_inr_10g": 137987,
+      "gold24_inr_10g": 150641,
+      "session": "PM",
+      "silver999_inr_kg": 231370,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-11",
+      "gold22_inr_10g": 139968,
+      "gold24_inr_10g": 152803,
+      "session": "PM",
+      "silver999_inr_kg": 235350,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-12",
+      "gold22_inr_10g": 140532,
+      "gold24_inr_10g": 153419,
+      "session": "PM",
+      "silver999_inr_kg": 237210,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-13",
+      "gold22_inr_10g": 140213,
+      "gold24_inr_10g": 153071,
+      "session": "PM",
+      "silver999_inr_kg": 234230,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-14",
+      "gold22_inr_10g": 139565,
+      "gold24_inr_10g": 152363,
+      "session": "PM",
+      "silver999_inr_kg": 233840,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-17",
+      "gold22_inr_10g": 141217,
+      "gold24_inr_10g": 154167,
+      "session": "PM",
+      "silver999_inr_kg": 235640,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-18",
+      "gold22_inr_10g": 141137,
+      "gold24_inr_10g": 154080,
+      "session": "PM",
+      "silver999_inr_kg": 233160,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-19",
+      "gold22_inr_10g": 140943,
+      "gold24_inr_10g": 153868,
+      "session": "PM",
+      "silver999_inr_kg": 229220,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-20",
+      "gold22_inr_10g": 143885,
+      "gold24_inr_10g": 157080,
+      "session": "PM",
+      "silver999_inr_kg": 237770,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-21",
+      "gold22_inr_10g": 147128,
+      "gold24_inr_10g": 160620,
+      "session": "PM",
+      "silver999_inr_kg": 246630,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-24",
+      "gold22_inr_10g": 148533,
+      "gold24_inr_10g": 162154,
+      "session": "PM",
+      "silver999_inr_kg": 245390,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-25",
+      "gold22_inr_10g": 148430,
+      "gold24_inr_10g": 162041,
+      "session": "PM",
+      "silver999_inr_kg": 241850,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-26",
+      "gold22_inr_10g": 147785,
+      "gold24_inr_10g": 161337,
+      "session": "PM",
+      "silver999_inr_kg": 242960,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-27",
+      "gold22_inr_10g": 145082,
+      "gold24_inr_10g": 158386,
+      "session": "PM",
+      "silver999_inr_kg": 239500,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-28",
+      "gold22_inr_10g": 146173,
+      "gold24_inr_10g": 159578,
+      "session": "PM",
+      "silver999_inr_kg": 243890,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-08-31",
+      "gold22_inr_10g": 142745,
+      "gold24_inr_10g": 155835,
+      "session": "PM",
+      "silver999_inr_kg": 237200,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-01",
+      "gold22_inr_10g": 140316,
+      "gold24_inr_10g": 153183,
+      "session": "PM",
+      "silver999_inr_kg": 230420,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-02",
+      "gold22_inr_10g": 138485,
+      "gold24_inr_10g": 151184,
+      "session": "PM",
+      "silver999_inr_kg": 228400,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-03",
+      "gold22_inr_10g": 141010,
+      "gold24_inr_10g": 153941,
+      "session": "PM",
+      "silver999_inr_kg": 232530,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-04",
+      "gold22_inr_10g": 141874,
+      "gold24_inr_10g": 154884,
+      "session": "PM",
+      "silver999_inr_kg": 235460,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-07",
+      "gold22_inr_10g": 139876,
+      "gold24_inr_10g": 152703,
+      "session": "PM",
+      "silver999_inr_kg": 231650,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-08",
+      "gold22_inr_10g": 140219,
+      "gold24_inr_10g": 153077,
+      "session": "PM",
+      "silver999_inr_kg": 233830,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-09",
+      "gold22_inr_10g": 140593,
+      "gold24_inr_10g": 153486,
+      "session": "PM",
+      "silver999_inr_kg": 235250,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-10",
+      "gold22_inr_10g": 140411,
+      "gold24_inr_10g": 153287,
+      "session": "PM",
+      "silver999_inr_kg": 233640,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-11",
+      "gold22_inr_10g": 139175,
+      "gold24_inr_10g": 151938,
+      "session": "PM",
+      "silver999_inr_kg": 228920,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-15",
+      "gold22_inr_10g": 138226,
+      "gold24_inr_10g": 150902,
+      "session": "PM",
+      "silver999_inr_kg": 228740,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-16",
+      "gold22_inr_10g": 139564,
+      "gold24_inr_10g": 152362,
+      "session": "PM",
+      "silver999_inr_kg": 231340,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-17",
+      "gold22_inr_10g": 139094,
+      "gold24_inr_10g": 151849,
+      "session": "PM",
+      "silver999_inr_kg": 229640,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-18",
+      "gold22_inr_10g": 140814,
+      "gold24_inr_10g": 153727,
+      "session": "PM",
+      "silver999_inr_kg": 236910,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-21",
+      "gold22_inr_10g": 140457,
+      "gold24_inr_10g": 153337,
+      "session": "PM",
+      "silver999_inr_kg": 234990,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-22",
+      "gold22_inr_10g": 139357,
+      "gold24_inr_10g": 152136,
+      "session": "PM",
+      "silver999_inr_kg": 232920,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-23",
+      "gold22_inr_10g": 139247,
+      "gold24_inr_10g": 152016,
+      "session": "PM",
+      "silver999_inr_kg": 232770,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-24",
+      "gold22_inr_10g": 138119,
+      "gold24_inr_10g": 150785,
+      "session": "PM",
+      "silver999_inr_kg": 228250,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-25",
+      "gold22_inr_10g": 139336,
+      "gold24_inr_10g": 152113,
+      "session": "PM",
+      "silver999_inr_kg": 232350,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-28",
+      "gold22_inr_10g": 135550,
+      "gold24_inr_10g": 147980,
+      "session": "PM",
+      "silver999_inr_kg": 223050,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-29",
+      "gold22_inr_10g": 135263,
+      "gold24_inr_10g": 147667,
+      "session": "PM",
+      "silver999_inr_kg": 221600,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-09-30",
+      "gold22_inr_10g": 135465,
+      "gold24_inr_10g": 147888,
+      "session": "PM",
+      "silver999_inr_kg": 220440,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-01",
+      "gold22_inr_10g": 135694,
+      "gold24_inr_10g": 148138,
+      "session": "PM",
+      "silver999_inr_kg": 220830,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-05",
+      "gold22_inr_10g": 135749,
+      "gold24_inr_10g": 148198,
+      "session": "PM",
+      "silver999_inr_kg": 224160,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-06",
+      "gold22_inr_10g": 136001,
+      "gold24_inr_10g": 148473,
+      "session": "PM",
+      "silver999_inr_kg": 222820,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-07",
+      "gold22_inr_10g": 135355,
+      "gold24_inr_10g": 147767,
+      "session": "PM",
+      "silver999_inr_kg": 220870,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-08",
+      "gold22_inr_10g": 135244,
+      "gold24_inr_10g": 147646,
+      "session": "PM",
+      "silver999_inr_kg": 217110,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-09",
+      "gold22_inr_10g": 136878,
+      "gold24_inr_10g": 149430,
+      "session": "PM",
+      "silver999_inr_kg": 221110,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-12",
+      "gold22_inr_10g": 135624,
+      "gold24_inr_10g": 148061,
+      "session": "PM",
+      "silver999_inr_kg": 220290,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-13",
+      "gold22_inr_10g": 135217,
+      "gold24_inr_10g": 147617,
+      "session": "PM",
+      "silver999_inr_kg": 219040,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-14",
+      "gold22_inr_10g": 133795,
+      "gold24_inr_10g": 146064,
+      "session": "PM",
+      "silver999_inr_kg": 213820,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-15",
+      "gold22_inr_10g": 133683,
+      "gold24_inr_10g": 145942,
+      "session": "PM",
+      "silver999_inr_kg": 208280,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-16",
+      "gold22_inr_10g": 134126,
+      "gold24_inr_10g": 146426,
+      "session": "PM",
+      "silver999_inr_kg": 210920,
+      "source": "IBJA archive via TrackLivePrice",
+      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
+      "source_url": "https://trackliveprice.com/methodology/"
+    },
+    {
+      "date": "2026-10-19",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 133685,
+      "gold24_inr_10g": 145944,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
+      "session": "PM",
+      "silver999_inr_kg": 208750,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-21",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 132000,
+      "gold24_inr_10g": 144105,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
+      "session": "PM",
+      "silver999_inr_kg": 206783,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-22",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 130708,
+      "gold24_inr_10g": 142694,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T15:29:23+00:00",
+      "session": "PM",
+      "silver999_inr_kg": 199777,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-23",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 129733,
+      "gold24_inr_10g": 141630,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-25T07:23:41+00:00",
+      "session": "PM",
+      "silver999_inr_kg": 194415,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-26",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 129806,
+      "gold24_inr_10g": 141710,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-26T12:30:26+00:00",
+      "session": "PM",
+      "silver999_inr_kg": 194479,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
+    }
+  ],
+  "schema_version": 1,
+  "spot": {
+    "XAG": [
+      {
+        "as_of": "2026-10-24T18:21:52+00:00",
+        "date": "2026-10-24",
+        "retrieved_at": "2026-10-24T18:22:18+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T06:54:37+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T06:54:46+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T07:23:37+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T07:23:41+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T07:26:07+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T07:26:06+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T08:29:08+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:29:05+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T08:31:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:31:58+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T08:32:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:32:39+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T08:55:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:55:47+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T08:59:08+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:59:21+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T09:00:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T09:00:59+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T12:33:08+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T12:33:24+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T13:19:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T13:19:48+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T13:22:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T13:22:49+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T13:38:08+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T13:38:21+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T14:10:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T14:10:54+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T14:11:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T14:11:50+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T15:04:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T15:04:55+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T15:48:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T15:48:43+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T15:49:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T15:49:45+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T16:09:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T16:09:42+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T16:13:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T16:13:57+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-25T17:12:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T17:13:01+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.046
+      },
+      {
+        "as_of": "2026-10-26T12:08:13+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:08:04+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.194
+      },
+      {
+        "as_of": "2026-10-26T12:10:43+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:10:42+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.183
+      },
+      {
+        "as_of": "2026-10-26T12:30:13+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:30:26+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.357
+      },
+      {
+        "as_of": "2026-10-26T12:46:13+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:46:34+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.206
+      },
+      {
+        "as_of": "2026-10-26T15:29:13+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:29:23+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.286
+      },
+      {
+        "as_of": "2026-10-26T15:29:43+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:30:06+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.286
+      },
+      {
+        "as_of": "2026-10-26T16:41:46+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T16:41:47+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.219
+      },
+      {
+        "as_of": "2026-10-26T17:15:44+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T17:15:53+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.348
+      }
+    ],
+    "XAU": [
+      {
+        "as_of": "2026-10-24T18:21:53+00:00",
+        "date": "2026-10-24",
+        "retrieved_at": "2026-10-24T18:22:18+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T06:54:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T06:54:46+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T07:23:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T07:23:41+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T07:26:08+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T07:26:06+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T08:28:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:29:05+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T08:31:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:31:58+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T08:32:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:32:39+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T08:55:38+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:55:47+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T08:59:09+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T08:59:21+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T09:00:41+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T09:00:59+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T12:33:09+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T12:33:24+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T13:19:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T13:19:48+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T13:22:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T13:22:49+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T13:38:09+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T13:38:21+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T14:10:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T14:10:54+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T14:11:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T14:11:50+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T15:04:40+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T15:04:55+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T15:48:40+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T15:48:43+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T15:49:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T15:49:45+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T16:09:39+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T16:09:42+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T16:13:40+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T16:13:57+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-25T17:12:40+00:00",
+        "date": "2026-10-25",
+        "retrieved_at": "2026-10-25T17:13:01+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.8999
+      },
+      {
+        "as_of": "2026-10-26T12:08:14+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:08:04+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4018.8999
+      },
+      {
+        "as_of": "2026-10-26T12:10:14+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:10:42+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4018.7
+      },
+      {
+        "as_of": "2026-10-26T12:30:14+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:30:26+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4022.3
+      },
+      {
+        "as_of": "2026-10-26T12:46:14+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T12:46:34+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4020.8
+      },
+      {
+        "as_of": "2026-10-26T15:29:14+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:29:23+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4018.8999
+      },
+      {
+        "as_of": "2026-10-26T15:29:44+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T15:30:06+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4018.8999
+      },
+      {
+        "as_of": "2026-10-26T16:41:47+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T16:41:47+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4020.5
+      },
+      {
+        "as_of": "2026-10-26T17:15:45+00:00",
+        "date": "2026-10-26",
+        "retrieved_at": "2026-10-26T17:15:53+00:00",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4027.3999
+      }
+    ]
+  },
+  "storage": {
+    "archive_manifest": "archive/manifest.json",
+    "note": "Older dated observations preserved in yearly GitHub archive.",
+    "type": "recent-cache"
+  }
+}

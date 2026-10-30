@@ -37,8 +37,8 @@ test('Binary PDF decoding works without canvas, DOM, images or code evaluation',
 });
 test('Collector prefers the dated official PDF when HTML history trails today',async()=>{
  const {collect}=await import('../cloudflare/nextrate-scheduler/pipeline.mjs');
- const root=require('node:path').resolve(__dirname,'..'),docs=Object.fromEntries(['latest','history','forecast','forecast_history','cities','funds'].map(n=>[n+'.json',JSON.parse(fs.readFileSync(root+'/data/'+n+'.json'))]));
- const stored=Object.fromEntries(['ibja','fx','spot-xau','spot-xag','forecasts'].map(k=>[k,JSON.parse(fs.readFileSync(root+'/data/archive/'+k+'/2026.json')).records]));
+ const root=require('node:path').resolve(__dirname,'..'),docs=Object.fromEntries(['latest','history','forecast','forecast_history','cities','funds'].map(n=>[n+'.json',JSON.parse(fs.readFileSync(root+'/tests/fixtures/legacy-publication/'+n+'.json'))]));
+ const stored=Object.fromEntries(['ibja','fx','spot-xau','spot-xag','forecasts'].map(k=>[k,JSON.parse(fs.readFileSync(root+'/tests/fixtures/legacy-publication/archive/'+k+'/2026.json')).records]));
  const html='<a href="/UploadedFiles/30DaysPdf/current.pdf">Previous 30 Days</a><table><tr><td data-label="PM">26/10/2026</td><td>141710</td><td>141143</td><td>129806</td><td>106283</td><td>82900</td><td>194479</td></tr></table>';
  const result=await collect(docs,stored,now,async url=>url==='https://www.ibjarates.com/'?new Response(html):url.endsWith('/current.pdf')?new Response(pdfBytes()):new Response('unavailable',{status:503}));
  assert.equal(result.docs['latest.json'].india.date,'2026-10-27');assert.equal(result.session_complete,true);assert.equal(result.docs['forecast.json'].based_on_session,'AM');assert.equal(result.docs['history.json'].india.at(-1).gold24_inr_10g,141082);

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-26T17:15:58+00:00",
+  "checked_at": "2026-10-30T08:15:31.538Z",
   "source": "https://www.amfiindia.com/net-asset-value/nav-download",
   "status": "ok",
   "funds": {
@@ -8,8 +8,8 @@
       "scheme_code": 120685,
       "name": "ICICI Prudential Gold ETF FOF",
       "kind": "Gold Fund",
-      "nav_inr_per_unit": 44.9185,
-      "nav_date": "2026-10-26",
+      "nav_inr_per_unit": 44.9514,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
@@ -18,8 +18,8 @@
       "scheme_code": 152735,
       "name": "SBI Silver ETF Fund of Fund",
       "kind": "Silver Fund",
-      "nav_inr_per_unit": 20.4946,
-      "nav_date": "2026-10-23",
+      "nav_inr_per_unit": 20.0961,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
@@ -28,8 +28,8 @@
       "scheme_code": 113049,
       "name": "HDFC Gold ETF",
       "kind": "Gold ETF",
-      "nav_inr_per_unit": 120.0213,
-      "nav_date": "2026-10-26",
+      "nav_inr_per_unit": 120.3985,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
@@ -38,8 +38,8 @@
       "scheme_code": 140088,
       "name": "Nippon India ETF Gold BeES",
       "kind": "Gold ETF",
-      "nav_inr_per_unit": 116.0136,
-      "nav_date": "2026-10-23",
+      "nav_inr_per_unit": 116.4806,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
@@ -48,8 +48,8 @@
       "scheme_code": 111954,
       "name": "SBI Gold ETF",
       "kind": "Gold ETF",
-      "nav_inr_per_unit": 119.6861,
-      "nav_date": "2026-10-23",
+      "nav_inr_per_unit": 120.1706,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
@@ -58,8 +58,8 @@
       "scheme_code": 150556,
       "name": "HDFC Silver ETF",
       "kind": "Silver ETF",
-      "nav_inr_per_unit": 184.7249,
-      "nav_date": "2026-10-26",
+      "nav_inr_per_unit": 180.8977,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"
@@ -68,8 +68,8 @@
       "scheme_code": 149758,
       "name": "Nippon India Silver ETF",
       "kind": "Silver ETF",
-      "nav_inr_per_unit": 184.3876,
-      "nav_date": "2026-10-23",
+      "nav_inr_per_unit": 180.8557,
+      "nav_date": "2026-10-29",
       "source": "AMFI published NAV",
       "source_url": "https://www.amfiindia.com/net-asset-value/nav-download",
       "quote_type": "NAV, not exchange trading price"

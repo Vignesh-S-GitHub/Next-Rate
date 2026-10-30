@@ -4,7 +4,7 @@ const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'..');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
+const pages=fs.readFileSync(path.join(root,'docs/reference/pages.yml.example'),'utf8');
 test('Buy Gold section shows all India ownership routes',()=>{
  for(const title of ['Gold Bar','Gold Coin','Jewellery','Gold ETF','Gold Fund',
   'Gold Bond (SGB)','Digital Gold','Silver Bar','Silver Coin','Silver ETF','Silver Fund']){

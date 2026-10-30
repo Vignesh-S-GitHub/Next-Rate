@@ -1,46 +1,61 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-26T17:15:53+00:00",
+  "checked_at": "2026-10-30T08:15:31.538Z",
   "india": {
-    "date": "2026-10-26",
-    "session": "PM",
-    "gold24_inr_10g": 141710,
-    "gold22_inr_10g": 129806,
-    "silver999_inr_kg": 194479,
+    "date": "2026-10-30",
+    "session": "AM",
+    "gold24_inr_10g": 140891,
+    "gold22_inr_10g": 129056,
+    "silver999_inr_kg": 183800,
     "source": "India Bullion and Jewellers Association (IBJA)",
     "source_url": "https://www.ibjarates.com/",
-    "retrieved_at": "2026-10-26T17:15:53+00:00",
+    "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_9668_20261030073926477_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+    "retrieved_at": "2026-10-30T07:45:12.943Z",
     "gst_included": false,
     "making_charges_included": false,
     "geography": "India national reference, not city retail"
   },
   "spot": {
     "XAU": {
-      "usd_per_troy_ounce": 4027.3999,
-      "as_of": "2026-10-26T17:15:45+00:00",
-      "retrieved_at": "2026-10-26T17:15:53+00:00",
+      "usd_per_troy_ounce": 3984.6001,
+      "as_of": "2026-10-30T08:15:12.000Z",
+      "retrieved_at": "2026-10-30T08:15:31.538Z",
       "source": "Gold API indicative spot",
       "source_url": "https://gold-api.com/docs"
     },
     "XAG": {
-      "usd_per_troy_ounce": 54.348,
-      "as_of": "2026-10-26T17:15:44+00:00",
-      "retrieved_at": "2026-10-26T17:15:53+00:00",
+      "usd_per_troy_ounce": 50.804,
+      "as_of": "2026-10-30T08:15:12.000Z",
+      "retrieved_at": "2026-10-30T08:15:31.538Z",
       "source": "Gold API indicative spot",
       "source_url": "https://gold-api.com/docs"
     }
   },
   "fx": {
-    "inr_per_usd": 94.96,
-    "date": "2026-10-26",
-    "retrieved_at": "2026-10-26T17:15:53+00:00",
+    "inr_per_usd": 95.24,
+    "date": "2026-10-30",
+    "retrieved_at": "2026-10-30T08:15:31.538Z",
     "source": "Frankfurter daily FX reference",
     "source_url": "https://frankfurter.dev/"
   },
   "sources_checked": {
-    "ibja": "ok",
+    "cities": "ok",
     "xau": "ok",
     "xag": "ok",
-    "usd_inr": "ok"
+    "usd_inr": "ok",
+    "nav": "ok",
+    "ibja": "unavailable",
+    "conversion": "ok"
+  },
+  "forecast_fx": {
+    "inr_per_usd": 95.2911,
+    "inr_per_troy_ounce": 379696.9263985278,
+    "usd_per_troy_ounce": 3984.600098,
+    "quote_as_of": "2026-10-30T08:15:42.000Z",
+    "date": "2026-10-30",
+    "retrieved_at": "2026-10-30T08:15:31.538Z",
+    "source": "Gold API indicative currency conversion",
+    "source_url": "https://gold-api.com/docs",
+    "rate_timing": "conversion_quote_not_fx_tick"
   }
 }

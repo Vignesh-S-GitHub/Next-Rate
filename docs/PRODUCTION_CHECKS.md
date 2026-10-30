@@ -1,3 +1,5 @@
+> **Historical reference:** NextRate was retired on 30 October 2026. No hosting or schedules are active from this source. See [retirement record](RETIREMENT.md).
+
 # Current production model (27 October 2026)
 
 Cloudflare now owns market refreshes, verified publication receipts and permanent

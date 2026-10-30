@@ -1,6 +1,6 @@
 {
   "name": "nextrate-production-checks",
   "private": true,
-  "scripts": {"test:browser": "node tests/browser-smoke.cjs"},
+  "scripts": {"test:browser": "node scripts/capture_screenshots.cjs --check-only"},
   "devDependencies": {"playwright": "1.62.1"}
 }

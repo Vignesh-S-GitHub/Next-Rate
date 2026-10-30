@@ -1,18 +1,4 @@
 {
-  "backfill": {
-    "conflicting_dates_skipped": 0,
-    "historical_closes": 99,
-    "imported_new_dates": 0,
-    "last_checked_at": "2026-10-26T17:15:55+00:00",
-    "note": "Backfilled PM rates, not live streaming; independent IBJA latest quote takes priority.",
-    "series_available": [
-      "gold22_inr_10g",
-      "gold24_inr_10g",
-      "silver999_inr_kg"
-    ],
-    "source": "TrackLivePrice archive of IBJA rates",
-    "source_url": "https://trackliveprice.com/methodology/"
-  },
   "fx": [
     {
       "date": "2026-10-23",
@@ -32,6 +18,34 @@
       "date": "2026-10-26",
       "inr_per_usd": 94.9,
       "retrieved_at": "2026-10-26T12:08:04+00:00",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    },
+    {
+      "date": "2026-10-27",
+      "inr_per_usd": 95.04,
+      "retrieved_at": "2026-10-27T08:41:09.516Z",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    },
+    {
+      "date": "2026-10-28",
+      "inr_per_usd": 95.12,
+      "retrieved_at": "2026-10-28T04:15:00.596Z",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    },
+    {
+      "date": "2026-10-29",
+      "inr_per_usd": 95.16,
+      "retrieved_at": "2026-10-29T07:45:12.896Z",
+      "source": "Frankfurter daily FX reference",
+      "source_url": "https://frankfurter.dev/"
+    },
+    {
+      "date": "2026-10-30",
+      "inr_per_usd": 95.24,
+      "retrieved_at": "2026-10-30T07:45:12.943Z",
       "source": "Frankfurter daily FX reference",
       "source_url": "https://frankfurter.dev/"
     }
@@ -819,163 +833,227 @@
     },
     {
       "date": "2026-09-24",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 138119,
       "gold24_inr_10g": 150785,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 228250,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 228248,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-09-25",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 139336,
       "gold24_inr_10g": 152113,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
       "silver999_inr_kg": 232350,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-09-28",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135550,
       "gold24_inr_10g": 147980,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 223050,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 223053,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-09-29",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135263,
       "gold24_inr_10g": 147667,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
       "silver999_inr_kg": 221600,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-09-30",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135465,
       "gold24_inr_10g": 147888,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 220440,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 220435,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-01",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135694,
       "gold24_inr_10g": 148138,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 220830,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 220829,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-05",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135749,
       "gold24_inr_10g": 148198,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 224160,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 224157,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-06",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 136001,
       "gold24_inr_10g": 148473,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
       "silver999_inr_kg": 222820,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-07",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135355,
       "gold24_inr_10g": 147767,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 220870,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 220866,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-08",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135244,
       "gold24_inr_10g": 147646,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 217110,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 217106,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-09",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 136878,
       "gold24_inr_10g": 149430,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 221110,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 221109,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-12",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135624,
       "gold24_inr_10g": 148061,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 220290,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 220295,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-13",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 135217,
       "gold24_inr_10g": 147617,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 219040,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 219038,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-14",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 133795,
       "gold24_inr_10g": 146064,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 213820,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 213822,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-15",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 133683,
       "gold24_inr_10g": 145942,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 208280,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 208275,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-16",
+      "geography": "India national reference, not city retail",
       "gold22_inr_10g": 134126,
       "gold24_inr_10g": 146426,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T09:58:23.534Z",
       "session": "PM",
-      "silver999_inr_kg": 210920,
-      "source": "IBJA archive via TrackLivePrice",
-      "source_precision": "INR 1 per 10g gold; silver converted from two-decimal INR/g",
-      "source_url": "https://trackliveprice.com/methodology/"
+      "silver999_inr_kg": 210918,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_7852_20261027080109209_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
     },
     {
       "date": "2026-10-19",
@@ -1040,6 +1118,62 @@
       "session": "PM",
       "silver999_inr_kg": 194479,
       "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-27",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 129551,
+      "gold24_inr_10g": 141431,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-27T13:45:20.251Z",
+      "session": "PM",
+      "silver999_inr_kg": 192499,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_4253_20261027125658557_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-28",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 130720,
+      "gold24_inr_10g": 142707,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-28T13:45:12.758Z",
+      "session": "PM",
+      "silver999_inr_kg": 193442,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_1243_20261028124731438_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-29",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 130306,
+      "gold24_inr_10g": 142255,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-29T13:45:13.474Z",
+      "session": "PM",
+      "silver999_inr_kg": 190478,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_9021_20261029125834700_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
+      "source_url": "https://www.ibjarates.com/"
+    },
+    {
+      "date": "2026-10-30",
+      "geography": "India national reference, not city retail",
+      "gold22_inr_10g": 129056,
+      "gold24_inr_10g": 140891,
+      "gst_included": false,
+      "making_charges_included": false,
+      "retrieved_at": "2026-10-30T07:45:12.943Z",
+      "session": "AM",
+      "silver999_inr_kg": 183800,
+      "source": "India Bullion and Jewellers Association (IBJA)",
+      "source_document_url": "https://www.ibjarates.com/UploadedFiles/30DaysPdf/Pdf_9668_20261030073926477_Daily%20Opening%20and%20Closing%20Market%20Rate.pdf",
       "source_url": "https://www.ibjarates.com/"
     }
   ],
@@ -1285,6 +1419,398 @@
         "source": "Gold API indicative spot",
         "source_url": "https://gold-api.com/docs",
         "usd_per_troy_ounce": 54.348
+      },
+      {
+        "as_of": "2026-10-27T08:40:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:41:09.516Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.003
+      },
+      {
+        "as_of": "2026-10-27T08:41:52.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:42:10.358Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.953
+      },
+      {
+        "as_of": "2026-10-27T08:42:52.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:43:10.821Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.925
+      },
+      {
+        "as_of": "2026-10-27T08:43:52.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:44:10.892Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.899
+      },
+      {
+        "as_of": "2026-10-27T08:44:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:45:09.675Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.914
+      },
+      {
+        "as_of": "2026-10-27T08:45:52.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:46:09.717Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.941
+      },
+      {
+        "as_of": "2026-10-27T08:46:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:47:09.870Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.927
+      },
+      {
+        "as_of": "2026-10-27T08:47:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:48:09.681Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.945
+      },
+      {
+        "as_of": "2026-10-27T08:48:52.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:49:09.356Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.992
+      },
+      {
+        "as_of": "2026-10-27T08:49:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:50:09.849Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.997
+      },
+      {
+        "as_of": "2026-10-27T08:50:52.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:51:10.071Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.038
+      },
+      {
+        "as_of": "2026-10-27T09:55:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:55:23.701Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.39
+      },
+      {
+        "as_of": "2026-10-27T09:56:22.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:56:23.583Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.39
+      },
+      {
+        "as_of": "2026-10-27T09:57:22.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:57:23.481Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.42
+      },
+      {
+        "as_of": "2026-10-27T09:58:22.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:58:23.534Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.382
+      },
+      {
+        "as_of": "2026-10-27T13:44:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T13:45:20.251Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.182
+      },
+      {
+        "as_of": "2026-10-27T15:17:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:17:45.841Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.62
+      },
+      {
+        "as_of": "2026-10-27T15:18:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:18:45.681Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.635
+      },
+      {
+        "as_of": "2026-10-27T15:19:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:19:45.715Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.631
+      },
+      {
+        "as_of": "2026-10-27T15:20:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:20:46.101Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.644
+      },
+      {
+        "as_of": "2026-10-27T15:21:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:21:46.907Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.635
+      },
+      {
+        "as_of": "2026-10-27T15:22:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:22:46.212Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.627
+      },
+      {
+        "as_of": "2026-10-27T16:44:54.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T16:45:17.643Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.551
+      },
+      {
+        "as_of": "2026-10-28T04:14:55.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:15:00.596Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.114
+      },
+      {
+        "as_of": "2026-10-28T04:15:55.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:16:01.084Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.112
+      },
+      {
+        "as_of": "2026-10-28T04:16:55.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:17:01.318Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.112
+      },
+      {
+        "as_of": "2026-10-28T04:17:55.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:18:00.622Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.107
+      },
+      {
+        "as_of": "2026-10-28T04:18:55.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:19:00.575Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.103
+      },
+      {
+        "as_of": "2026-10-28T04:19:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:20:00.578Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.109
+      },
+      {
+        "as_of": "2026-10-28T07:44:55.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T07:45:12.913Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.951
+      },
+      {
+        "as_of": "2026-10-28T08:15:25.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T08:15:31.060Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.091
+      },
+      {
+        "as_of": "2026-10-28T08:45:25.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T08:45:30.540Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54.2
+      },
+      {
+        "as_of": "2026-10-28T13:44:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T13:45:12.758Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 54
+      },
+      {
+        "as_of": "2026-10-28T14:15:26.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T14:15:30.998Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.938
+      },
+      {
+        "as_of": "2026-10-28T14:45:26.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T14:45:30.592Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.616
+      },
+      {
+        "as_of": "2026-10-28T16:44:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T16:45:16.548Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.762
+      },
+      {
+        "as_of": "2026-10-28T17:44:57.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T17:45:13.023Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.693
+      },
+      {
+        "as_of": "2026-10-29T02:44:59.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T02:45:12.706Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 53.602
+      },
+      {
+        "as_of": "2026-10-29T07:45:01.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T07:45:12.896Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.945
+      },
+      {
+        "as_of": "2026-10-29T08:15:15.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T08:15:30.520Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.999
+      },
+      {
+        "as_of": "2026-10-29T08:45:07.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T08:45:30.452Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.851
+      },
+      {
+        "as_of": "2026-10-29T13:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T13:45:13.474Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.181
+      },
+      {
+        "as_of": "2026-10-29T14:15:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T14:15:30.668Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.322
+      },
+      {
+        "as_of": "2026-10-29T14:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T14:45:31.010Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.85
+      },
+      {
+        "as_of": "2026-10-29T16:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T16:45:12.352Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.551
+      },
+      {
+        "as_of": "2026-10-29T17:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T17:45:12.303Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 52.219
+      },
+      {
+        "as_of": "2026-10-30T02:45:10.000Z",
+        "date": "2026-10-30",
+        "retrieved_at": "2026-10-30T02:45:13.088Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 51.572
+      },
+      {
+        "as_of": "2026-10-30T07:45:11.000Z",
+        "date": "2026-10-30",
+        "retrieved_at": "2026-10-30T07:45:12.943Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 50.82
+      },
+      {
+        "as_of": "2026-10-30T08:15:12.000Z",
+        "date": "2026-10-30",
+        "retrieved_at": "2026-10-30T08:15:31.538Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 50.804
       }
     ],
     "XAU": [
@@ -1527,6 +2053,398 @@
         "source": "Gold API indicative spot",
         "source_url": "https://gold-api.com/docs",
         "usd_per_troy_ounce": 4027.3999
+      },
+      {
+        "as_of": "2026-10-27T08:40:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:41:09.516Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3996.5
+      },
+      {
+        "as_of": "2026-10-27T08:41:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:42:10.358Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3994.7
+      },
+      {
+        "as_of": "2026-10-27T08:42:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:43:10.821Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3993.8
+      },
+      {
+        "as_of": "2026-10-27T08:43:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:44:10.892Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3993.5
+      },
+      {
+        "as_of": "2026-10-27T08:44:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:45:09.675Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3993.5
+      },
+      {
+        "as_of": "2026-10-27T08:45:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:46:09.717Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3993.3999
+      },
+      {
+        "as_of": "2026-10-27T08:46:54.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:47:09.870Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3993
+      },
+      {
+        "as_of": "2026-10-27T08:47:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:48:09.681Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3993.8999
+      },
+      {
+        "as_of": "2026-10-27T08:48:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:49:09.356Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3994.8999
+      },
+      {
+        "as_of": "2026-10-27T08:49:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:50:09.849Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3995.1001
+      },
+      {
+        "as_of": "2026-10-27T08:50:53.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T08:51:10.071Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3995.8999
+      },
+      {
+        "as_of": "2026-10-27T09:55:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:55:23.701Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3999.3
+      },
+      {
+        "as_of": "2026-10-27T09:56:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:56:23.583Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3998.5
+      },
+      {
+        "as_of": "2026-10-27T09:57:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:57:23.481Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3999.8999
+      },
+      {
+        "as_of": "2026-10-27T09:58:23.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T09:58:23.534Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3998.6001
+      },
+      {
+        "as_of": "2026-10-27T13:44:54.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T13:45:20.251Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4031.3
+      },
+      {
+        "as_of": "2026-10-27T15:17:24.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:17:45.841Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4059.8
+      },
+      {
+        "as_of": "2026-10-27T15:18:24.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:18:45.681Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4058.8999
+      },
+      {
+        "as_of": "2026-10-27T15:19:24.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:19:45.715Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4059
+      },
+      {
+        "as_of": "2026-10-27T15:20:24.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:20:46.101Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4058.8
+      },
+      {
+        "as_of": "2026-10-27T15:21:24.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:21:46.907Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4058.7
+      },
+      {
+        "as_of": "2026-10-27T15:22:24.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T15:22:46.212Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4058.3999
+      },
+      {
+        "as_of": "2026-10-27T16:44:54.000Z",
+        "date": "2026-10-27",
+        "retrieved_at": "2026-10-27T16:45:17.643Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4060.3999
+      },
+      {
+        "as_of": "2026-10-28T04:14:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:15:00.596Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4043.3999
+      },
+      {
+        "as_of": "2026-10-28T04:15:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:16:01.084Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4043.3
+      },
+      {
+        "as_of": "2026-10-28T04:16:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:17:01.318Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4043.5
+      },
+      {
+        "as_of": "2026-10-28T04:17:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:18:00.622Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4043.5
+      },
+      {
+        "as_of": "2026-10-28T04:18:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:19:00.575Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4043.5
+      },
+      {
+        "as_of": "2026-10-28T04:19:57.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T04:20:00.578Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4043.5
+      },
+      {
+        "as_of": "2026-10-28T07:44:56.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T07:45:12.913Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4040.7
+      },
+      {
+        "as_of": "2026-10-28T08:15:26.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T08:15:31.060Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4048.1001
+      },
+      {
+        "as_of": "2026-10-28T08:45:26.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T08:45:30.540Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4057.1001
+      },
+      {
+        "as_of": "2026-10-28T13:44:57.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T13:45:12.758Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4050.1001
+      },
+      {
+        "as_of": "2026-10-28T14:15:27.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T14:15:30.998Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4048.8
+      },
+      {
+        "as_of": "2026-10-28T14:45:27.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T14:45:30.592Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4041.8999
+      },
+      {
+        "as_of": "2026-10-28T16:44:57.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T16:45:16.548Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4041.1001
+      },
+      {
+        "as_of": "2026-10-28T17:44:57.000Z",
+        "date": "2026-10-28",
+        "retrieved_at": "2026-10-28T17:45:13.023Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4039.2
+      },
+      {
+        "as_of": "2026-10-29T02:45:00.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T02:45:12.706Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4045.2
+      },
+      {
+        "as_of": "2026-10-29T07:45:01.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T07:45:12.896Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4029.2
+      },
+      {
+        "as_of": "2026-10-29T08:15:16.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T08:15:30.520Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4030.2
+      },
+      {
+        "as_of": "2026-10-29T08:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T08:45:30.452Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4025.3999
+      },
+      {
+        "as_of": "2026-10-29T13:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T13:45:13.474Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4022.6001
+      },
+      {
+        "as_of": "2026-10-29T14:15:09.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T14:15:30.668Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4023.3
+      },
+      {
+        "as_of": "2026-10-29T14:45:08.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T14:45:31.010Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4037.3
+      },
+      {
+        "as_of": "2026-10-29T16:45:09.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T16:45:12.352Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4017.3
+      },
+      {
+        "as_of": "2026-10-29T17:45:09.000Z",
+        "date": "2026-10-29",
+        "retrieved_at": "2026-10-29T17:45:12.303Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4014.3999
+      },
+      {
+        "as_of": "2026-10-30T02:45:11.000Z",
+        "date": "2026-10-30",
+        "retrieved_at": "2026-10-30T02:45:13.088Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 4002.5
+      },
+      {
+        "as_of": "2026-10-30T07:45:12.000Z",
+        "date": "2026-10-30",
+        "retrieved_at": "2026-10-30T07:45:12.943Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3981.6001
+      },
+      {
+        "as_of": "2026-10-30T08:15:12.000Z",
+        "date": "2026-10-30",
+        "retrieved_at": "2026-10-30T08:15:31.538Z",
+        "source": "Gold API indicative spot",
+        "source_url": "https://gold-api.com/docs",
+        "usd_per_troy_ounce": 3984.6001
       }
     ]
   },

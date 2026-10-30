@@ -91,18 +91,13 @@ class SchedulerTests(unittest.TestCase):
         self.assertFalse(decide(self.root, now)["refresh"])
         self.assertEqual(self.latest["india"]["date"], "2026-10-23")
 
-    def test_cloudflare_owns_refresh_and_github_only_deploys_static_ui(self):
+    def test_retired_project_has_no_active_workflows_timers_or_database_bindings(self):
         root = Path(__file__).resolve().parents[1]
-        self.assertFalse((root / ".github/workflows/refresh-rates.yml").exists())
-        pages = (root / ".github/workflows/pages.yml").read_text()
-        self.assertNotIn("schedule:", pages)
-        self.assertNotIn("python scripts/update_rates.py", pages)
-        self.assertNotIn("python scripts/forecast.py", pages)
-        self.assertIn("python scripts/validate_publication.py", pages)
+        self.assertEqual(list((root / ".github/workflows").glob("*.y*ml")), [])
+        self.assertTrue((root / "docs/reference/pages.yml.example").exists())
         worker = json.loads((root / "cloudflare/nextrate-scheduler/wrangler.jsonc").read_text())
-        self.assertEqual(worker['triggers']['crons'], ["45 2,7,13,16,17 * * *", "15,45 8,14 * * *"])
-        self.assertEqual(worker['d1_databases'][0]['binding'], "DB")
-        self.assertIn("data-loader.js", pages)
+        self.assertEqual(worker["triggers"]["crons"], [])
+        self.assertEqual(worker["d1_databases"], [])
 
     def test_explicit_manual_refresh_exercises_the_complete_pipeline(self):
         self.assertTrue(decide(self.root, NOW, requested=True)["refresh"])

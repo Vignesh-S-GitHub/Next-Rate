@@ -9,44 +9,44 @@
     {
       "file": "ibja/2026.json",
       "first": "2026-06-04:PM",
-      "last": "2026-10-26:PM",
-      "records": 104,
-      "sha256": "75d0e6445e9333f604eebeb0e95131c5545dc5e23343503e54717845ffb9aea4"
+      "last": "2026-10-30:AM",
+      "records": 108,
+      "sha256": "78caae4d5d1452b2e7edc0439bce4016a4ed124978ed5d369b97775b034fe0c6"
     },
     {
       "file": "fx/2026.json",
       "first": "2026-10-23",
-      "last": "2026-10-26",
-      "records": 3,
-      "sha256": "592bfdb745a1ceee44848c7f885868ab503e71de7e5316dc9ee7a4e1b52476f4"
+      "last": "2026-10-30",
+      "records": 7,
+      "sha256": "2adda5e9c00cded32c1592fac69f4fd3c3ad91bfdb9762b2f6f3aa13a38c470d"
     },
     {
       "file": "spot-xau/2026.json",
       "first": "2026-10-24T18:21:53+00:00",
-      "last": "2026-10-26T17:15:45+00:00",
-      "records": 30,
-      "sha256": "95cd59f4e2b69ffbe52b0b99959de74f63d4424010006ad7b12ec42de147b25e"
+      "last": "2026-10-30T08:15:12.000Z",
+      "records": 79,
+      "sha256": "9de9cb9fcd6fb3c725f0e4d6efeef22afaf060c968bbad72c7ed77599dcbcc66"
     },
     {
       "file": "spot-xag/2026.json",
       "first": "2026-10-24T18:21:52+00:00",
-      "last": "2026-10-26T17:15:44+00:00",
-      "records": 30,
-      "sha256": "aeb0bc32183b7d4f0b4b34ec488aec0ec91153c4a54f2ca6e5ba9a179c5cf6e3"
+      "last": "2026-10-30T08:15:12.000Z",
+      "records": 79,
+      "sha256": "ff2169182124de95cdb185855c03a94f145c795a039d7c84063243aab70cbeaa"
     },
     {
       "file": "forecasts/2026.json",
       "first": "2026-10-26",
-      "last": "2026-10-27",
-      "records": 4,
-      "sha256": "2b08a0c8ee9c01277520c90e3da7adebc6a886ac204d9302d9da009743581b26"
+      "last": "2026-11-02",
+      "records": 19,
+      "sha256": "3efec7bfc75f0dca3241656cfafaf68e2d27504e8cc200eee80416159489f0b8"
     }
   ],
   "totals": {
-    "forecasts": 4,
-    "fx": 3,
-    "ibja": 104,
-    "spot-xag": 30,
-    "spot-xau": 30
+    "forecasts": 19,
+    "fx": 7,
+    "ibja": 108,
+    "spot-xag": 79,
+    "spot-xau": 79
   }
 }

@@ -9,7 +9,7 @@ const home=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const tools=fs.readFileSync(path.join(root,'features.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'features.css'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-const workflows=['pages.yml'].map(f=>fs.readFileSync(path.join(root,'.github/workflows',f),'utf8'));
+const workflows=['pages.yml'].map(f=>fs.readFileSync(path.join(root,'docs/reference',f+'.example'),'utf8'));
 
 test('Publisher logo URLs come from original official websites, never stock or AI images',()=>{
  const p=sources.providers;

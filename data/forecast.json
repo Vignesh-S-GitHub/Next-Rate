@@ -1,196 +1,247 @@
 {
   "schema_version": 1,
-  "model_version": 3,
-  "generated_at": "2026-10-26T17:16:06+00:00",
-  "today_ist": "2026-10-26",
-  "calendar_tomorrow": "2026-10-27",
-  "target_date": "2026-10-27",
+  "model_version": 4,
+  "generated_at": "2026-10-30T08:15:31.538Z",
+  "today_ist": "2026-10-30",
+  "calendar_tomorrow": "2026-10-31",
+  "target_date": "2026-11-02",
   "target_type": "expected_IBJA_publication_day",
   "holiday_calendar_verified": true,
   "holiday_calendar_source": "https://www.ibjarates.com/pdf/List-of-Holidays/List-of-Holidays-2026.pdf",
-  "market_closed_tomorrow": false,
+  "market_closed_tomorrow": true,
   "status": "experimental",
   "scope": "India national IBJA benchmark estimate; not city retail or jewellery pricing",
-  "method": "Chronological model selection with a typical historical-error band and a separate wider volatility scenario.",
-  "validity": "Typical range targets 50% of earlier historical errors, not a guaranteed future probability. Predictions may be wrong.",
+  "method": "Verified IBJA rate × observed global metal ratio × paired currency-reference ratio.",
+  "validity": "Conditional market-implied estimate. Scenario range describes historical moves and is not a calibrated probability.",
   "source_url": "https://www.ibjarates.com/",
   "metals": {
     "gold24": {
       "label": "24K gold",
       "unit": "10 g",
-      "baseline": 141710,
-      "estimate": 141710,
-      "low": 140700,
-      "high": 142700,
-      "expected_change_pct": 0.0,
-      "direction": "Mostly steady",
-      "scenario_width_pct": 1.5,
-      "history_returns_used": 7,
-      "history_rows_used": 99,
-      "history_close_rows_used": 99,
-      "model_name": "last_close",
-      "model_version": 3,
-      "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+      "baseline": 140891,
+      "estimate": 140997,
+      "low": 139100,
+      "high": 142900,
+      "expected_change_pct": 0.08,
+      "direction": "Up",
+      "scenario_width_pct": 1.33,
+      "history_returns_used": 90,
+      "history_rows_used": 103,
+      "history_close_rows_used": 102,
+      "model_name": "market_parity",
+      "model_version": 4,
+      "description": "Last verified IBJA rate adjusted by observed same-provider global metal and USD/INR ratios since its first paired source check.",
       "backtest": {
-        "status": "walk_forward",
-        "selected_model": "last_close",
-        "source_observations": 99,
-        "validation_samples": 59,
-        "validation_mape_pct": 0.841,
-        "validation_naive_mape_pct": 0.841,
-        "holdout_samples": 25,
-        "holdout_mape_pct": 0.618,
-        "holdout_naive_mape_pct": 0.618,
-        "holdout_beats_naive": false,
-        "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
+        "status": "forward_only"
       },
       "interval_calibrated": false,
-      "range_label": "Typical range",
-      "range_profile": {
-        "target_historical_coverage_pct": 50,
-        "half_width": 0.006818570732798905,
-        "calibration_samples": 59,
-        "holdout_samples": 25,
-        "holdout_covered": 14,
-        "holdout_coverage_pct": 56.0,
-        "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."
-      },
+      "range_label": "Scenario range",
+      "range_profile": null,
       "wider_range": {
-        "low": 139500,
-        "high": 143900,
-        "method": "Heuristic volatility scenario, not a guaranteed interval."
+        "low": 139100,
+        "high": 142900,
+        "method": "80th percentile of past absolute IBJA daily moves. Descriptive scenario, not a calibrated prediction interval."
+      },
+      "scenario_basis": {
+        "low": 139100,
+        "high": 142900,
+        "half_width": 0.013256101993070726,
+        "sample_size": 90,
+        "method": "80th percentile of past absolute IBJA daily moves. Descriptive scenario, not a calibrated prediction interval."
+      },
+      "forward_evidence": {
+        "status": "collecting",
+        "independent_target_dates": 2,
+        "market_mape_pct": 0.113,
+        "baseline_mape_pct": 0.606,
+        "note": "Forward results from forecasts saved before the target day. Latest saved issue per target date; no historical simulation is presented as live accuracy."
+      },
+      "drivers": {
+        "metal_change_pct": 0.07534659244157194,
+        "fx_change_pct": 0,
+        "metal_contribution_inr": 106.15656755685512,
+        "fx_contribution_inr": 0
       }
     },
     "gold22": {
       "label": "22K gold",
       "unit": "10 g",
-      "baseline": 129806,
-      "estimate": 129806,
-      "low": 128900,
-      "high": 130700,
-      "expected_change_pct": 0.0,
-      "direction": "Mostly steady",
-      "scenario_width_pct": 1.5,
-      "history_returns_used": 7,
-      "history_rows_used": 99,
-      "history_close_rows_used": 99,
-      "model_name": "last_close",
-      "model_version": 3,
-      "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+      "baseline": 129056,
+      "estimate": 129153,
+      "low": 127400,
+      "high": 130900,
+      "expected_change_pct": 0.08,
+      "direction": "Up",
+      "scenario_width_pct": 1.33,
+      "history_returns_used": 90,
+      "history_rows_used": 103,
+      "history_close_rows_used": 102,
+      "model_name": "market_parity",
+      "model_version": 4,
+      "description": "Last verified IBJA rate adjusted by observed same-provider global metal and USD/INR ratios since its first paired source check.",
       "backtest": {
-        "status": "walk_forward",
-        "selected_model": "last_close",
-        "source_observations": 99,
-        "validation_samples": 59,
-        "validation_mape_pct": 0.841,
-        "validation_naive_mape_pct": 0.841,
-        "holdout_samples": 25,
-        "holdout_mape_pct": 0.618,
-        "holdout_naive_mape_pct": 0.618,
-        "holdout_beats_naive": false,
-        "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
+        "status": "forward_only"
       },
       "interval_calibrated": false,
-      "range_label": "Typical range",
-      "range_profile": {
-        "target_historical_coverage_pct": 50,
-        "half_width": 0.006818753368061792,
-        "calibration_samples": 59,
-        "holdout_samples": 25,
-        "holdout_covered": 14,
-        "holdout_coverage_pct": 56.0,
-        "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."
-      },
+      "range_label": "Scenario range",
+      "range_profile": null,
       "wider_range": {
-        "low": 127800,
-        "high": 131800,
-        "method": "Heuristic volatility scenario, not a guaranteed interval."
+        "low": 127400,
+        "high": 130900,
+        "method": "80th percentile of past absolute IBJA daily moves. Descriptive scenario, not a calibrated prediction interval."
+      },
+      "scenario_basis": {
+        "low": 127400,
+        "high": 130900,
+        "half_width": 0.013255877893824455,
+        "sample_size": 90,
+        "method": "80th percentile of past absolute IBJA daily moves. Descriptive scenario, not a calibrated prediction interval."
+      },
+      "forward_evidence": {
+        "status": "collecting",
+        "independent_target_dates": 2,
+        "market_mape_pct": 0.113,
+        "baseline_mape_pct": 0.606,
+        "note": "Forward results from forecasts saved before the target day. Latest saved issue per target date; no historical simulation is presented as live accuracy."
+      },
+      "drivers": {
+        "metal_change_pct": 0.07534659244157194,
+        "fx_change_pct": 0,
+        "metal_contribution_inr": 97.23929834139508,
+        "fx_contribution_inr": 0
       }
     },
     "silver": {
       "label": "Silver 999",
       "unit": "1 kg",
-      "baseline": 194479,
-      "estimate": 194479,
-      "low": 192000,
-      "high": 197000,
-      "expected_change_pct": 0.0,
-      "direction": "Mostly steady",
-      "scenario_width_pct": 2.8,
-      "history_returns_used": 7,
-      "history_rows_used": 99,
-      "history_close_rows_used": 99,
-      "model_name": "last_close",
-      "model_version": 3,
-      "description": "Simple model chosen using past validation, then checked on a later held-out period.",
+      "baseline": 183800,
+      "estimate": 183742,
+      "low": 179000,
+      "high": 188500,
+      "expected_change_pct": -0.03,
+      "direction": "Down",
+      "scenario_width_pct": 2.41,
+      "history_returns_used": 90,
+      "history_rows_used": 103,
+      "history_close_rows_used": 102,
+      "model_name": "market_parity",
+      "model_version": 4,
+      "description": "Last verified IBJA rate adjusted by observed same-provider global metal and USD/INR ratios since its first paired source check.",
       "backtest": {
-        "status": "walk_forward",
-        "selected_model": "last_close",
-        "source_observations": 99,
-        "validation_samples": 59,
-        "validation_mape_pct": 1.303,
-        "validation_naive_mape_pct": 1.303,
-        "holdout_samples": 25,
-        "holdout_mape_pct": 1.448,
-        "holdout_naive_mape_pct": 1.448,
-        "holdout_beats_naive": false,
-        "note": "Earlier validation selected the strategy; untouched chronological holdout used only to report error. Lower MAPE is better."
+        "status": "forward_only"
       },
       "interval_calibrated": false,
-      "range_label": "Typical range",
-      "range_profile": {
-        "target_historical_coverage_pct": 50,
-        "half_width": 0.010524528942454592,
-        "calibration_samples": 59,
-        "holdout_samples": 25,
-        "holdout_covered": 13,
-        "holdout_coverage_pct": 52.0,
-        "method": "Median absolute one-step error from earlier validation; outward-rounded bounds checked on later closes."
-      },
+      "range_label": "Scenario range",
+      "range_profile": null,
       "wider_range": {
-        "low": 189000,
-        "high": 200000,
-        "method": "Heuristic volatility scenario, not a guaranteed interval."
+        "low": 179000,
+        "high": 188500,
+        "method": "80th percentile of past absolute IBJA daily moves. Descriptive scenario, not a calibrated prediction interval."
+      },
+      "scenario_basis": {
+        "low": 179000,
+        "high": 188500,
+        "half_width": 0.02411179779881847,
+        "sample_size": 90,
+        "method": "80th percentile of past absolute IBJA daily moves. Descriptive scenario, not a calibrated prediction interval."
+      },
+      "forward_evidence": {
+        "status": "collecting",
+        "independent_target_dates": 2,
+        "market_mape_pct": 0.584,
+        "baseline_mape_pct": 1.022,
+        "note": "Forward results from forecasts saved before the target day. Latest saved issue per target date; no historical simulation is presented as live accuracy."
+      },
+      "drivers": {
+        "metal_change_pct": -0.0314836678472985,
+        "fx_change_pct": 0,
+        "metal_contribution_inr": -57.86698150333465,
+        "fx_contribution_inr": 0
       }
     }
   },
   "signal_summary": [
     {
-      "name": "Selected historical price model",
-      "details": "Each metal uses the model selected on earlier dated IBJA closes. The last-close model repeats the latest price; it does not use momentum in its point estimate.",
-      "used_in_estimate": true
+      "factor": "Global metal movement",
+      "used": true
     },
     {
-      "name": "Uncertainty range",
-      "details": "Typical range uses the median earlier one-step forecast error, checked on later historical closes. The wider heuristic scenario is retained separately. Neither guarantees a future price.",
-      "used_in_estimate": true
+      "factor": "USD/INR movement",
+      "used": true
     },
     {
-      "name": "International references",
-      "details": "International spot and USD/INR are shown on Markets as context, but not added to this forecast without a validated, time-aligned history.",
-      "used_in_estimate": false
-    },
-    {
-      "name": "LBMA / COMEX / MCX",
-      "details": "Official venue feeds are not connected. Their price changes are not assumed or invented.",
-      "used_in_estimate": false
+      "factor": "IBJA benchmark and historical moves",
+      "used": true
     }
   ],
-  "based_on_date": "2026-10-26",
-  "based_on_session": "PM",
-  "observations": 99,
+  "based_on_date": "2026-10-30",
+  "based_on_session": "AM",
+  "observations": 103,
   "validation": {
-    "status": "walk_forward",
-    "observations": 99,
-    "model_version": 3,
-    "tested_metals": 3,
-    "description": "Time-ordered train, validation and untouched holdout per metal. Models may still lose to last-close."
+    "status": "forward_collecting",
+    "model_version": 4,
+    "description": "Market-implied parity assumption; forward errors are measured against actual target-date PM closes."
   },
-  "issuance_key": "v3:2026-10-27:2026-10-26:PM",
+  "input_policy_version": 2,
+  "forecast_mode": "market_adjusted",
+  "market_model": {
+    "status": "active",
+    "method": "market_parity_v1",
+    "reference_checked_at": "2026-10-30T07:45:12.943Z",
+    "current_checked_at": "2026-10-30T08:15:31.538Z",
+    "inputs": {
+      "gold24": {
+        "symbol": "XAU",
+        "reference_usd_oz": 3981.6001,
+        "current_usd_oz": 3984.6001,
+        "reference_as_of": "2026-10-30T07:45:12.000Z",
+        "current_as_of": "2026-10-30T08:15:12.000Z",
+        "source_url": "https://gold-api.com/docs"
+      },
+      "gold22": {
+        "symbol": "XAU",
+        "reference_usd_oz": 3981.6001,
+        "current_usd_oz": 3984.6001,
+        "reference_as_of": "2026-10-30T07:45:12.000Z",
+        "current_as_of": "2026-10-30T08:15:12.000Z",
+        "source_url": "https://gold-api.com/docs"
+      },
+      "silver": {
+        "symbol": "XAG",
+        "reference_usd_oz": 50.82,
+        "current_usd_oz": 50.804,
+        "reference_as_of": "2026-10-30T07:45:11.000Z",
+        "current_as_of": "2026-10-30T08:15:12.000Z",
+        "source_url": "https://gold-api.com/docs"
+      }
+    },
+    "fx": {
+      "reference": 95.2911,
+      "current": 95.2911,
+      "kind": "indicative_conversion",
+      "reference_date": "2026-10-30",
+      "current_date": "2026-10-30",
+      "source_url": "https://gold-api.com/docs",
+      "reference_quote_as_of": "2026-10-30T07:45:12.000Z",
+      "current_quote_as_of": "2026-10-30T08:15:42.000Z",
+      "fx_tick_timestamp_verified": false
+    },
+    "assumptions": [
+      "Global metal and FX levels hold until the next IBJA publication.",
+      "Domestic taxes and the local market premium remain unchanged.",
+      "Reference market quotes were captured at the first verified benchmark check, not at an assumed IBJA publication time."
+    ],
+    "limitations": [
+      "This is an experimental market-implied projection, not a fitted or proven predictive model.",
+      "MCX, COMEX and LBMA feeds are not connected.",
+      "The provider conversion accompanies a gold quote; an independent FX tick timestamp is not available."
+    ]
+  },
+  "issuance_key": "v4:2026-11-02:2026-10-30:AM:market_adjusted:2026-10-30T08:15:31.538Z",
   "accuracy_tracking": {
-    "evaluated_issuances": 0,
-    "independent_target_dates": 0,
-    "model_version": 3,
+    "evaluated_issuances": 2,
+    "independent_target_dates": 2,
+    "model_version": 4,
     "status": "collecting"
   }
 }

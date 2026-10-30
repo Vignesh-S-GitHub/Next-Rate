@@ -2,7 +2,7 @@
 
 /*
  * Source-backed static dashboard. All published observations come from
- * a consistent Cloudflare publication, with committed dated files as fallback.
+ * the final archived publication committed with this source.
  * Never generate a numeric "tomorrow" prediction here.
  */
 const cities = ['Chennai', 'Mumbai', 'Delhi', 'Bengaluru', 'Hyderabad'];
@@ -771,7 +771,7 @@ function insights() {
 }
 function errorScreen() {
   return heading('Latest Gold & Silver Rates','Waiting for the first validated market data publication.')+
-    '<article class="card"><h2>Rates temporarily unavailable</h2><p>NextRate has no confirmed published snapshot yet. Cloudflare will publish a new snapshot after a verified source check. We do not show invented fallback prices.</p><a href="https://nextrate-scheduler.vigneshshanmugam.workers.dev/status.json" target="_blank" rel="noopener noreferrer">Check collection status ↗</a></article>';
+    '<article class="card"><h2>Archived rates unavailable</h2><p>The committed snapshot could not be loaded. Serve this repository with a local HTTP server.</p></article>';
 }
 function render() {
   const quality=window.NextRateDataQuality;
@@ -828,6 +828,7 @@ let publicationLoader;
 let loadingData=false,lastAttempt=0,dataSource='loading',refreshFailed=false;
 function dataWarning(){
  const warnings=[];
+ if(dataSource==='archive')warnings.push(appLanguage==='ta'?'காப்பகப் பதிவு · தானியங்கி புதுப்பிப்புகள் நிறுத்தப்பட்டன.':'Archived snapshot · Automatic updates are disabled.');
  if(dataSource==='fallback')warnings.push('Live data connection unavailable. Showing the dated backup.');
  if(refreshFailed&&rates)warnings.push('Refresh failed. Keeping the last verified prices.');
  if(india()&&daysOld(india().date)>2)warnings.push('Older published rates. Check the source dates before using these values.');
@@ -966,12 +967,6 @@ document.addEventListener('click',event=>{
   const link=event.target.closest('[data-feature-link]');
   if(link)window.NextRateFeatures?.select(link.dataset.featureLink);
 });
-window.addEventListener('focus',()=>{void loadData();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void loadData();});
-setInterval(()=>{
- const editing=document.activeElement?.matches('input,textarea,[contenteditable="true"]');
- if(!document.hidden&&!editing)void loadData();
-},300000);
 window.addEventListener('hashchange',render);
 // Unregister the retired notification-only worker installed by older releases.
 if(navigator.serviceWorker?.getRegistrations){

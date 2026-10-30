@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
-const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
+const pages=fs.readFileSync(path.join(root,'docs/reference/pages.yml.example'),'utf8');
 const cities=JSON.parse(fs.readFileSync(path.join(root,'data/cities.json'),'utf8'));
 test('all five city labels and source attribution are actually displayed',()=>{
  for(const city of ['Chennai','Mumbai','Delhi','Bengaluru','Hyderabad']){

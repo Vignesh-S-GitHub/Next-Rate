@@ -6,7 +6,7 @@ const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 const chart=fs.readFileSync(path.join(root,'chart-ui.js'),'utf8');
 const model=fs.readFileSync(path.join(root,'chart-interaction.js'),'utf8');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
-const pages=fs.readFileSync(path.join(root,'.github/workflows/pages.yml'),'utf8');
+const pages=fs.readFileSync(path.join(root,'docs/reference/pages.yml.example'),'utf8');
 
 test('Home uses two continuous desktop columns and a compact mobile order',()=>{
  const section=app.slice(app.indexOf('function home(){'),app.indexOf('function featuresContext(){'));

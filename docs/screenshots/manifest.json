@@ -1,0 +1,249 @@
+{
+  "captured_on": "2026-10-30",
+  "snapshot_checked_at": "2026-10-30T08:15:31.538Z",
+  "source_commit_before_retirement": "bd56d566be890ca210b325a55d597a2f015a3dde",
+  "browser": "153.0.8010.0",
+  "note": "Real archived app. Clock held at the saved publication time so dated forecasts remain reviewable. No fabricated prices or external data requests. Unavailable publisher emblems use the app’s text fallback.",
+  "screenshots": [
+    {
+      "file": "desktop-en-home.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home"
+    },
+    {
+      "file": "desktop-en-markets.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "markets"
+    },
+    {
+      "file": "desktop-en-compare.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "compare"
+    },
+    {
+      "file": "desktop-en-insights.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "insights"
+    },
+    {
+      "file": "desktop-en-tools-resale.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "tools-resale"
+    },
+    {
+      "file": "desktop-en-tools-hallmark.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "tools-hallmark"
+    },
+    {
+      "file": "desktop-en-tools-etfs.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "tools-etfs"
+    },
+    {
+      "file": "desktop-en-home-change-7d.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home-change-7d"
+    },
+    {
+      "file": "desktop-en-home-change-30d.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home-change-30d"
+    },
+    {
+      "file": "desktop-en-home-change-90d.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home-change-90d"
+    },
+    {
+      "file": "desktop-en-home-chart-30d.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home-chart-30d"
+    },
+    {
+      "file": "desktop-en-home-chart-90d.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home-chart-90d"
+    },
+    {
+      "file": "desktop-en-home-expanded.jpg",
+      "view": "desktop",
+      "language": "en",
+      "screen": "home-expanded"
+    },
+    {
+      "file": "desktop-ta-home.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "home"
+    },
+    {
+      "file": "desktop-ta-markets.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "markets"
+    },
+    {
+      "file": "desktop-ta-compare.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "compare"
+    },
+    {
+      "file": "desktop-ta-insights.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "insights"
+    },
+    {
+      "file": "desktop-ta-tools-resale.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "tools-resale"
+    },
+    {
+      "file": "desktop-ta-tools-hallmark.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "tools-hallmark"
+    },
+    {
+      "file": "desktop-ta-tools-etfs.jpg",
+      "view": "desktop",
+      "language": "ta",
+      "screen": "tools-etfs"
+    },
+    {
+      "file": "mobile-en-home.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home"
+    },
+    {
+      "file": "mobile-en-markets.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "markets"
+    },
+    {
+      "file": "mobile-en-compare.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "compare"
+    },
+    {
+      "file": "mobile-en-insights.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "insights"
+    },
+    {
+      "file": "mobile-en-tools-resale.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "tools-resale"
+    },
+    {
+      "file": "mobile-en-tools-hallmark.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "tools-hallmark"
+    },
+    {
+      "file": "mobile-en-tools-etfs.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "tools-etfs"
+    },
+    {
+      "file": "mobile-en-home-change-7d.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home-change-7d"
+    },
+    {
+      "file": "mobile-en-home-change-30d.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home-change-30d"
+    },
+    {
+      "file": "mobile-en-home-change-90d.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home-change-90d"
+    },
+    {
+      "file": "mobile-en-home-chart-30d.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home-chart-30d"
+    },
+    {
+      "file": "mobile-en-home-chart-90d.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home-chart-90d"
+    },
+    {
+      "file": "mobile-en-home-expanded.jpg",
+      "view": "mobile",
+      "language": "en",
+      "screen": "home-expanded"
+    },
+    {
+      "file": "mobile-ta-home.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "home"
+    },
+    {
+      "file": "mobile-ta-markets.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "markets"
+    },
+    {
+      "file": "mobile-ta-compare.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "compare"
+    },
+    {
+      "file": "mobile-ta-insights.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "insights"
+    },
+    {
+      "file": "mobile-ta-tools-resale.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "tools-resale"
+    },
+    {
+      "file": "mobile-ta-tools-hallmark.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "tools-hallmark"
+    },
+    {
+      "file": "mobile-ta-tools-etfs.jpg",
+      "view": "mobile",
+      "language": "ta",
+      "screen": "tools-etfs"
+    }
+  ]
+}
