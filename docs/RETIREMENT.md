@@ -16,11 +16,11 @@ The frontend defaults to local committed data. Focus, visibility and interval-ba
 ## Retirement state
 
 - Cloudflare cron triggers: cleared and verified empty.
-- Worker `nextrate-scheduler`: deletion follows verified preservation of the backup and screenshots in GitHub.
-- D1 `nextrate-data` (`9bbbac81-d301-42fc-8686-6ef910b9cb59`): deletion follows the Worker and verified backup.
+- Worker `nextrate-scheduler`: deleted after the backup and screenshots were verified in GitHub.
+- D1 `nextrate-data` (`9bbbac81-d301-42fc-8686-6ef910b9cb59`): deleted after the Worker and verified backup. Deletion completed **2026-10-30T08:45:46Z (14:15 IST)**; listing Workers and D1 databases returned no NextRate matches. Other projects were unchanged.
 - GitHub Actions: active Pages workflow removed; original source retained under `docs/reference/pages.yml.example`.
 - Repository Worker configuration: cron list and D1 binding list empty.
-- GitHub Pages: unpublication requires the repository's Pages settings; the connected GitHub tool does not expose that administration operation.
+- GitHub Pages: **not yet unpublished**. The connected GitHub tool does not expose that administration operation, and the Pages settings browser requires repository-owner sign-in. No new deployment can run from the retained source.
 
 Cloudflare inventory showed no NextRate KV namespace or Pages project; R2 is not enabled in the account. Other projects are outside this retirement.
 

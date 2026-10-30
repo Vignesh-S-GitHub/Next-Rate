@@ -1,0 +1,16 @@
+{
+  "retired_on": "2026-10-30",
+  "deleted_at": "2026-10-30T08:45:46.400Z",
+  "worker": "nextrate-scheduler",
+  "database": "nextrate-data",
+  "worker_deleted": true,
+  "database_deleted": true,
+  "verified_remaining_project_workers": [],
+  "verified_remaining_project_databases": [],
+  "schedules": "cleared before deletion",
+  "backup_commit": "447bbe6ea7ddd68e2635f76e2246054856417992",
+  "backup_revision": 49,
+  "screenshots": 40,
+  "active_github_workflows": 0,
+  "github_pages": "Owner sign-in required to unpublish; not yet confirmed"
+}
